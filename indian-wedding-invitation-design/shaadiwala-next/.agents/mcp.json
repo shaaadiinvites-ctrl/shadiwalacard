@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "originkit": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sse",
+        "https://mcp.originkit.dev/mcp"
+      ],
+      "env": {
+        "AUTHORIZATION": "Bearer cmp_live_552M8sbmL0NttKxq1szkccRO-Wvj3Ju1"
+      }
+    }
+  }
+}

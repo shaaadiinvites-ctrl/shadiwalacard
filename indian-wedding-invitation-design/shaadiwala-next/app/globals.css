@@ -1,0 +1,63 @@
+/* =====================================================
+   SHADIWALACARD.COM — Royal Luxury Theme
+   Global CSS — Clean, highly optimized tokens & rules
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+}
+
+@layer base {
+  :root {
+    --background: #F2F4F8;
+    --foreground: #1A202C;
+    --primary: #1A202C;
+    --primary-foreground: #FFFFFF;
+    --border: rgba(26,32,44,0.15);
+    --input: rgba(26,32,44,0.15);
+    --ring: rgba(26,32,44,0.5);
+    --radius: 0.5rem;
+  }
+}
+
+/* ── Base Reset & Optimization ── */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Core Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
+  margin: 0;
+}
+h1 { line-height: 1.08; }
+h2 { line-height: 1.12; }
+h3 { line-height: 1.2; }
+
+.font-playfair { font-family: 'Playfair Display', serif; }
+.font-inter    { font-family: 'Inter', sans-serif; }
+.italic-serif  { font-family: 'Playfair Display', serif; font-style: italic; letter-spacing: 0.5px; }
+
+a { color: inherit; text-decoration: none; transition: opacity 0.2s ease; }
+::selection { background: rgba(157, 23, 77, 0.15); color: #2e1065; }
+
+/* Mobile Utilities */
+@media (max-width: 768px) {
+  .nav-links { display: none !important; }
+}

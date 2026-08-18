@@ -1,0 +1,238 @@
+/* =====================================================
+   SHAADIWALA CARD — Deep Space & Celestial Bronze
+   Global CSS — All theme tokens, animations, utilities
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Root CSS Variables ── */
+:root {
+  --bronze:         #e8a85a;
+  --bronze-dark:    #cd7f32;
+  --bronze-light:   #f5d17e;
+  --space:          #04050f;
+  --cosmic-navy:    #0a1020;
+  --card-bg:        #0c1422;
+  --card-bg-deep:   #080d18;
+  --starlight:      #eef0f8;
+  --slate:          #8899b8;
+  --slate-dark:     #7888a8;
+  --slate-muted:    #56637a;
+  --space-blue:     rgba(20,60,120,0.3);
+  --bronze-glow:    rgba(205,127,50,0.25);
+}
+
+/* ── Base ── */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--space);
+  background-image:
+    radial-gradient(ellipse 90% 60% at 15% 5%,  rgba(20,60,110,0.3)   0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 15%,  rgba(205,127,50,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 70% at 50% 90%,  rgba(8,12,22,0.95)    0%, transparent 65%);
+  color: var(--starlight);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 1;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+}
+h1 { line-height: 1.08; }
+h2 { line-height: 1.12; }
+h3 { line-height: 1.2; }
+
+.font-cormorant { font-family: 'Cormorant Garamond', serif; }
+.font-jost      { font-family: 'Jost', sans-serif; }
+.italic-serif   { font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0.5px; }
+
+a { color: var(--bronze); text-decoration: none; }
+a:hover { color: #ffffff; }
+::selection { background: #1a3d60; color: var(--bronze); }
+
+/* ── Animations ── */
+@keyframes marq {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes pop {
+  from { transform: translateY(14px) scale(.98); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes foilShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes auroraWave {
+  0%,100% { transform: scale(1) translateY(0);    opacity: 0.7; }
+  50%      { transform: scale(1.08) translateY(-24px); opacity: 1; }
+}
+@keyframes auroraBlob2 {
+  0%,100% { transform: translate(0,0) scale(1);         opacity: 0.6; }
+  40%      { transform: translate(40px,-25px) scale(1.12); opacity: 0.9; }
+}
+@keyframes floatGeo1 {
+  0%,100% { transform: rotate(-15deg) translateY(0);  }
+  50%      { transform: rotate(-12deg) translateY(-20px); }
+}
+@keyframes floatGeo2 {
+  0%,100% { transform: rotate(18deg) translateY(0); }
+  50%      { transform: rotate(15deg) translateY(-24px); }
+}
+@keyframes floatGeo3 {
+  0%,100% { transform: rotate(-8deg) translateY(0); }
+  50%      { transform: rotate(-12deg) translateY(18px); }
+}
+@keyframes floatGeo4 {
+  0%,100% { transform: rotate(12deg) translateY(0); }
+  50%      { transform: rotate(8deg) translateY(22px); }
+}
+@keyframes pinBounce {
+  0%,100% { transform: translateY(0);  }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes radarPulse {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes orbitRotate {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+@keyframes shimmerBronze {
+  0%,100% { border-color: rgba(205,127,50,.35); box-shadow: 0 14px 35px -12px rgba(10,30,60,.25); }
+  50%      { border-color: rgba(232,168,90,.9);  box-shadow: 0 18px 45px -10px rgba(205,127,50,.4); }
+}
+@keyframes ultraLiquidGlow {
+  0%,100% { box-shadow: 0 0 22px rgba(205,127,50,0.55), inset 0 0 10px rgba(255,220,160,0.5); border-color: #cd7f32; }
+  50%      { box-shadow: 0 0 40px rgba(232,168,90,0.95), inset 0 0 18px rgba(255,220,160,0.8); border-color: #f5d17e; }
+}
+
+/* ── Utility Classes ── */
+.shiny-foil-text {
+  background: linear-gradient(90deg, #cd7f32 0%, #f5e6c8 22%, #e8a85a 44%, #fff8ee 66%, #cd7f32 88%, #e8a85a 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: foilShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 16px rgba(205,127,50,0.55));
+}
+
+.liquid-glass-btn {
+  background: linear-gradient(135deg, #0c1525, #070c18) !important;
+  backdrop-filter: blur(14px);
+  border: 2px solid #cd7f32;
+  color: #ffffff !important;
+  font-weight: 700;
+  animation: ultraLiquidGlow 3s infinite ease-in-out;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+}
+.liquid-glass-btn:hover { transform: translateY(-4px) scale(1.04); }
+
+.spotlight-card { position: relative; overflow: hidden; }
+.spotlight-card::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,220,160,0.35) 50%, transparent 60%);
+  transform: translateX(-100%) rotate(25deg);
+  transition: transform 0.8s ease;
+  pointer-events: none;
+  z-index: 12;
+}
+.spotlight-card:hover::after { transform: translateX(100%) rotate(25deg); }
+
+.float-geo-1 { animation: floatGeo1 8s ease-in-out infinite; }
+.float-geo-2 { animation: floatGeo2 9s ease-in-out infinite; }
+.float-geo-3 { animation: floatGeo3 7.5s ease-in-out infinite; }
+.float-geo-4 { animation: floatGeo4 8.5s ease-in-out infinite; }
+
+.template-card-container { animation: shimmerBronze 5s ease-in-out infinite; }
+
+.orbital-ring-wrap { position: relative; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.orbital-ring-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px dashed #cd7f32;
+  box-shadow: 0 0 20px rgba(205,127,50,0.7);
+  animation: orbitRotate 12s linear infinite;
+  pointer-events: none;
+}
+
+/* Silk Aurora blobs */
+.silk-aurora-bg { position: absolute; top: 0; left: 0; right: 0; height: 110%; pointer-events: none; z-index: 1; overflow: hidden; }
+.silk-aurora-bg::before {
+  content: '';
+  position: absolute;
+  top: -8%; left: 25%;
+  width: 800px; height: 650px;
+  background: radial-gradient(ellipse, rgba(205,127,50,0.25) 0%, rgba(160,90,20,0.1) 40%, transparent 70%);
+  animation: auroraWave 10s ease-in-out infinite;
+  border-radius: 50%;
+}
+.silk-aurora-bg::after {
+  content: '';
+  position: absolute;
+  top: 5%; left: -12%;
+  width: 650px; height: 550px;
+  background: radial-gradient(ellipse, rgba(20,60,120,0.32) 0%, rgba(10,30,70,0.12) 45%, transparent 70%);
+  animation: auroraBlob2 13s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+/* Ornamental section divider */
+.section-divider {
+  position: relative;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.section-divider::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,transparent,rgba(205,127,50,0.45) 25%,rgba(20,60,120,0.45) 50%,rgba(205,127,50,0.45) 75%,transparent);
+}
+.section-divider-dot {
+  position: relative;
+  background: #04050f;
+  padding: 0 18px;
+  font-size: 20px;
+  color: rgba(205,127,50,0.55);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .nav-links { display: none !important; }
+  .float-geo-1, .float-geo-2, .float-geo-3, .float-geo-4 { opacity: 0.4; }
+}

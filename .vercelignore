@@ -1,0 +1,4 @@
+# Reference-only design template — not part of the deployed app.
+# Having a second package.json in here confuses Vercel's framework
+# auto-detection, so keep it out of what gets uploaded entirely.
+Indian Wedding Invitation Landing Page/

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100%" height="100%">
+  <style>
+    .pin { animation: bounce 2s infinite cubic-bezier(0.28, 0.84, 0.42, 1); transform-origin: 24px 20px; }
+    .path { stroke-dasharray: 40; animation: dash 3s infinite linear; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px) scale(1.1); } }
+    @keyframes dash { 0% { stroke-dashoffset: 40; } 50%, 100% { stroke-dashoffset: 0; } }
+  </style>
+  <path d="M6 12l12-6 12 6 12-6v28l-12 6-12-6-12 6V12z" fill="#fdf5e6" stroke="#6e1f2a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M18 6v28M30 12v28" stroke="#6e1f2a" stroke-width="2" opacity="0.3"/>
+  <path d="M6 26h10c4 0 6-2 6-6s-2-6-6-6" fill="none" stroke="#6e1f2a" stroke-width="2" stroke-linecap="round" class="path"/>
+  <g class="pin">
+    <path d="M24 32c0 0 10-9 10-16A10 10 0 0 0 14 16c0 7 10 16 10 16z" fill="#ffffff" stroke="#6e1f2a" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="16" r="4" fill="#6e1f2a"/>
+  </g>
+</svg>
