@@ -10,14 +10,19 @@ export const metadata = {
 };
 
 interface Props {
-  searchParams: Promise<{ po?: string; template?: string }>;
+  searchParams: Promise<{ po?: string; template?: string; e?: string; p?: string }>;
 }
 
 export default async function SuccessPage({ searchParams }: Props) {
-  const { po, template } = await searchParams;
+  const { po, template, e, p } = await searchParams;
   const templateSlug = template || "royal-heritage";
 
   const selectedTemplate = getTemplate(templateSlug);
+  
+  // Build the form URL preserving email and phone if they exist
+  let formUrl = `/form?po=${po}&template=${templateSlug}`;
+  if (e) formUrl += `&e=${encodeURIComponent(e)}`;
+  if (p) formUrl += `&p=${encodeURIComponent(p)}`;
   const templateImage = selectedTemplate.img;
 
   if (!po) {
@@ -102,7 +107,7 @@ export default async function SuccessPage({ searchParams }: Props) {
             </Link>
             
             <Link 
-              href={`/form?po=${po}&template=${template || "royal-heritage"}`} 
+              href={formUrl} 
               className="w-full no-underline flex min-w-0 overflow-hidden"
             >
               <button className="w-full h-10 flex items-center justify-center px-1 text-white font-medium tracking-wide text-[0.75rem] bg-[#9d174d] border-none rounded-xl cursor-pointer hover:bg-[#831843] transition-colors whitespace-nowrap overflow-hidden">

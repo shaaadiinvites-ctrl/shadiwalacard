@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldPath } from "react-hook-form";
 import { WeddingFormData, STEPS } from "@/types/wedding";
 import { CheckCircle, Circle } from "lucide-react";
@@ -44,6 +44,17 @@ export default function WeddingForm({
   const [submitted, setSubmitted] = useState(false);
   const [slug, setSlug] = useState<string | null>(existingSlug ?? null);
   const [editUrl, setEditUrl] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [ghostClickLock, setGhostClickLock] = useState(false);
+
+  useEffect(() => {
+    if (currentStep === STEPS.length) {
+      setGhostClickLock(true);
+      const timer = setTimeout(() => setGhostClickLock(false), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep]);
+
   const posthog = usePostHog();
 
   // Payment gate: only applies to new submissions. This page should only
@@ -81,7 +92,7 @@ export default function WeddingForm({
     formState: { errors, isSubmitting },
   } = useForm<WeddingFormData>({
     mode: "onChange",
-    defaultValues: mode === "edit" ? { ...DEFAULT_VALUES, ...initialData } : DEFAULT_VALUES,
+    defaultValues: { ...DEFAULT_VALUES, ...(initialData || {}) },
   });
 
   // Fields validated per step
@@ -116,8 +127,6 @@ export default function WeddingForm({
     setCurrentStep((s) => Math.max(s - 1, 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const onSubmit = async (data: WeddingFormData) => {
     // Prevent mobile keyboards from submitting the form early via 'Enter'/'Go'
@@ -265,8 +274,9 @@ export default function WeddingForm({
         <div className="flex items-center justify-between mb-2">
           <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-1.5">
             <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={24} height={24} className="object-contain rounded" />
-            <span className="text-[#2e1065]">Shadiwala</span>
-            <span className="text-[#9d174d]">Card</span>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
+              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+            </span>
           </a>
           <span className="text-[11px] font-extrabold text-[#9d174d] bg-[#9d174d]/10 px-3 py-1 rounded-full border border-[#9d174d]/20">
             Step {currentStep} of {STEPS.length}
@@ -289,10 +299,9 @@ export default function WeddingForm({
         <div className="mb-8">
           <a href="/" className="text-2xl font-extrabold tracking-tight flex items-center gap-2 mb-2 no-underline">
             <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={32} height={32} className="object-contain rounded" />
-            <div>
-              <span className="text-[#2e1065]">Shadiwala</span>
-              <span className="text-[#9d174d]">Card</span>
-            </div>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
+              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+            </span>
           </a>
           <h1 className="text-xl font-bold text-[#1A202C]" style={{ fontFamily: "'Playfair Display', serif" }}>
             {mode === "edit" ? "Edit Your Invite" : "Customize Your Invite"}
@@ -349,7 +358,15 @@ export default function WeddingForm({
 
       {/* ── Main Form Area ── */}
       <main className="flex-1 flex flex-col min-w-0 md:min-h-screen">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col justify-between">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (currentStep < STEPS.length) goNext();
+          }} 
+          className="flex-1 flex flex-col justify-between"
+        >
+          <input type="hidden" {...register("primaryEmail")} />
+          <input type="hidden" {...register("contactNumber")} />
           <div className="flex-1 flex gap-0 w-full min-w-0">
             <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
               <div className="max-w-3xl mx-auto">
@@ -360,7 +377,7 @@ export default function WeddingForm({
                   <Step2Events register={register} errors={errors} control={control} setValue={setValue} />
                 )}
                 {currentStep === 3 && (
-                  <Step3Media register={register} errors={errors} />
+                  <Step3Media register={register} errors={errors} watch={watch} setValue={setValue} />
                 )}
                 {currentStep === 4 && (
                   <Step5RSVP register={register} errors={errors} />
@@ -395,8 +412,9 @@ export default function WeddingForm({
                 </button>
               ) : (
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting || ghostClickLock}
                   className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 shrink-0"
                 >
                   {isSubmitting ? (mode === "edit" ? "Saving…" : "Submitting…") : mode === "edit" ? "Save Changes ✓" : "Submit Invite ✓"}

@@ -252,13 +252,14 @@ function CartPageContent() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               email: email,
+              phone: phone,
             }),
           });
 
           const verifyData = await verifyRes.json();
           if (verifyRes.ok && verifyData.verified) {
             // Payment success -> Redirect to success page!
-            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}`);
+            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}&e=${encodeURIComponent(email)}&p=${encodeURIComponent(phone)}`);
           } else {
             setIsProcessingPayment(false);
             setError(verifyData.error || "Payment verification failed.");

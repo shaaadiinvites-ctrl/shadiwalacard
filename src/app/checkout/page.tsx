@@ -100,7 +100,7 @@ function CheckoutInner() {
         key: orderJson.keyId,
         amount: orderJson.amountPaise,
         currency: "INR",
-        name: "Shadiwala Card",
+        name: "ShadiwalaCard",
         description: `${template.name} invitation`,
         order_id: orderJson.orderId,
         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {

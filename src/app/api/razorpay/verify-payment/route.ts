@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
     }
 
-    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, email } = await req.json();
+    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, email, phone } = await req.json();
 
     if (!paymentOrderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
@@ -57,9 +57,10 @@ export async function POST(req: NextRequest) {
 
     // Send setup email if we got the email
     if (email) {
-      const origin = req.headers.get("origin") || "https://shaadiwala.in";
-      const setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
-      // Import dynamically or we can add it to the top
+      const origin = req.headers.get("origin") || "https://shadiwalacard.com";
+      let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}&e=${encodeURIComponent(email)}`;
+      if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
+      
       const { sendSetupLinkEmail } = await import("@/lib/email");
       // Fire and forget (don't await so we don't slow down the response)
       sendSetupLinkEmail(email, setupUrl).catch(console.error);

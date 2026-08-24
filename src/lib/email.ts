@@ -18,9 +18,9 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
   }
 
   const mailOptions = {
-    from: `"Shaadiwala" <${process.env.EMAIL_USER}>`,
+    from: `"ShadiwalaCard" <${process.env.EMAIL_USER}>`,
     to,
-    subject: "Your Shaadiwala Website Setup Link \uD83D\uDC9D",
+    subject: "Your ShadiwalaCard Website Setup Link \uD83D\uDC9D",
     html: `
       <!DOCTYPE html>
       <html>
@@ -116,11 +116,11 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
         <div class="wrapper">
           <div class="container">
             <div class="header">
-              <h1>Shaadiwala</h1>
+              <h1>ShadiwalaCard</h1>
             </div>
             <div class="content">
               <h2>Payment Successful! \uD83C\uDF89</h2>
-              <p>Thank you for choosing Shaadiwala. We are so excited to help you create your beautiful digital wedding invitation!</p>
+              <p>Thank you for choosing ShadiwalaCard. We are so excited to help you create your beautiful digital wedding invitation!</p>
               <p>You can start customizing your website right away, or come back to it later at any time using your secure link below.</p>
               
               <div style="margin: 32px 0;">
@@ -133,7 +133,7 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
               </p>
             </div>
             <div class="footer">
-              &copy; ${new Date().getFullYear()} Shaadiwala. All rights reserved.<br>
+              &copy; ${new Date().getFullYear()} ShadiwalaCard. All rights reserved.<br>
               If you need any help, simply reply to this email.
             </div>
           </div>

@@ -23,6 +23,7 @@ export default async function EditWeddingPage({ params }: Props) {
   const initialData: Partial<WeddingFormData> = {
     brideName: data.bride_name,
     groomName: data.groom_name,
+    nameOrder: data.name_order as "bride_first" | "groom_first",
     hashtag: data.hashtag ?? "",
     contactNumber: data.contact_number ?? "",
     primaryEmail: data.primary_email ?? "",

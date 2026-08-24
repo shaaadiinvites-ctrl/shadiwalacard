@@ -53,20 +53,20 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
             </div>
 
               <div className="flex items-center gap-3 mt-1 mb-2">
-                <label className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80">
-                  <input
-                    type="radio"
-                    value="true"
-                    {...register(`events.${index}.isMainEvent`)}
-                    checked={watchedEvents?.[index]?.isMainEvent === true}
-                    onChange={() => {
-                      // Deselect all others, select this one
-                      watchedEvents?.forEach((_, i) => {
-                        setValue(`events.${i}.isMainEvent`, i === index);
-                      });
-                    }}
-                    className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
-                  />
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer bg-white p-2 rounded-lg border border-gray-100 shadow-sm hover:border-[#2e1065]/30 transition-all">
+                    <input
+                      type="radio"
+                      value="true"
+                      {...register(`events.${index}.isMainEvent`)}
+                      checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
+                      onChange={() => {
+                        // Deselect all others, select this one
+                        watchedEvents?.forEach((_, i) => {
+                          setValue(`events.${i}.isMainEvent`, i === index);
+                        });
+                      }}
+                      className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
+                    />
                   <span className="font-semibold text-[#2e1065]">Set as Main Event</span>
                 </label>
                 <span className="text-xs text-gray-400">(Used for Countdown)</span>
