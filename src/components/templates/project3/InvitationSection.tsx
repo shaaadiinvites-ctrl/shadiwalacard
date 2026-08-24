@@ -58,31 +58,63 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="relative w-full max-w-[600px] mt-5 py-10">
           
-          <div className="relative z-10 w-full flex flex-col items-center text-center">
-            <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
-            {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
-              <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                Son of {wedding.groom_mother_name ? `Mrs. ${wedding.groom_mother_name}` : ""}
-                {wedding.groom_mother_name && wedding.groom_father_name ? " & " : ""}
-                {wedding.groom_father_name ? `Mr. ${wedding.groom_father_name}` : ""}
-              </p>
-            )}
-          </div>
-          
-          <div className="relative z-10 flex items-center justify-center w-full my-9">
-             <span className="font-playfair italic font-normal text-[clamp(34px,8vw,50px)] text-[#C8912A]/90 leading-none">&amp;</span>
-          </div>
-          
-          <div className="relative z-10 w-full flex flex-col items-center text-center">
-            <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
-            {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
-              <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                Daughter of {wedding.bride_mother_name ? `Mrs. ${wedding.bride_mother_name}` : ""}
-                {wedding.bride_mother_name && wedding.bride_father_name ? " & " : ""}
-                {wedding.bride_father_name ? `Mr. ${wedding.bride_father_name}` : ""}
-              </p>
-            )}
-          </div>
+          {wedding?.name_order === "bride_first" ? (
+            <>
+              <div className="relative z-10 w-full flex flex-col items-center text-center">
+                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
+                {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
+                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                    Daughter of {wedding.bride_mother_name ? `Mrs. ${wedding.bride_mother_name}` : ""}
+                    {wedding.bride_mother_name && wedding.bride_father_name ? " & " : ""}
+                    {wedding.bride_father_name ? `Mr. ${wedding.bride_father_name}` : ""}
+                  </p>
+                )}
+              </div>
+              
+              <div className="relative z-10 flex items-center justify-center w-full my-9">
+                 <span className="font-playfair italic font-normal text-[clamp(34px,8vw,50px)] text-[#C8912A]/90 leading-none">&amp;</span>
+              </div>
+              
+              <div className="relative z-10 w-full flex flex-col items-center text-center">
+                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
+                {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
+                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                    Son of {wedding.groom_mother_name ? `Mrs. ${wedding.groom_mother_name}` : ""}
+                    {wedding.groom_mother_name && wedding.groom_father_name ? " & " : ""}
+                    {wedding.groom_father_name ? `Mr. ${wedding.groom_father_name}` : ""}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative z-10 w-full flex flex-col items-center text-center">
+                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
+                {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
+                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                    Son of {wedding.groom_mother_name ? `Mrs. ${wedding.groom_mother_name}` : ""}
+                    {wedding.groom_mother_name && wedding.groom_father_name ? " & " : ""}
+                    {wedding.groom_father_name ? `Mr. ${wedding.groom_father_name}` : ""}
+                  </p>
+                )}
+              </div>
+              
+              <div className="relative z-10 flex items-center justify-center w-full my-9">
+                 <span className="font-playfair italic font-normal text-[clamp(34px,8vw,50px)] text-[#C8912A]/90 leading-none">&amp;</span>
+              </div>
+              
+              <div className="relative z-10 w-full flex flex-col items-center text-center">
+                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
+                {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
+                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                    Daughter of {wedding.bride_mother_name ? `Mrs. ${wedding.bride_mother_name}` : ""}
+                    {wedding.bride_mother_name && wedding.bride_father_name ? " & " : ""}
+                    {wedding.bride_father_name ? `Mr. ${wedding.bride_father_name}` : ""}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
           
         </motion.div>
 

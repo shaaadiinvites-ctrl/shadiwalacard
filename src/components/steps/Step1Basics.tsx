@@ -18,7 +18,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Full Name" error={errors.brideName?.message}>
       <Input
         {...register("brideName", { required: "Required" })}
-        placeholder="e.g. Ananya Sharma"
+        placeholder="e.g. Ananya Sharma" className="capitalize"
       />
     </FieldWrapper>
   );
@@ -27,7 +27,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Full Name" error={errors.groomName?.message}>
       <Input
         {...register("groomName", { required: "Required" })}
-        placeholder="e.g. Aditya Verma"
+        placeholder="e.g. Aditya Verma" className="capitalize"
       />
     </FieldWrapper>
   );
@@ -36,7 +36,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Mother's Name" error={errors.brideMotherName?.message}>
       <Input
         {...register("brideMotherName")}
-        placeholder="e.g. Mrs. Shalini Mittal"
+        placeholder="e.g. Mrs. Shalini Mittal" className="capitalize"
       />
     </FieldWrapper>
   );
@@ -45,7 +45,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Father's Name" error={errors.brideFatherName?.message}>
       <Input
         {...register("brideFatherName")}
-        placeholder="e.g. Mr. Aakash Mittal"
+        placeholder="e.g. Mr. Aakash Mittal" className="capitalize"
       />
     </FieldWrapper>
   );
@@ -54,7 +54,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Mother's Name" error={errors.groomMotherName?.message}>
       <Input
         {...register("groomMotherName")}
-        placeholder="e.g. Mrs. Premika Kapoor"
+        placeholder="e.g. Mrs. Premika Kapoor" className="capitalize"
       />
     </FieldWrapper>
   );
@@ -63,7 +63,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Father's Name" error={errors.groomFatherName?.message}>
       <Input
         {...register("groomFatherName")}
-        placeholder="e.g. Mr. Prem Kapoor"
+        placeholder="e.g. Mr. Prem Kapoor" className="capitalize"
       />
     </FieldWrapper>
   );

@@ -11,8 +11,6 @@ import Step1Basics from "@/components/steps/Step1Basics";
 import Step2Events from "@/components/steps/Step2Events";
 import Step3Media from "@/components/steps/Step3Media";
 import Step5RSVP from "@/components/steps/Step5RSVP";
-import Step6Virtual from "@/components/steps/Step6Virtual";
-import Step7Theme from "@/components/steps/Step7Theme";
 
 const DEFAULT_VALUES: Partial<WeddingFormData> = {
   nameOrder: "groom_first",
@@ -92,8 +90,6 @@ export default function WeddingForm({
     2: ["events"],
     3: [],
     4: [],
-    5: [],
-    6: ["contactNumber", "primaryEmail"],
   };
 
   const goNext = async () => {
@@ -132,7 +128,30 @@ export default function WeddingForm({
 
     setSubmitError(null);
     try {
-      const { coverPhoto, galleryImages, ...rest } = data;
+      // Helper function to capitalize first letter of each word
+      const toTitleCase = (str?: string) => {
+        if (!str) return str;
+        return str.replace(/\b\w/g, (char) => char.toUpperCase());
+      };
+
+      const formattedData = {
+        ...data,
+        brideName: toTitleCase(data.brideName),
+        groomName: toTitleCase(data.groomName),
+        brideMotherName: toTitleCase(data.brideMotherName),
+        brideFatherName: toTitleCase(data.brideFatherName),
+        groomMotherName: toTitleCase(data.groomMotherName),
+        groomFatherName: toTitleCase(data.groomFatherName),
+        rsvp1Name: toTitleCase(data.rsvp1Name),
+        rsvp2Name: toTitleCase(data.rsvp2Name),
+        events: data.events?.map(event => ({
+          ...event,
+          name: event.name === "Other" ? event.name : (toTitleCase(event.name) as any),
+          customName: toTitleCase(event.customName)
+        }))
+      };
+
+      const { coverPhoto, galleryImages, ...rest } = formattedData;
 
       const formData = new FormData();
       const extra = mode === "edit" ? { editToken } : { paymentOrderId, templateId };
@@ -182,14 +201,14 @@ export default function WeddingForm({
       <div className="min-h-screen flex items-center justify-center relative p-6 font-sans">
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
         <div className="rounded-2xl border border-gray-200 p-8 text-center max-w-lg w-full space-y-6" style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
-          <div className="text-6xl">💍</div>
+          <div className="text-6xl">✨</div>
           <h2 className="text-3xl font-extrabold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>
-            {mode === "edit" ? "Invite Updated!" : "Royal Invite Ready!"}
+            {mode === "edit" ? "Your Invite is Updated!" : "Your Royal Invite is Ready!"}
           </h2>
           <p className="text-gray-600 text-sm leading-relaxed">
             {mode === "edit"
-              ? "Your wedding details have been seamlessly updated. Check your live invite below:"
-              : "Your personalized ShadiwalaCard details are saved and ready for the world:"}
+              ? "Your wedding details have been successfully updated. You can view your live digital invitation below:"
+              : "Congratulations! Your personalized ShadiwalaCard is now live and ready to be shared with your loved ones:"}
           </p>
           {inviteUrl && (
             <a
@@ -201,6 +220,11 @@ export default function WeddingForm({
               {inviteUrl} →
             </a>
           )}
+          {mode === "create" && (
+            <div className="mt-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+              <span className="font-semibold">✉️ Note:</span> We have also sent your customized invitation link to your primary email address.
+            </div>
+          )}
           {mode === "edit" && (
             <p className="text-xs text-gray-400">
               Keep your secret edit link bookmarked for making any future changes.
@@ -209,10 +233,10 @@ export default function WeddingForm({
           {editUrl && (
             <div className="text-left border border-gray-200 rounded-2xl p-5 space-y-2.5" style={{ background: '#F9FAFB' }}>
               <p className="text-xs font-extrabold text-[#2e1065] uppercase tracking-wider flex items-center gap-1.5">
-                <span>🔑</span> Save Your Private Edit Link
+                <span>🔑</span> Your Private Edit Link
               </p>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Anyone with this private URL can modify your invitation later—keep it bookmarked or share it with your inner circle to update events, maps, or rsvp details anytime!
+                You can use this private link to modify your invitation details anytime. We recommend keeping it bookmarked!
               </p>
               <a
                 href={editUrl}
@@ -327,7 +351,7 @@ export default function WeddingForm({
       <main className="flex-1 flex flex-col min-w-0 md:min-h-screen">
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col justify-between">
           <div className="flex-1 flex gap-0 w-full min-w-0">
-            <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-28 md:pb-16">
+            <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
               <div className="max-w-3xl mx-auto">
                 {currentStep === 1 && (
                   <Step1Basics register={register} errors={errors} watch={watch} />
@@ -340,12 +364,6 @@ export default function WeddingForm({
                 )}
                 {currentStep === 4 && (
                   <Step5RSVP register={register} errors={errors} />
-                )}
-                {currentStep === 5 && (
-                  <Step6Virtual register={register} errors={errors} />
-                )}
-                {currentStep === 6 && (
-                  <Step7Theme register={register} errors={errors} watch={watch} />
                 )}
               </div>
             </div>

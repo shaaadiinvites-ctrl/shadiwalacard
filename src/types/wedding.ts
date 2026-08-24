@@ -16,7 +16,7 @@ export const EVENT_NAME_OPTIONS = [
   "Haldi",
   "Mehendi",
   "Sangeet",
-  "Wedding / Shaadi",
+  "Shaadi",
   "Reception",
   "Other"
 ] as const;
@@ -114,6 +114,4 @@ export const STEPS = [
   { id: 2, title: "Event Schedule", short: "Events" },
   { id: 3, title: "Love Story & Media", short: "Media" },
   { id: 4, title: "R.S.V.P Details", short: "RSVP" },
-  { id: 5, title: "Virtual Wedding", short: "Virtual" },
-  { id: 6, title: "Final Details", short: "Final" },
 ] as const;

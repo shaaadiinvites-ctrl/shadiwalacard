@@ -39,7 +39,7 @@ Textarea.displayName = "Textarea";
 
 // ── FieldWrapper ─────────────────────────────────────────────────────────────
 interface FieldWrapperProps {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   error?: string;
   children: React.ReactNode;
@@ -89,14 +89,29 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
 
         try {
           autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(el, {
-            fields: ["name", "formatted_address", "url"],
+            fields: ["name", "address_components", "formatted_address", "url"],
             componentRestrictions: { country: "in" },
           });
 
           autocompleteRef.current.addListener("place_changed", () => {
             const place = autocompleteRef.current.getPlace();
             if (place && place.name && onPlaceSelected) {
-              const addressStr = place.formatted_address ? place.name + ", " + place.formatted_address : place.name;
+              let addressParts = [place.name];
+              
+              // Extract short area and city
+              if (place.address_components) {
+                const sublocality = place.address_components.find((c: any) => c.types.includes("sublocality") || c.types.includes("sublocality_level_1"))?.long_name;
+                const locality = place.address_components.find((c: any) => c.types.includes("locality"))?.long_name;
+                
+                if (sublocality) addressParts.push(sublocality);
+                if (locality && locality !== sublocality) addressParts.push(locality);
+              }
+              
+              // Fallback to formatted address if components failed
+              let addressStr = addressParts.length > 1 
+                ? addressParts.join(", ") 
+                : (place.formatted_address ? place.name + ", " + place.formatted_address.split(',').slice(-3, -1).join(',').trim() : place.name);
+
               onPlaceSelected(addressStr, place.url || "");
               
               if (onChange) {

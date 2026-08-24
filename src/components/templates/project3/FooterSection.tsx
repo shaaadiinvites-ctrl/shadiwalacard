@@ -3,6 +3,10 @@
 import { WeddingRecord } from "@/types/wedding";
 
 export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
+  const isBrideFirst = wedding?.name_order === "bride_first";
+  const firstName = isBrideFirst ? wedding?.bride_name : wedding?.groom_name;
+  const secondName = isBrideFirst ? wedding?.groom_name : wedding?.bride_name;
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -27,7 +31,7 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
 
         {/* Couple Name */}
         <h2 className="font-cinzel font-bold text-4xl md:text-6xl text-white tracking-[2px] mb-4 drop-shadow-lg">
-          {wedding?.groom_name || "Groom"} &amp; {wedding?.bride_name || "Bride"}
+          {firstName || (isBrideFirst ? "Bride" : "Groom")} &amp; {secondName || (isBrideFirst ? "Groom" : "Bride")}
         </h2>
         
         <p className="font-lora text-[#FFD98A] tracking-widest text-sm uppercase mb-12 drop-shadow-md font-semibold">

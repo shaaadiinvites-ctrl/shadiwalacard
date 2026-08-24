@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import ClientTracker from "@/components/ClientTracker";
 import ConfettiEffect from "@/components/ConfettiEffect";
+import { getTemplate } from "@/lib/templates";
 
 export const metadata = {
   title: "Payment Successful | ShadiwalaCard",
@@ -16,12 +17,8 @@ export default async function SuccessPage({ searchParams }: Props) {
   const { po, template } = await searchParams;
   const templateSlug = template || "royal-heritage";
 
-  const imageMap: Record<string, string> = {
-    'royal-heritage': '/uploads/couple_card_1.jpg',
-    'modern-minimal': '/uploads/couple_card_2.jpg',
-    'floral-romance': '/uploads/hero-bg-custom.png',
-  };
-  const templateImage = imageMap[templateSlug] || imageMap['royal-heritage'];
+  const selectedTemplate = getTemplate(templateSlug);
+  const templateImage = selectedTemplate.img;
 
   if (!po) {
     return (
@@ -81,7 +78,7 @@ export default async function SuccessPage({ searchParams }: Props) {
       }}>
         {/* Image Area */}
         <div style={{ position: 'relative', aspectRatio: '4/5', width: '100%', borderRadius: '24px 24px 20px 20px', overflow: 'hidden', flexShrink: 0, boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)' }}>
-          <img src={templateImage} alt="Template Selection" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={templateImage} alt="Template Selection" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
           <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 2 }} />
         </div>
         

@@ -23,7 +23,7 @@ export default async function SlugPage({ params }: Props) {
   const { data, error } = await supabase
     .from("weddings")
     .select(
-      `slug, bride_name, groom_name, hashtag, contact_number, primary_email,
+      `slug, bride_name, groom_name, name_order, hashtag, contact_number, primary_email,
        events, our_story, cover_photo_url, gallery_urls, video_link, music_link,
        bride_mother_name, bride_father_name, groom_mother_name, groom_father_name,
        wedding_party, rsvp1_name, rsvp1_phone, rsvp2_name, rsvp2_phone,

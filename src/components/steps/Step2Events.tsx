@@ -3,8 +3,10 @@
 import { UseFormRegister, FieldErrors, useFieldArray, Control, UseFormSetValue, useWatch, Controller } from "react-hook-form";
 import { WeddingFormData, EVENT_NAME_OPTIONS } from "@/types/wedding";
 import { FieldWrapper, Input, Textarea, LocationInput, Select } from "@/components/FormFields";
-import { MobileSheetSelect, MobileSheetDatePicker, MobileSheetTimePicker } from "@/components/MobileSheetPickers";
-import { Plus, Trash2 } from "lucide-react";
+import { MobileSheetSelect, MobileSheetDatePicker } from "@/components/MobileSheetPickers";
+import { WheelTimePickerSheet } from "@/components/ui/WheelTimePickerSheet";
+import { Plus, Trash2, Clock } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -18,6 +20,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
   
   // Watch all events to conditionally render the "Other" text box
   const watchedEvents = useWatch({ control, name: "events" });
+  const [activeTimePicker, setActiveTimePicker] = useState<number | null>(null);
 
   return (
     <div className="space-y-6">
@@ -105,25 +108,15 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
 
               {watchedEvents?.[index]?.name === "Other" && (
                 <FieldWrapper
-                  label="Custom Event Name"
+                  label={<>Custom Event Name <span className="text-red-500">*</span></>}
                   error={errors.events?.[index]?.customName?.message}
                 >
                   <Input
                     {...register(`events.${index}.customName`, { required: "Required" })}
-                    placeholder="e.g. Pool Party"
+                    placeholder="e.g. Pool Party" className="capitalize"
                   />
                 </FieldWrapper>
               )}
-
-              <FieldWrapper
-                label="Tagline (Optional)"
-                error={errors.events?.[index]?.dressCode?.message}
-              >
-                <Input
-                  {...register(`events.${index}.dressCode`)}
-                  placeholder="e.g. Forever Begins Today"
-                />
-              </FieldWrapper>
 
               <FieldWrapper
                 label="Date"
@@ -167,15 +160,23 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                   rules={{ required: "Required" }}
                   render={({ field }) => (
                     <>
-                      <div className="hidden md:block">
-                        <Input {...field} type="time" />
+                      <div 
+                        onClick={() => setActiveTimePicker(index)}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-purple-600 focus-within:border-transparent outline-none transition-all flex items-center justify-between cursor-pointer"
+                      >
+                        <span className={field.value ? "text-gray-900" : "text-gray-400"}>
+                          {field.value || "Select time"}
+                        </span>
+                        <Clock size={18} className="text-gray-400" />
                       </div>
-                      <div className="md:hidden">
-                        <MobileSheetTimePicker
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </div>
+                      <WheelTimePickerSheet
+                        isOpen={activeTimePicker === index}
+                        onClose={() => setActiveTimePicker(null)}
+                        initialTime={field.value}
+                        onSelect={(time) => {
+                          field.onChange(time);
+                        }}
+                      />
                     </>
                   )}
                 />

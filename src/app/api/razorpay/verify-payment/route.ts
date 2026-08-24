@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
     }
 
-    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, email } = await req.json();
 
     if (!paymentOrderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
@@ -53,6 +53,16 @@ export async function POST(req: NextRequest) {
     if (error || !row) {
       console.error("verify-payment: could not update payment_orders", error);
       return NextResponse.json({ error: "This payment was already used or could not be verified." }, { status: 400 });
+    }
+
+    // Send setup email if we got the email
+    if (email) {
+      const origin = req.headers.get("origin") || "https://shaadiwala.in";
+      const setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
+      // Import dynamically or we can add it to the top
+      const { sendSetupLinkEmail } = await import("@/lib/email");
+      // Fire and forget (don't await so we don't slow down the response)
+      sendSetupLinkEmail(email, setupUrl).catch(console.error);
     }
 
     return NextResponse.json({ verified: true, paymentOrderId: row.id, templateId: row.template_id });

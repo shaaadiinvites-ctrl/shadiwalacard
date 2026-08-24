@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
+import { WeddingRecord } from "@/types/wedding";
 
 function AnimatedCounterBox({ value, label, progress }: { value: string; label: string; progress: number }) {
   const radius = 54;
@@ -109,7 +110,7 @@ function FloralParallaxBackground() {
   );
 }
 
-export function CountdownSection() {
+export function CountdownSection({ wedding }: { wedding?: WeddingRecord }) {
   const [timeLeft, setTimeLeft] = useState({
     days: { str: "00", progress: 1 },
     hours: { str: "00", progress: 1 },
@@ -118,8 +119,11 @@ export function CountdownSection() {
   });
 
   useEffect(() => {
+    const mainEvent = wedding?.events?.find(e => e.isMainEvent) || wedding?.events?.[0];
+    const targetDateString = mainEvent?.date ? (mainEvent.time ? `${mainEvent.date}T${mainEvent.time}` : `${mainEvent.date}T00:00:00`) : "2026-10-15T00:00:00";
+    
     const updateCountdown = () => {
-      const targetDate = new Date("2026-10-15T00:00:00").getTime();
+      const targetDate = new Date(targetDateString).getTime();
       const now = new Date().getTime();
       const difference = targetDate - now;
 

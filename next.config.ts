@@ -13,18 +13,20 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://maps.googleapis.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://maps.googleapis.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://*.firebaseapp.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' data: https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://maps.googleapis.com",
-      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+      "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://maps.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com",
+      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com/recaptcha/ https://*.firebaseapp.com",
       "frame-ancestors 'self'",
     ].join("; "),
   },
 ];
 
 const nextConfig: NextConfig = {
+  // @ts-ignore
+  allowedDevOrigins: ['192.168.1.2'],
   async headers() {
     return [
       {

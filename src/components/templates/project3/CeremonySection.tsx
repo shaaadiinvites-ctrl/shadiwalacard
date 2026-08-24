@@ -124,17 +124,24 @@ const bgFireflies = [
 export function CeremonySection({ events = [] }: { events?: any[] }) {
   // Use DB events if provided, otherwise fallback to hardcoded ceremonies
   const activeCeremonies = events && events.length > 0 
-    ? events.map((e, idx) => ({
-        id: `event-${idx}`,
-        title: e.name || "Wedding Event",
-        subtitle: "",
-        date: `✦ ${new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()} • ${e.time || ''} ✦`,
-        venueName: e.venue || "",
-        venueAddress: "",
-        mapLink: e.mapsLink || "",
-        theme: ["card-marigold", "card-sapphire", "card-crimson", "card-emerald"][idx % 4],
-        icon: ceremonies[idx % ceremonies.length].icon
-      }))
+    ? [...events]
+        .sort((a, b) => {
+          const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
+          const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
+          return dateA.getTime() - dateB.getTime();
+        })
+        .map((e, idx) => ({
+          id: `event-${idx}`,
+          title: (e.name === "Other" || e.name === "Others" || !e.name) ? (e.customName || "Special Event") : (e.name || "Wedding Event"),
+          date: `✦ ${new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()} • ${
+            e.time ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : ''
+          } ✦`,
+          venueName: e.venue || "",
+          venueAddress: "",
+          mapLink: e.mapsLink || "",
+          theme: ["card-marigold", "card-sapphire", "card-crimson", "card-emerald"][idx % 4],
+          icon: ceremonies[idx % ceremonies.length].icon
+        }))
     : ceremonies;
   const targetRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -177,7 +184,7 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
 
   // Calculate dynamic progress values that are strictly immune to volatile address bar viewport changes
   const getStableProgress = (p: number) => {
-    if (!targetRef.current || trackWidth === 0) return 0;
+    if (!targetRef.current || trackWidth <= 0) return 0;
     
     // The sticky container is the first child. Its height is ALWAYS exactly 100svh or 100vh.
     const stickyContainer = targetRef.current.children[0] as HTMLElement;
@@ -222,7 +229,7 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
   });
 
   const scrollToCard = (index: number) => {
-    if (!targetRef.current || !trackRef.current || trackWidth === 0) return;
+    if (!targetRef.current || !trackRef.current || trackWidth <= 0) return;
     const cards = Array.from(trackRef.current.children) as HTMLElement[];
     if (!cards[index]) return;
     
@@ -396,10 +403,10 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
 
       {/* Scroll track for useScroll animation. Taller on mobile to slow down the scroll speed.
           Using svh (small viewport height) prevents violent layout jumps when mobile address bar hides/shows! */}
-      <div ref={targetRef} className="relative w-full h-[400svh] md:h-[350vh]">
+      <div ref={targetRef} className="relative w-full" style={{ height: activeCeremonies.length > 1 ? `${Math.max(120, activeCeremonies.length * 80)}svh` : 'auto' }}>
         
         {/* STICKY CONTAINER FOR PINNED HORIZONTAL SCROLL */}
-        <div className="sticky top-0 h-[100svh] md:h-screen w-full flex flex-col justify-center overflow-hidden z-10">
+        <div className={activeCeremonies.length > 1 ? "sticky top-0 h-[100svh] md:h-screen w-full flex flex-col justify-center overflow-hidden z-10" : "relative min-h-[100svh] w-full flex flex-col justify-center overflow-hidden z-10 py-10"}>
         
         {/* Fixed Title inside Sticky Container */}
         <div className="text-center px-6 flex-shrink-0 text-[#f7ede2] mb-4 md:mb-12">
@@ -409,37 +416,43 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
           <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-4 drop-shadow-md">
             Days of Celebration
           </h2>
-          <div className="font-playfair italic text-sm md:text-base text-[#FFF8DC]/60 mb-6">
-            Scroll to move through the ceremonies &nbsp;&rarr;
-          </div>
-          <div className="w-[min(280px,60vw)] h-[3px] rounded bg-white/10 mx-auto overflow-hidden">
-            <motion.div 
-              style={{ width: progressWidth }} 
-              className="h-full bg-gradient-to-r from-[#C8912A] to-[#FFD98A] rounded"
-            />
-          </div>
+          {activeCeremonies.length > 1 && (
+            <>
+              <div className="font-playfair italic text-sm md:text-base text-[#FFF8DC]/60 mb-6">
+                Scroll to move through the ceremonies &nbsp;&rarr;
+              </div>
+              <div className="w-[min(280px,60vw)] h-[3px] rounded bg-white/10 mx-auto overflow-hidden">
+                <motion.div 
+                  style={{ width: progressWidth }} 
+                  className="h-full bg-gradient-to-r from-[#C8912A] to-[#FFD98A] rounded"
+                />
+              </div>
+            </>
+          )}
         </div>
         
         {/* Dedicated Mobile Navigation Bar (Moved above cards) */}
-        <div className="cer-mobile-nav-bar">
-          <button 
-            className="cer-mobile-nav-btn" 
-            disabled={activeIndex === 0}
-            onClick={() => scrollToCard(activeIndex - 1)}
-            aria-label="Previous Ceremony"
-          >
-            {"<"} PREV
-          </button>
-          <span className="cer-mobile-counter">{activeIndex + 1} / {ceremonies.length}</span>
-          <button 
-            className="cer-mobile-nav-btn" 
-            disabled={activeIndex === ceremonies.length - 1}
-            onClick={() => scrollToCard(activeIndex + 1)}
-            aria-label="Next Ceremony"
-          >
-            NEXT {">"}
-          </button>
-        </div>
+        {activeCeremonies.length > 1 && (
+          <div className="cer-mobile-nav-bar">
+            <button 
+              className="cer-mobile-nav-btn" 
+              disabled={activeIndex === 0}
+              onClick={() => scrollToCard(activeIndex - 1)}
+              aria-label="Previous Ceremony"
+            >
+              {"<"} PREV
+            </button>
+            <span className="cer-mobile-counter">{activeIndex + 1} / {activeCeremonies.length}</span>
+            <button 
+              className="cer-mobile-nav-btn" 
+              disabled={activeIndex === activeCeremonies.length - 1}
+              onClick={() => scrollToCard(activeIndex + 1)}
+              aria-label="Next Ceremony"
+            >
+              NEXT {">"}
+            </button>
+          </div>
+        )}
 
         {/* Horizontal Track */}
         <motion.div 
@@ -448,9 +461,9 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{ 
-            x,
-          }} 
-          className="flex gap-[60px] w-max items-center px-[calc(50vw-min(42.5vw,210px))]"
+            x: activeCeremonies.length > 1 ? x : 0,
+          }}  
+          className="flex gap-[60px] w-max items-stretch px-[calc(50vw-min(42.5vw,210px))]"
         >
           {activeCeremonies.map((ceremony, idx) => {
             const isActive = idx === activeIndex;
@@ -495,9 +508,6 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
                   <h3 className="text-center font-cinzel font-bold text-2xl md:text-3xl text-white tracking-wider drop-shadow-md mb-2">
                     {ceremony.title}
                   </h3>
-                  <p className="text-center font-playfair italic text-[#FFEBB4] mb-4 md:mb-6">
-                    {ceremony.subtitle}
-                  </p>
 
                   <div className="flex justify-center mb-5 md:mb-8">
                     <div className="text-center px-4 py-2 rounded-full bg-gold-primary/10 border border-gold-primary/30 font-montserrat font-bold text-xs tracking-wider text-[#FFE8AC] shadow-inner relative z-10">

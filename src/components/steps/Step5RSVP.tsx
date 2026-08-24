@@ -18,7 +18,7 @@ export default function Step5RSVP({ register, errors }: Props) {
       </div>
 
       <div className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 shadow-inner">
-        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Primary RSVP Contact</h3>
+        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">RSVP 1</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWrapper label="Contact Name" error={errors.rsvp1Name?.message}>
             <Input
@@ -37,7 +37,7 @@ export default function Step5RSVP({ register, errors }: Props) {
       </div>
 
       <div className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 shadow-inner">
-        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Secondary Contact / Compliments</h3>
+        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">RSVP 2</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWrapper label="Contact Name" error={errors.rsvp2Name?.message}>
             <Input

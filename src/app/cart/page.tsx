@@ -7,6 +7,9 @@ import Link from "next/link";
 import { getTemplate, TemplateMeta } from "@/lib/templates";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { usePostHog } from 'posthog-js/react';
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { motion, AnimatePresence } from "framer-motion";
 
 function CartPageContent() {
   const searchParams = useSearchParams();
@@ -23,6 +26,17 @@ function CartPageContent() {
   const [countryCode, setCountryCode] = useState("+91");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+
+  // Firebase OTP State
+  const [isVerified, setIsVerified] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [otpError, setOtpError] = useState("");
+
+
+  const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
 
   const validatePhone = (code: string, number: string) => {
     const digitsOnly = number.replace(/\D/g, '');
@@ -91,6 +105,99 @@ function CartPageContent() {
     }
   };
 
+  useEffect(() => {
+    if (!template) return;
+    if (typeof window !== "undefined" && !(window as any).recaptchaVerifier) {
+      try {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+          size: "invisible",
+        });
+      } catch (e) {
+        console.error("Recaptcha Init Error:", e);
+      }
+    }
+  }, [template]);
+
+  const sendOtp = async () => {
+    if (!validatePhone(countryCode, phone)) {
+      setError(`Please enter a valid phone number for ${countryCode}.`);
+      return;
+    }
+    setError("");
+    setVerifying(true);
+    setOtpError("");
+    setOtpArray(["", "", "", "", "", ""]);
+    try {
+      const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+      const appVerifier = (window as any).recaptchaVerifier;
+      
+      if (!appVerifier) {
+        throw new Error("Google reCAPTCHA failed to load. This usually happens if an Adblocker, Antivirus (like Kaspersky), or browser privacy setting is blocking it. Please disable it and refresh the page.");
+      }
+
+      const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
+      setConfirmationResult(result);
+      setShowOtpModal(true); // Re-purposing this as 'isOtpSent' flag
+    } catch (err: any) {
+      console.error("Error sending OTP", err);
+      setError(err.message || "Failed to send OTP. Please try again.");
+    }
+    setVerifying(false);
+  };
+
+  const handleOtpChange = (element: any, index: number) => {
+    if (isNaN(element.value)) return false;
+    const newOtpArray = [...otpArray];
+    newOtpArray[index] = element.value;
+    setOtpArray(newOtpArray);
+    setOtpError("");
+    
+    if (element.nextSibling && element.value !== "") {
+      element.nextSibling.focus();
+    }
+    
+    if (index === 5 && element.value !== "") {
+      verifyOtp(newOtpArray.join(""));
+    }
+  };
+
+  const handleOtpKeyDown = (e: any, index: number) => {
+    if (e.key === "Backspace" && !otpArray[index] && e.target.previousSibling) {
+      e.target.previousSibling.focus();
+    }
+  };
+
+  const verifyOtp = async (otpString: string) => {
+    if (!otpString || otpString.length !== 6) {
+      setOtpError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    setVerifying(true);
+    setOtpError("");
+    try {
+      const result = await confirmationResult.confirm(otpString);
+      const token = await result.user.getIdToken();
+      
+      // Update Supabase
+      const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+      const res = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: token, phone: fullPhone }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error);
+
+      setIsVerified(true);
+      setShowOtpModal(false);
+    } catch (err: any) {
+      console.error("Error verifying OTP", err);
+      setOtpError("Invalid OTP. Please try again.");
+    }
+    setVerifying(false);
+  };
+
   const handleCheckout = async () => {
     if (!template) return;
     setLoadingRazorpay(true);
@@ -105,8 +212,8 @@ function CartPageContent() {
       return;
     }
 
-    if (!validatePhone(countryCode, phone)) {
-      setError(`Please enter a valid phone number for ${countryCode}.`);
+    if (!isVerified) {
+      setError("Please verify your phone number first.");
       setLoadingRazorpay(false);
       return;
     }
@@ -144,6 +251,7 @@ function CartPageContent() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              email: email,
             }),
           });
 
@@ -199,7 +307,7 @@ function CartPageContent() {
   const couponDiscountExclGst = basePriceBeforeCoupon - basePrice;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isFormValid = emailRegex.test(email) && validatePhone(countryCode, phone);
+  const isFormValid = emailRegex.test(email) && validatePhone(countryCode, phone) && isVerified;
   const isButtonDisabled = loadingRazorpay || !isFormValid;
 
   return (
@@ -244,30 +352,98 @@ function CartPageContent() {
         <div className="max-w-4xl mx-auto relative z-10">
 
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: Cart Items */}
-            <div className="flex-1 space-y-6">
-              <div className="rounded-2xl p-6 flex gap-6 items-center" style={{ background: '#ffffff', border: '1px solid rgba(26, 32, 44, 0.1)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
-                <div className="w-24 h-32 relative rounded-xl overflow-hidden flex-shrink-0">
-                  <Image src={template.img} alt={template.name} fill className="object-cover" />
+          <div className="max-w-xl mx-auto space-y-6">
+            
+            {/* Section 1: Template Summary */}
+            <div className="rounded-2xl p-6 flex gap-6 items-center" style={{ background: '#ffffff', border: '1px solid rgba(26, 32, 44, 0.1)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
+              <div className="w-24 h-32 relative rounded-xl overflow-hidden flex-shrink-0">
+                <Image src={template.img} alt={template.name} fill className="object-cover" />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-bold text-[#9d174d] tracking-wider uppercase mb-1">
+                  Digital Invite
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs font-bold text-[#9d174d] tracking-wider uppercase mb-1">
-                    Digital Invite
+                <h2 className="text-xl font-bold text-[#2e1065] mb-2">{template.name}</h2>
+                <div className="text-gray-600 text-sm mb-3">Quantity: 1</div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.4rem', color: '#1A202C', fontWeight: 800, lineHeight: 1.1 }}>₹{template.priceInr}</div>
+              </div>
+            </div>
+
+            {/* Section 2: Order Summary & Coupon */}
+            <div className="rounded-2xl p-6" style={{ background: '#ffffff', border: '1px solid rgba(26, 32, 44, 0.1)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
+              <h2 className="text-xl font-bold text-[#2e1065] mb-6">Order Summary</h2>
+
+              {/* Coupon Section */}
+              <div className="flex gap-2 mb-6 h-[44px]">
+                <input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  style={{ flex: 1, border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '0 16px', fontSize: '0.9rem', outline: 'none', background: '#ffffff', color: '#1A202C', transition: 'border-color 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = '#9d174d'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(26, 32, 44, 0.2)'}
+                />
+                <button
+                  onClick={handleApplyCoupon}
+                  style={{
+                    height: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '0 20px',
+                    color: '#2e1065', fontWeight: 500, letterSpacing: '0.3px', fontSize: '0.85rem',
+                    background: 'transparent',
+                    borderRadius: '12px',
+                    border: '1px solid #2e1065',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s ease, color 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#f3e8ff'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  Apply
+                </button>
+              </div>
+
+              <div className="space-y-4 text-sm mb-6 border-b border-gray-100 pb-6 text-gray-700">
+                <div className="flex justify-between items-center">
+                  <span>Original Price</span>
+                  <span className="font-medium text-gray-400 line-through">{template.mrp}</span>
+                </div>
+                <div className="flex justify-between items-center text-green-700 font-semibold">
+                  <span>Special Offer ({specialOfferPercent}% OFF)</span>
+                  <span>-₹{specialOfferDiscount.toFixed(2)}</span>
+                </div>
+
+                {discountPercent > 0 && (
+                  <div className="flex justify-between text-[#9d174d] font-semibold">
+                    <span>Coupon Discount ({discountPercent}%)</span>
+                    <span>-₹{couponDiscountExclGst.toFixed(2)}</span>
                   </div>
-                  <h2 className="text-xl font-bold text-[#2e1065] mb-2">{template.name}</h2>
-                  <div className="text-gray-600 text-sm mb-3">Quantity: 1</div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.4rem', color: '#1A202C', fontWeight: 800, lineHeight: 1.1 }}>₹{template.priceInr}</div>
+                )}
+
+                <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                  <span>Subtotal (excl. GST)</span>
+                  <span className="font-semibold text-[#1A202C]">₹{basePrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <span>GST (18%)</span>
+                  <span className="font-semibold text-[#1A202C]">₹{gstAmount.toFixed(2)}</span>
                 </div>
               </div>
 
-            {/* Customer Details */}
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-[#2e1065]">Total (incl. GST)</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.8rem', color: '#9d174d', fontWeight: 800, lineHeight: 1.1 }}>₹{total}</span>
+              </div>
+            </div>
+
+            {/* Section 3: Customer Details & Checkout */}
             <div className="rounded-2xl p-6" style={{ background: '#ffffff', border: '1px solid rgba(26, 32, 44, 0.1)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
-              <h2 className="text-xl font-bold text-[#2e1065] mb-2">Enter your details</h2>
+              <h2 className="text-xl font-bold text-[#2e1065] mb-2">Checkout details</h2>
               <p className="text-xs text-gray-500 mb-6 leading-relaxed">
                 We'll use this to send your payment receipt and your private customization dashboard link.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-semibold text-[#1A202C] mb-1">Email Address <span className="text-red-500">*</span></label>
                   <input
@@ -280,139 +456,100 @@ function CartPageContent() {
                     onBlur={(e) => e.target.style.borderColor = 'rgba(26, 32, 44, 0.2)'}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A202C] mb-1">Phone Number <span className="text-red-500">*</span></label>
-                  <div className="flex gap-2">
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      style={{ width: '90px', border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '10px 8px', fontSize: '0.95rem', outline: 'none', background: '#ffffff', color: '#1A202C', cursor: 'pointer', appearance: 'none', textAlign: 'center' }}
-                    >
-                      <option value="+91">+91</option>
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                      <option value="+61">+61</option>
-                      <option value="+971">+971</option>
-                    </select>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Phone Number"
-                      style={{ flex: 1, border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '0.95rem', outline: 'none', background: '#ffffff', color: '#1A202C', transition: 'border-color 0.2s' }}
-                      onFocus={(e) => e.target.style.borderColor = '#9d174d'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(26, 32, 44, 0.2)'}
-                    />
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-blue-600 mt-5 font-medium flex items-start gap-1">
-                <svg className="w-4 h-4 mt-[-1px] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Please double-check your email and phone number before proceeding!
-              </p>
-            </div>
-            </div>
-
-            {/* Right Column: Order Summary */}
-            <div className="lg:w-[380px]">
-              <div className="rounded-2xl p-6 sticky top-24" style={{ background: '#ffffff', border: '1px solid rgba(26, 32, 44, 0.1)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
-                <h2 className="text-xl font-bold text-[#2e1065] mb-6">Order Summary</h2>
-
-                {/* Coupon Section */}
-                <div className="flex gap-2 mb-6 h-[44px]">
-                  <input
-                    type="text"
-                    placeholder="Enter coupon code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    style={{ flex: 1, border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '0 16px', fontSize: '0.9rem', outline: 'none', background: '#ffffff', color: '#1A202C', transition: 'border-color 0.2s' }}
-                    onFocus={(e) => e.target.style.borderColor = '#9d174d'}
-                    onBlur={(e) => e.target.style.borderColor = 'rgba(26, 32, 44, 0.2)'}
-                  />
-                  <button
-                    onClick={handleApplyCoupon}
-                    style={{
-                      height: '100%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '0 20px',
-                      color: '#2e1065', fontWeight: 500, letterSpacing: '0.3px', fontSize: '0.85rem',
-                      background: 'transparent',
-                      borderRadius: '12px',
-                      border: '1px solid #2e1065',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s ease, color 0.2s ease'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.background = '#f3e8ff'}
-                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    Apply
-                  </button>
-                </div>
-
-                <div className="space-y-4 text-sm mb-6 border-b border-gray-100 pb-6 text-gray-700">
-                  <div className="flex justify-between items-center">
-                    <span>Original Price</span>
-                    <span className="font-medium text-gray-400 line-through">{template.mrp}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-green-700 font-semibold">
-                    <span>Special Offer ({specialOfferPercent}% OFF)</span>
-                    <span>-₹{specialOfferDiscount.toFixed(2)}</span>
-                  </div>
-
-                  {discountPercent > 0 && (
-                    <div className="flex justify-between text-[#9d174d] font-semibold">
-                      <span>Coupon Discount ({discountPercent}%)</span>
-                      <span>-₹{couponDiscountExclGst.toFixed(2)}</span>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1A202C] mb-1">Phone Number <span className="text-red-500">*</span></label>
+                    <div className="flex gap-2 h-[44px]">
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        disabled={isVerified}
+                        style={{ width: '70px', border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '0 4px', fontSize: '0.9rem', outline: 'none', background: '#ffffff', color: '#1A202C', cursor: 'pointer', appearance: 'none', textAlign: 'center', height: '100%', flexShrink: 0 }}
+                      >
+                        <option value="+91">+91</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                        <option value="+61">+61</option>
+                        <option value="+971">+971</option>
+                      </select>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value.replace(/\D/g, ''));
+                          setIsVerified(false);
+                        }}
+                        disabled={isVerified}
+                        placeholder="Phone Number"
+                        style={{ flex: 1, minWidth: 0, border: '1px solid rgba(26, 32, 44, 0.2)', borderRadius: '12px', padding: '0 12px', fontSize: '0.9rem', outline: 'none', background: '#ffffff', color: '#1A202C', transition: 'border-color 0.2s', height: '100%' }}
+                        onFocus={(e) => e.target.style.borderColor = '#9d174d'}
+                        onBlur={(e) => e.target.style.borderColor = 'rgba(26, 32, 44, 0.2)'}
+                      />
+                      {!isVerified && (
+                        <button
+                          onClick={sendOtp}
+                          disabled={verifying || !phone}
+                          style={{
+                            height: '100%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            padding: '0 16px',
+                            color: '#2e1065', fontWeight: 500, letterSpacing: '0.3px', fontSize: '0.85rem',
+                            background: 'transparent',
+                            borderRadius: '12px',
+                            border: '1px solid #2e1065',
+                            cursor: (verifying || !phone) ? 'not-allowed' : 'pointer',
+                            opacity: (verifying || !phone) ? 0.5 : 1,
+                            transition: 'background 0.2s ease, color 0.2s ease',
+                            flexShrink: 0
+                          }}
+                          onMouseOver={(e) => { if(!(verifying || !phone)) e.currentTarget.style.background = '#f3e8ff'; }}
+                          onMouseOut={(e) => { if(!(verifying || !phone)) e.currentTarget.style.background = 'transparent'; }}
+                          type="button"
+                        >
+                          {verifying ? "Sending..." : "Get OTP"}
+                        </button>
+                      )}
                     </div>
-                  )}
-
-                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
-                    <span>Subtotal (excl. GST)</span>
-                    <span className="font-semibold text-[#1A202C]">₹{basePrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-3">
-                    <span>GST (18%)</span>
-                    <span className="font-semibold text-[#1A202C]">₹{gstAmount.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-bold text-[#2e1065]">Total (incl. GST)</span>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.8rem', color: '#9d174d', fontWeight: 800, lineHeight: 1.1 }}>₹{total}</span>
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 border border-red-200 text-xs font-semibold">
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleCheckout}
-                  disabled={isButtonDisabled}
-                  style={{
-                    width: '100%',
-                    height: '54px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#ffffff', fontWeight: 'normal', letterSpacing: '0.4px', fontSize: '1.05rem',
-                    background: isButtonDisabled ? '#6b7280' : '#2e1065',
-                    borderRadius: '16px',
-                    border: 'none',
-                    cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                    opacity: isButtonDisabled ? 0.6 : 1,
-                    transition: 'background 0.2s ease, opacity 0.2s ease'
-                  }}
-                  onMouseOver={(e) => { if(!isButtonDisabled) e.currentTarget.style.background = '#4c1d95'; }}
-                  onMouseOut={(e) => { if(!isButtonDisabled) e.currentTarget.style.background = '#2e1065'; }}
-                >
-                  {loadingRazorpay ? "Securely Connecting..." : "Checkout & Pay"}
-                </button>
-                
-                <div className="text-center mt-4 text-xs text-[#2e1065]/70 font-medium flex items-center justify-center gap-2">
-                  🔒 Secured by Razorpay
+                    {isVerified && (
+                      <div className="text-green-600 text-sm mt-2 font-medium flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        Number Verified!
+                      </div>
+                    )}
                 </div>
               </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 border border-red-200 text-xs font-semibold">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleCheckout}
+                disabled={isButtonDisabled}
+                style={{
+                  width: '100%',
+                  height: '54px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#ffffff', fontWeight: 'normal', letterSpacing: '0.4px', fontSize: '1.05rem',
+                  background: isButtonDisabled ? '#6b7280' : '#2e1065',
+                  borderRadius: '16px',
+                  border: 'none',
+                  cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
+                  opacity: isButtonDisabled ? 0.6 : 1,
+                  transition: 'background 0.2s ease, opacity 0.2s ease'
+                }}
+                onMouseOver={(e) => { if(!isButtonDisabled) e.currentTarget.style.background = '#4c1d95'; }}
+                onMouseOut={(e) => { if(!isButtonDisabled) e.currentTarget.style.background = '#2e1065'; }}
+              >
+                {loadingRazorpay ? "Securely Connecting..." : "Checkout & Pay"}
+              </button>
+              
+              <div className="text-center mt-4 text-xs text-[#2e1065]/70 font-medium flex items-center justify-center gap-2">
+                🔒 Secured by Razorpay
+              </div>
             </div>
+            
           </div>
         </div>
       </div>
@@ -428,15 +565,80 @@ function CartPageContent() {
             <img src="https://flagcdn.com/w20/in.png" alt="India" style={{ width: '14px', height: '10px' }} />
           </span>
         </div>
-      </footer>
-    </div>
-  );
-}
+        </footer>
 
+        {/* Firebase recaptcha container */}
+        <div id="recaptcha-container"></div>
+
+        {/* OTP Bottom Sheet */}
+        <AnimatePresence>
+          {showOtpModal && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowOtpModal(false)}
+                className="fixed inset-0 bg-black/40 z-[9998]"
+              />
+
+              {/* Bottom Sheet */}
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[9999] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-[env(safe-area-inset-bottom)]"
+              >
+                <div className="w-full max-w-lg mx-auto p-6 pt-4">
+                  <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
+                  
+                  <h3 className="text-xl font-bold text-[#2e1065] text-center mb-2">Verify Phone Number</h3>
+                  <p className="text-sm text-gray-500 text-center mb-8">
+                    Enter the 6-digit OTP sent to <span className="font-semibold text-gray-800">{countryCode} {phone}</span>
+                  </p>
+
+                  <div className="flex justify-center gap-2 md:gap-3 mb-6">
+                    {otpArray.map((digit, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(e.target, index)}
+                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                        className="w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold border rounded-xl focus:border-[#9d174d] focus:ring-2 focus:ring-[#9d174d]/20 focus:outline-none transition-all bg-gray-50 text-[#1A202C]"
+                        style={{ borderColor: 'rgba(26, 32, 44, 0.2)' }}
+                      />
+                    ))}
+                  </div>
+
+                  {otpError && <p className="text-red-500 text-sm text-center font-medium mb-4">{otpError}</p>}
+                  {verifying && <p className="text-blue-500 text-sm text-center font-medium mb-4">Verifying OTP...</p>}
+
+                  <div className="mt-8">
+                    <button 
+                      onClick={() => setShowOtpModal(false)}
+                      className="w-full py-4 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                      disabled={verifying}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+  
 export default function CartPage() {
-  return (
-    <Suspense fallback={<div className="p-10 text-center">Loading cart...</div>}>
-      <CartPageContent />
-    </Suspense>
-  );
+    return (
+      <Suspense fallback={<div className="p-10 text-center">Loading cart...</div>}>
+        <CartPageContent />
+      </Suspense>
+    );
 }

@@ -36,10 +36,10 @@ export default function GrandPalaceDemo() {
       {/* Parallax Flowers floating across the document */}
       <FlowersOverlay />
 
-      <HeroSection brideName="Kanika" groomName="Abhishek" />
-      <InvitationSection />
+      <HeroSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
+      <InvitationSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
       <CeremonySection events={[]} />
-      <CountdownSection />
+      <CountdownSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
 
       {/* OriginKit Coverflow Gallery with Mood Backgrounds & Grand Palace Footer */}
       <GallerySection galleryUrls={[]} />

@@ -37,12 +37,12 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
       {/* Parallax Flowers floating across the document */}
       <FlowersOverlay />
 
-      <HeroSection brideName={wedding.bride_name} groomName={wedding.groom_name} />
+      <HeroSection wedding={wedding} />
       <InvitationSection wedding={wedding} />
       <CeremonySection events={wedding.events || []} />
       
       {/* Only show countdown if there's a main event with a date in the future */}
-      <CountdownSection />
+      <CountdownSection wedding={wedding} />
 
       {/* OriginKit Coverflow Gallery with Mood Backgrounds & Grand Palace Footer */}
       <GallerySection galleryUrls={wedding.gallery_urls || []} />

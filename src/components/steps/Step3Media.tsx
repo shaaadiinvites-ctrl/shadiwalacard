@@ -19,41 +19,19 @@ export default function Step3Media({ register, errors }: Props) {
 
       <FieldWrapper
         label="Gallery Images"
-        hint="Select multiple photos — these appear in your gallery section"
+        hint="Select multiple photos (Supported formats: JPG, JPEG, PNG) — these appear in your gallery section"
         error={undefined}
       >
         <input
           {...register("galleryImages")}
           type="file"
-          accept="image/*"
+          accept="image/jpeg, image/png"
           multiple
           className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#2e1065]/10 file:text-[#2e1065] hover:file:bg-[#2e1065]/20 cursor-pointer border border-[#2e1065]/20 rounded-xl p-1.5 shadow-xs transition"
         />
       </FieldWrapper>
 
-      <FieldWrapper
-        label="Pre-Wedding Video / Save the Date Link"
-        hint="YouTube or Vimeo link"
-        error={errors.videoLink?.message}
-      >
-        <Input
-          {...register("videoLink")}
-          placeholder="https://youtube.com/..."
-          type="url"
-        />
-      </FieldWrapper>
 
-      <FieldWrapper
-        label="Background Music Track Link"
-        hint="Spotify or YouTube link — plays softly on your invitation page"
-        error={errors.musicLink?.message}
-      >
-        <Input
-          {...register("musicLink")}
-          placeholder="https://open.spotify.com/..."
-          type="url"
-        />
-      </FieldWrapper>
     </div>
   );
 }
