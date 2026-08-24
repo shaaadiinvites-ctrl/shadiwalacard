@@ -8,12 +8,14 @@ import nodemailer from "nodemailer";
 // Failure to send must never block a paid submission from completing —
 // callers should fire-and-log this, not let it throw past them.
 function getTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
   if (!user || !pass) return null;
 
   return nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.zoho.in",
+    port: 465,
+    secure: true,
     auth: { user, pass },
   });
 }
@@ -65,15 +67,15 @@ export async function sendInviteReadyEmail(opts: {
     lose it.</p>
 
     <p style="margin-top: 32px; color: #888; font-size: 0.85em;">
-      Sent by Shadiwala Card · shaaadi.invites@gmail.com
+      Sent by ShadiwalaCard · shaaadi.invites@gmail.com
     </p>
   </div>`;
 
   try {
     await transporter.sendMail({
-      from: `"Shadiwala Card" <${process.env.GMAIL_USER}>`,
+      from: `"ShadiwalaCard" <${process.env.EMAIL_USER}>`,
       to,
-      subject: `Your wedding invite is live — ${coupleNames}`,
+      subject: `Your wedding invite is live ✨ ${coupleNames}`,
       html,
     });
     return { sent: true };
