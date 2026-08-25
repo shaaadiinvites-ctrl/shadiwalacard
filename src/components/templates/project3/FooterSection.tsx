@@ -1,6 +1,7 @@
 "use client";
 
 import { WeddingRecord } from "@/types/wedding";
+import { clsx } from "clsx";
 
 export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
   const isBrideFirst = wedding?.name_order === "bride_first";
@@ -48,15 +49,23 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
             <div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center justify-center w-full">
               {(wedding ? (wedding.rsvp1_name || wedding.rsvp1_phone) : true) && (
                 <div className="text-center">
-                  <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding?.rsvp1_name || (!wedding ? "Mr. & Mrs. Sharma" : "Family")}</p>
-                  <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding?.rsvp1_phone || (!wedding ? "+91 98765 43210" : "")}</p>
+                  <p className={clsx("font-cinzel text-xl text-white drop-shadow-md", (wedding?.rsvp1_phone || (!wedding)) ? "mb-3" : "")}>{wedding?.rsvp1_name || (!wedding ? "Mr. & Mrs. Sharma" : "Family")}</p>
+                  {(wedding?.rsvp1_phone || (!wedding)) && (
+                    <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">
+                      {wedding?.rsvp1_phone || (!wedding ? "+91 98765 43210" : "")}
+                    </p>
+                  )}
                 </div>
               )}
               
               {(wedding ? (wedding.rsvp2_name || wedding.rsvp2_phone) : true) && (
                 <div className="text-center">
-                  <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding?.rsvp2_name || (!wedding ? "The Verma Family" : "")}</p>
-                  <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding?.rsvp2_phone || (!wedding ? "+91 87654 32109" : "")}</p>
+                  <p className={clsx("font-cinzel text-xl text-white drop-shadow-md", (wedding?.rsvp2_phone || (!wedding)) ? "mb-3" : "")}>{wedding?.rsvp2_name || (!wedding ? "The Verma Family" : "")}</p>
+                  {(wedding?.rsvp2_phone || (!wedding)) && (
+                    <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">
+                      {wedding?.rsvp2_phone || (!wedding ? "+91 87654 32109" : "")}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

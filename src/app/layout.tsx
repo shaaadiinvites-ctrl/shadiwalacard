@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col" style={{ background: '#F2F4F8', color: '#1A202C', fontFamily: "var(--font-body), 'Inter', sans-serif" }} suppressHydrationWarning>
         <PostHogProvider>
           {children}

@@ -7,6 +7,7 @@ import { MobileSheetSelect, MobileSheetDatePicker } from "@/components/MobileShe
 import { WheelTimePickerSheet } from "@/components/ui/WheelTimePickerSheet";
 import { Plus, Trash2, Clock } from "lucide-react";
 import { useState } from "react";
+import { clsx } from "clsx";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -25,8 +26,8 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>Event Schedule</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">Event Schedule</h2>
+        <p className="text-[14px] font-normal text-gray-500">
           Add each ceremony — Mehendi, Haldi, Sangeet, Wedding, Reception, etc.
         </p>
       </div>
@@ -35,10 +36,10 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 relative shadow-inner"
+            className="border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm relative space-y-6"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">
+              <span className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">
                 Event {index + 1}
               </span>
               {fields.length > 1 && (
@@ -52,27 +53,42 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
               )}
             </div>
 
-              <div className="flex items-center gap-3 mt-1 mb-2">
-                  <label className="flex items-center gap-2 mt-2 cursor-pointer bg-white p-2 rounded-lg border border-gray-100 shadow-sm hover:border-[#2e1065]/30 transition-all">
-                    <input
-                      type="radio"
-                      value="true"
-                      {...register(`events.${index}.isMainEvent`)}
-                      checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
-                      onChange={() => {
-                        // Deselect all others, select this one
-                        watchedEvents?.forEach((_, i) => {
-                          setValue(`events.${i}.isMainEvent`, i === index);
-                        });
-                      }}
-                      className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
-                    />
-                  <span className="font-semibold text-[#2e1065]">Set as Main Event</span>
-                </label>
-                <span className="text-xs text-gray-400">(Used for Countdown)</span>
-              </div>
+            <div>
+              <label className={clsx(
+                "flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+                String(watchedEvents?.[index]?.isMainEvent) === "true" 
+                  ? "border-[#4a148c] bg-purple-50" 
+                  : "border-gray-200 bg-white hover:border-[#4a148c]/30"
+              )}>
+                <div className="flex items-center gap-3">
+                  <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "border-[#4a148c]" : "border-gray-300")}>
+                    {String(watchedEvents?.[index]?.isMainEvent) === "true" && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className={clsx("font-semibold text-[15px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]" : "text-gray-600")}>
+                      Set as Main Event
+                    </span>
+                    <span className={clsx("text-[12px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]/70" : "text-gray-400")}>
+                      This event will be used for countdown.
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="radio"
+                  value="true"
+                  {...register(`events.${index}.isMainEvent`)}
+                  checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
+                  onChange={() => {
+                    watchedEvents?.forEach((_, i) => {
+                      setValue(`events.${i}.isMainEvent`, i === index);
+                    });
+                  }}
+                  className="sr-only"
+                />
+              </label>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FieldWrapper
                 label="Event Name"
                 error={errors.events?.[index]?.name?.message}
@@ -113,7 +129,8 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                 >
                   <Input
                     {...register(`events.${index}.customName`, { required: "Required" })}
-                    placeholder="e.g. Pool Party" className="capitalize"
+                    placeholder="e.g. Pool Party"
+                    className="capitalize"
                   />
                 </FieldWrapper>
               )}
@@ -162,9 +179,9 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                     <>
                       <div 
                         onClick={() => setActiveTimePicker(index)}
-                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-purple-600 focus-within:border-transparent outline-none transition-all flex items-center justify-between cursor-pointer"
+                        className="w-full px-4 h-[44px] bg-white border border-gray-300 rounded-xl focus-within:border-[#4a148c] outline-none transition-all flex items-center justify-between cursor-pointer"
                       >
-                        <span className={field.value ? "text-gray-900" : "text-gray-400"}>
+                        <span className={clsx("text-[14px] font-medium", field.value ? "text-[#1A202C]" : "text-gray-400")}>
                           {field.value || "Select time"}
                         </span>
                         <Clock size={18} className="text-gray-400" />
@@ -185,7 +202,6 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
 
             <FieldWrapper
               label="Venue Name & Location"
-              hint="Search your venue name to automatically generate the Google Maps link."
               error={errors.events?.[index]?.venue?.message}
             >
               <LocationInput
@@ -200,20 +216,18 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
 
             <input type="hidden" {...register(`events.${index}.mapsLink`)} />
             {watchedEvents?.[index]?.mapsLink && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-semibold text-[#1A202C]">Generated Google Maps Link</span>
+              <div className="flex flex-col gap-1.5 mt-2 max-w-full overflow-hidden">
+                <span className="text-[14px] font-medium text-[#1A202C]">Google Maps Link</span>
                 <a 
                   href={watchedEvents[index].mapsLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-[#9d174d] hover:text-[#2e1065] underline break-all line-clamp-2 w-fit"
+                  className="text-[14px] text-[#4a148c] hover:text-[#2e1065] underline truncate block w-full"
                 >
                   {watchedEvents[index].mapsLink}
                 </a>
               </div>
             )}
-
-
           </div>
         ))}
       </div>
@@ -223,7 +237,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
         onClick={() =>
           append({ name: "", customName: "", isMainEvent: fields.length === 0, date: "", time: "", venue: "", mapsLink: "", dressCode: "", notes: "" })
         }
-        className="flex items-center gap-2 text-[#9d174d] hover:text-[#2e1065] font-bold text-sm border-2 border-[#9d174d]/30 hover:border-[#9d174d] bg-[#9d174d]/5 hover:bg-[#9d174d]/10 rounded-full px-5 py-3 transition-all w-full justify-center shadow-xs"
+        className="flex items-center gap-2 bg-transparent border border-[#4a148c] text-[#4a148c] font-semibold text-[14px] hover:bg-purple-50 rounded-xl px-5 h-[44px] transition-all w-full justify-center"
       >
         <Plus size={18} />
         Add Another Event

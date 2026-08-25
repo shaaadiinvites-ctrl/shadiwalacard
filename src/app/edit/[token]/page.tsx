@@ -53,6 +53,7 @@ export default async function EditWeddingPage({ params }: Props) {
       initialData={initialData}
       existingSlug={data.slug}
       existingCoverPhotoUrl={data.cover_photo_url ?? null}
+      existingGalleryUrls={data.gallery_urls ?? []}
     />
   );
 }

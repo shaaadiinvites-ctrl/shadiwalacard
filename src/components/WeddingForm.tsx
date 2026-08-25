@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useForm, FieldPath } from "react-hook-form";
 import { WeddingFormData, STEPS } from "@/types/wedding";
-import { CheckCircle, Circle } from "lucide-react";
+import { CheckCircle, Circle, ArrowLeft } from "lucide-react";
 import { clsx } from "clsx";
+import BubbleUp from "./originkit/ui/floatingicons";
 import { usePostHog } from 'posthog-js/react';
 
 import Step1Basics from "@/components/steps/Step1Basics";
@@ -30,6 +31,7 @@ interface WeddingFormProps {
   initialData?: Partial<WeddingFormData>;
   existingSlug?: string;
   existingCoverPhotoUrl?: string | null;
+  existingGalleryUrls?: string[];
 }
 
 export default function WeddingForm({
@@ -39,6 +41,7 @@ export default function WeddingForm({
   editToken,
   initialData,
   existingSlug,
+  existingGalleryUrls = [],
 }: WeddingFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
@@ -47,8 +50,7 @@ export default function WeddingForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ghostClickLock, setGhostClickLock] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
-
+  const [retainedGalleryUrls, setRetainedGalleryUrls] = useState<string[]>(existingGalleryUrls);
 
   useEffect(() => {
     if (currentStep === STEPS.length) {
@@ -65,7 +67,11 @@ export default function WeddingForm({
   // appends ?po=<id>&template=<id>.
   if (mode === "create" && !paymentOrderId) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative p-6 font-sans">
+      <div className="min-h-screen flex items-center justify-center relative p-6 font-manrope">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          .font-manrope { font-family: 'Manrope', sans-serif; }
+        `}</style>
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
         <div className="rounded-2xl border border-[rgba(26,32,44,0.1)] p-8 text-center max-w-md w-full space-y-5" style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
           <div className="text-5xl">🔒</div>
@@ -194,7 +200,7 @@ export default function WeddingForm({
       const { coverPhoto, galleryImages, ...rest } = formattedData;
 
       const formData = new FormData();
-      const extra = mode === "edit" ? { editToken } : { paymentOrderId, templateId };
+      const extra = mode === "edit" ? { editToken, existingGalleryUrls: retainedGalleryUrls } : { paymentOrderId, templateId };
       formData.append("payload", JSON.stringify({ ...rest, ...extra }));
 
       if (coverPhoto && coverPhoto.length > 0) {
@@ -275,8 +281,32 @@ export default function WeddingForm({
       : "";
 
     return (
-      <div className="min-h-screen flex items-center justify-center relative p-6 font-sans">
+      <div className="min-h-screen flex items-center justify-center relative p-6 font-manrope">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          .font-manrope { font-family: 'Manrope', sans-serif; }
+        `}</style>
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
+        
+        <div className="absolute inset-0 z-[9999] pointer-events-none overflow-hidden">
+          <BubbleUp mode="text" text="✨🎉💖🥂💌💍" amount={30} minSize={24} maxSize={54} direction="bottom" loop={false} />
+        </div>
+
+        {/* HEADER matching Contact Us */}
+        <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-gray-200">
+          <div className="w-full max-w-[1220px] mx-auto px-5 h-[60px] flex items-center justify-center relative">
+            <a href="/" className="flex items-center gap-2 flex-shrink-0 select-none no-underline">
+              <img 
+                src="/uploads/envelope_icon_transparent.png" 
+                alt="shadiwalacard.com Icon" 
+                className="h-8 w-8 object-contain rounded"
+              />
+              <span className="font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', letterSpacing: '0.2px' }}>
+                Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+              </span>
+            </a>
+          </div>
+        </header>
         <div className="rounded-2xl border border-gray-200 p-8 text-center max-w-lg w-full space-y-6" style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
           <div className="text-6xl">✨</div>
           <h2 className="text-3xl font-extrabold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -335,7 +365,15 @@ export default function WeddingForm({
   }
 
   return (
-    <div className="min-h-screen relative flex flex-col md:flex-row font-sans text-[#1A202C]">
+    <div className="min-h-screen relative flex flex-col md:flex-row font-manrope text-[#1A202C]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+        input { font-family: 'Manrope', sans-serif; }
+        button { font-family: 'Manrope', sans-serif; }
+        select { font-family: 'Manrope', sans-serif; }
+        textarea { font-family: 'Manrope', sans-serif; }
+      `}</style>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
       
       {/* ── Full Screen Upload Overlay ── */}
@@ -364,27 +402,34 @@ export default function WeddingForm({
       )}
 
       {/* ── Mobile Top Header & Stepper (Visible only on mobile `< md`) ── */}
-      <header className="md:hidden sticky top-0 z-30 border-b border-gray-200 px-4 py-3 shadow-sm bg-white">
-        <div className="flex items-center justify-between mb-2">
-          <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-1.5">
-            <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={24} height={24} className="object-contain rounded" />
-            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
-              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+      <header className="md:hidden sticky top-0 z-30 px-4 py-2 bg-white">
+        <div className="flex items-center justify-between relative h-11">
+          <div className="flex-1">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={currentStep === 1}
+              className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-[#4a148c] cursor-pointer transition-colors flex items-center justify-center hover:bg-purple-50 -ml-2"
+              aria-label="Go Back"
+            >
+              <ArrowLeft size={24} />
+            </button>
+          </div>
+
+          <div className="absolute left-1/2 -translate-x-1/2 flex justify-center">
+            <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-1.5">
+              <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={24} height={24} className="object-contain rounded" />
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
+                Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+              </span>
+            </a>
+          </div>
+
+          <div className="flex-1 flex justify-end">
+            <span className="text-[11px] font-extrabold text-[#4a148c] bg-purple-50 px-2.5 py-1 rounded-full border border-[#4a148c]/20">
+              {currentStep}/{STEPS.length}
             </span>
-          </a>
-          <span className="text-[11px] font-extrabold text-[#9d174d] bg-[#9d174d]/10 px-3 py-1 rounded-full border border-[#9d174d]/20">
-            Step {currentStep} of {STEPS.length}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-xs font-medium text-[#2e1065] mb-1.5">
-          <span className="truncate pr-2 font-bold">{STEPS.find((s) => s.id === currentStep)?.title}</span>
-          <span className="text-gray-400 font-normal">{Math.round(((currentStep - 1) / STEPS.length) * 100)}% done</span>
-        </div>
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] rounded-full transition-all duration-500"
-            style={{ width: `${((currentStep - 1) / STEPS.length) * 100}%` }}
-          />
+          </div>
         </div>
       </header>
 
@@ -443,7 +488,7 @@ export default function WeddingForm({
           </div>
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] rounded-full transition-all duration-500"
+              className="h-full bg-[#4a148c] rounded-full transition-all duration-500"
               style={{ width: `${((currentStep - 1) / STEPS.length) * 100}%` }}
             />
           </div>
@@ -461,7 +506,25 @@ export default function WeddingForm({
         >
           <input type="hidden" {...register("primaryEmail")} />
           <input type="hidden" {...register("contactNumber")} />
-          <div className="flex-1 flex gap-0 w-full min-w-0">
+          <div className="flex-1 flex flex-col w-full min-w-0">
+            {/* ── Secondary Header Bar ── */}
+            <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-10 pb-3 pt-1 sticky top-[60px] md:top-0 z-20 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-[#2e1065]">
+                  {STEPS.find((s) => s.id === currentStep)?.title}
+                </span>
+                <span className="text-[12px] font-medium text-gray-500">
+                  {Math.round(((currentStep - 1) / STEPS.length) * 100)}% done
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-[#e2d9ea] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#2e1065] rounded-full transition-all duration-500"
+                  style={{ width: `${((currentStep - 1) / STEPS.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
             <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
               <div className="max-w-3xl mx-auto">
                 {currentStep === 1 && (
@@ -471,7 +534,14 @@ export default function WeddingForm({
                   <Step2Events register={register} errors={errors} control={control} setValue={setValue} />
                 )}
                 {currentStep === 3 && (
-                  <Step3Media register={register} errors={errors} watch={watch} setValue={setValue} />
+                  <Step3Media 
+                    register={register} 
+                    errors={errors} 
+                    watch={watch} 
+                    setValue={setValue} 
+                    existingGalleryUrls={retainedGalleryUrls}
+                    onRemoveExistingGalleryUrl={(url) => setRetainedGalleryUrls(prev => prev.filter(u => u !== url))}
+                  />
                 )}
                 {currentStep === 4 && (
                   <Step5RSVP register={register} errors={errors} />
@@ -487,12 +557,13 @@ export default function WeddingForm({
                 type="button"
                 onClick={goBack}
                 disabled={currentStep === 1}
-                className="disabled:opacity-30 disabled:cursor-not-allowed h-[46px] px-4 sm:px-6 rounded-xl border border-gray-800/20 bg-transparent text-[#1A202C] font-medium text-[0.95rem] cursor-pointer transition-colors flex items-center justify-center hover:bg-gray-100"
+                className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-[#4a148c] cursor-pointer transition-colors flex items-center justify-center hover:bg-purple-50"
+                aria-label="Go Back"
               >
-                ← Back
+                <ArrowLeft size={24} />
               </button>
 
-              <span className="text-xs font-bold text-[#2e1065] text-center truncate px-2">
+              <span className="text-[12px] font-bold text-[#2e1065] text-center truncate px-2">
                 Step {currentStep} <span className="text-gray-400 font-normal">of {STEPS.length}</span>
               </span>
 
@@ -500,7 +571,7 @@ export default function WeddingForm({
                 <button
                   type="button"
                   onClick={goNext}
-                  className="h-[46px] px-6 sm:px-8 rounded-xl border-none bg-[#2e1065] text-white font-medium text-[0.95rem] cursor-pointer transition-colors flex items-center justify-center shadow-md hover:bg-[#4c1d95]"
+                  className="h-[54px] px-6 sm:px-8 rounded-xl border-none bg-[#4a148c] text-white font-bold text-[18px] cursor-pointer transition-colors flex items-center justify-center shadow-md hover:bg-[#3b0764]"
                 >
                   Continue →
                 </button>
@@ -510,7 +581,7 @@ export default function WeddingForm({
                     type="button"
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting || ghostClickLock}
-                    className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 shrink-0"
+                    className="h-[54px] px-6 sm:px-8 rounded-xl bg-[#4a148c] text-white text-[18px] font-bold shadow-md hover:bg-[#3b0764] transition-colors disabled:bg-[#9ca3af] disabled:opacity-60 disabled:cursor-not-allowed shrink-0 flex items-center justify-center"
                   >
                     {isSubmitting 
                       ? (mode === "edit" ? "Saving…" : "Submitting…")

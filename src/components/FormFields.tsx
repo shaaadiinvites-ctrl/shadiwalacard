@@ -12,14 +12,56 @@ export const Input = forwardRef<
   <input
     ref={ref}
     className={clsx(
-      "w-full rounded-xl border border-[#2e1065]/20 bg-white px-3.5 py-3 text-base md:text-sm text-[#1A202C] placeholder-gray-400 shadow-xs",
-      "focus:outline-none focus:ring-2 focus:ring-[#9d174d]/30 focus:border-[#9d174d] transition duration-200",
+      "w-full border border-gray-300 rounded-xl p-3 text-[14px] font-medium outline-none bg-white text-[#1A202C] transition-colors focus:border-[#4a148c]",
       className
     )}
     {...props}
   />
 ));
 Input.displayName = "Input";
+
+// ── Floating Input ─────────────────────────────────────────────────────────────
+interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+
+export const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
+  ({ label, error, className, id, ...props }, ref) => {
+    const inputId = id || `floating-${label.replace(/\s+/g, '-').toLowerCase()}`;
+    return (
+      <div className="w-full">
+        <div className="relative w-full">
+          <input
+            ref={ref}
+            id={inputId}
+            placeholder=" "
+            className={clsx(
+              "block px-4 py-3 w-full text-[14px] font-medium text-[#1A202C] bg-white rounded-xl border border-gray-300 appearance-none focus:outline-none focus:ring-1 focus:ring-[#4a148c] focus:border-[#4a148c] peer transition-colors h-[54px]",
+              error ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500" : "",
+              className
+            )}
+            {...props}
+          />
+          <label
+            htmlFor={inputId}
+            className={clsx(
+              "absolute text-[14px] text-gray-500 bg-white px-1.5 duration-300 transform -translate-y-1/2 scale-75 top-0 z-10 origin-[0] left-3",
+              "peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2",
+              "peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2",
+              "pointer-events-none",
+              error ? "text-rose-500" : "peer-focus:text-[#4a148c]"
+            )}
+          >
+            {label}
+          </label>
+        </div>
+        {error && <p className="text-[12px] font-medium text-rose-600 mt-1">{error}</p>}
+      </div>
+    );
+  }
+);
+FloatingInput.displayName = "FloatingInput";
 
 // ── Textarea ─────────────────────────────────────────────────────────────────
 export const Textarea = forwardRef<
@@ -29,8 +71,7 @@ export const Textarea = forwardRef<
   <textarea
     ref={ref}
     className={clsx(
-      "w-full rounded-xl border border-[#2e1065]/20 bg-white px-3.5 py-3 text-base md:text-sm text-[#1A202C] placeholder-gray-400 shadow-xs",
-      "focus:outline-none focus:ring-2 focus:ring-[#9d174d]/30 focus:border-[#9d174d] transition duration-200 resize-none",
+      "w-full border border-gray-300 rounded-xl p-3 text-[14px] font-medium outline-none bg-white text-[#1A202C] transition-colors focus:border-[#4a148c] resize-none",
       className
     )}
     {...props}
@@ -48,11 +89,11 @@ interface FieldWrapperProps {
 
 export function FieldWrapper({ label, hint, error, children }: FieldWrapperProps) {
   return (
-    <div className="space-y-1.5 w-full min-w-0">
-      <label className="block text-sm font-semibold text-[#2e1065] tracking-wide">{label}</label>
-      {hint && <p className="text-xs text-gray-500 font-normal">{hint}</p>}
+    <div className="w-full min-w-0">
+      <label className="block text-[14px] font-medium text-[#1A202C] mb-1">{label}</label>
+      {hint && <p className="text-[12px] text-gray-500 font-normal mb-1">{hint}</p>}
       <div className="w-full">{children}</div>
-      {error && <p className="text-xs font-semibold text-rose-600 mt-1">{error}</p>}
+      {error && <p className="text-[12px] font-medium text-rose-600 mt-1">{error}</p>}
     </div>
   );
 }
@@ -177,8 +218,8 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
         <input
           id={inputId}
           className={clsx(
-            "w-full rounded-xl border border-[#2e1065]/20 bg-white pl-3.5 pr-10 py-3 text-base md:text-sm text-[#1A202C] placeholder-gray-400 shadow-xs",
-            "focus:outline-none focus:ring-2 focus:ring-[#9d174d]/30 focus:border-[#9d174d] transition duration-200",
+            "w-full rounded-xl border border-gray-300 bg-white pl-4 pr-10 h-[44px] text-[14px] font-medium text-[#1A202C] placeholder-gray-400",
+            "focus:outline-none focus:border-[#4a148c] transition duration-200",
             className
           )}
           {...props}
@@ -205,8 +246,8 @@ export const Select = forwardRef<
     <select
       ref={ref}
       className={clsx(
-        "appearance-none w-full rounded-xl border border-[#2e1065]/20 bg-white px-3.5 py-3 text-base md:text-sm text-[#1A202C] shadow-xs cursor-pointer",
-        "focus:outline-none focus:ring-2 focus:ring-[#9d174d]/30 focus:border-[#9d174d] transition duration-200",
+        "appearance-none w-full rounded-xl border border-gray-300 bg-white px-4 h-[44px] text-[14px] font-medium text-[#1A202C] cursor-pointer",
+        "focus:outline-none focus:border-[#4a148c] transition duration-200",
         className
       )}
       {...props}

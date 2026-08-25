@@ -13,45 +13,73 @@ export default function Step5RSVP({ register, errors }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>R.S.V.P Details</h2>
-        <p className="text-sm text-gray-500 mt-1">Provide contact points for guests who have questions or need to RSVP.</p>
+        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">R.S.V.P Details</h2>
+        <p className="text-[14px] font-normal text-gray-500">Provide contact points for guests who have questions or need to RSVP.</p>
       </div>
 
-      <div className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 shadow-inner">
-        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">RSVP 1</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm space-y-6">
+        <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">RSVP 1</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FieldWrapper label="Contact Name" error={errors.rsvp1Name?.message}>
             <Input
               {...register("rsvp1Name")}
-              placeholder="e.g. Mr. & Mrs. Sharma"
               className="capitalize"
             />
           </FieldWrapper>
           <FieldWrapper label="Contact Number" error={errors.rsvp1Phone?.message}>
             <Input
-              {...register("rsvp1Phone")}
-              placeholder="e.g. +91 98765 43210"
+              {...register("rsvp1Phone", {
+                pattern: {
+                  value: /^[0-9+\-\s()]*$/,
+                  message: "Invalid phone number format",
+                },
+                validate: (val) => {
+                  if (!val) return true;
+                  const digits = val.replace(/\D/g, '').length;
+                  if (digits < 10) return "Phone number must be at least 10 digits";
+                  if (digits > 15) return "Phone number is too long";
+                  return true;
+                },
+              })}
               type="tel"
+              maxLength={20}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(/[^\d+\-\s()]/g, '');
+              }}
             />
           </FieldWrapper>
         </div>
       </div>
 
-      <div className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 shadow-inner">
-        <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">RSVP 2</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm space-y-6">
+        <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">RSVP 2</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FieldWrapper label="Contact Name" error={errors.rsvp2Name?.message}>
             <Input
               {...register("rsvp2Name")}
-              placeholder="e.g. The Verma Family"
               className="capitalize"
             />
           </FieldWrapper>
           <FieldWrapper label="Contact Number" error={errors.rsvp2Phone?.message}>
             <Input
-              {...register("rsvp2Phone")}
-              placeholder="e.g. +91 87654 32109"
+              {...register("rsvp2Phone", {
+                pattern: {
+                  value: /^[0-9+\-\s()]*$/,
+                  message: "Invalid phone number format",
+                },
+                validate: (val) => {
+                  if (!val) return true;
+                  const digits = val.replace(/\D/g, '').length;
+                  if (digits < 10) return "Phone number must be at least 10 digits";
+                  if (digits > 15) return "Phone number is too long";
+                  return true;
+                },
+              })}
               type="tel"
+              maxLength={20}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(/[^\d+\-\s()]/g, '');
+              }}
             />
           </FieldWrapper>
         </div>

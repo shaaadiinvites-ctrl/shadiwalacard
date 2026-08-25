@@ -11,9 +11,11 @@ interface Props {
   errors: FieldErrors<WeddingFormData>;
   watch: UseFormWatch<WeddingFormData>;
   setValue: UseFormSetValue<WeddingFormData>;
+  existingGalleryUrls?: string[];
+  onRemoveExistingGalleryUrl?: (url: string) => void;
 }
 
-export default function Step3Media({ register, errors, watch, setValue }: Props) {
+export default function Step3Media({ register, errors, watch, setValue, existingGalleryUrls = [], onRemoveExistingGalleryUrl }: Props) {
   const galleryImages = watch("galleryImages");
   const [previews, setPreviews] = useState<string[]>([]);
 
@@ -45,8 +47,8 @@ export default function Step3Media({ register, errors, watch, setValue }: Props)
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>Love Story & Media</h2>
-        <p className="text-sm text-gray-500 mt-1">Share your romantic story and the visuals that tell it.</p>
+        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">Love Story & Media</h2>
+        <p className="text-[14px] font-normal text-gray-500">Share your romantic story and the visuals that tell it.</p>
       </div>
 
       <FieldWrapper
@@ -86,12 +88,32 @@ export default function Step3Media({ register, errors, watch, setValue }: Props)
           type="file"
           accept="image/jpeg, image/png"
           multiple
-          className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#2e1065]/10 file:text-[#2e1065] hover:file:bg-[#2e1065]/20 cursor-pointer border border-[#2e1065]/20 rounded-xl p-1.5 shadow-xs transition"
+          className="block w-full text-[14px] font-medium text-[#1A202C] file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[14px] file:font-semibold file:bg-purple-50 file:text-[#4a148c] hover:file:bg-purple-100 cursor-pointer border border-gray-300 rounded-xl bg-white p-1 shadow-sm transition"
         />
-        {previews.length > 0 && (
+        {(existingGalleryUrls.length > 0 || previews.length > 0) && (
           <div className="mt-4 flex flex-wrap gap-3">
+            {/* Existing Images */}
+            {existingGalleryUrls.map((url, idx) => (
+              <div key={`existing-${idx}`} className="relative aspect-square w-20 sm:w-24 rounded-xl overflow-hidden border border-[#4a148c]/20 shadow-sm opacity-90 hover:opacity-100 transition-opacity">
+                <img
+                  src={url}
+                  alt={`Existing ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemoveExistingGalleryUrl && onRemoveExistingGalleryUrl(url)}
+                  className="absolute top-1 right-1 bg-white hover:bg-red-50 text-red-600 rounded-full p-1 shadow-sm transition-colors"
+                  aria-label="Remove existing image"
+                >
+                  <X size={14} strokeWidth={3} />
+                </button>
+              </div>
+            ))}
+
+            {/* New Previews */}
             {previews.map((preview, idx) => (
-              <div key={idx} className="relative aspect-square w-20 sm:w-24 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+              <div key={`new-${idx}`} className="relative aspect-square w-20 sm:w-24 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                 <img
                   src={preview}
                   alt={`Preview ${idx + 1}`}

@@ -40,24 +40,22 @@ export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }:
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Select Time">
-      <div className="relative flex justify-center items-center h-[200px] mt-4 mb-2 px-8">
+      <div className="relative flex justify-center items-center h-[200px] mt-2 mb-6 px-4">
         {/* Highlight bar behind */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-8 right-8 h-[44px] bg-[#2e1065]/5 border-y border-[#2e1065]/10 rounded-lg pointer-events-none" />
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 h-[48px] bg-[#2e1065]/5 border-y border-[#2e1065]/10 rounded-xl pointer-events-none" />
         
-        <div className="flex gap-8 z-10 w-full max-w-[160px] justify-between items-center">
+        <div className="flex gap-6 z-10 w-full max-w-[140px] justify-between items-center">
           <Wheel column={hours} value={hour} onChange={setHour} />
           <div className="text-2xl font-bold pb-1 text-[#2e1065]">:</div>
           <Wheel column={minutes} value={minute} onChange={setMinute} />
         </div>
-      </div>
 
-      <div className="flex justify-center mt-2 px-6">
         <button
           type="button"
           onClick={handleSave}
-          className="w-14 h-14 bg-[#2e1065] hover:bg-[#3b0764] text-white rounded-2xl flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
+          className="absolute top-1/2 -translate-y-1/2 right-6 z-20 w-[40px] h-[40px] bg-[#2e1065] text-white rounded-[10px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
         >
-          <Check size={28} />
+          <Check size={22} strokeWidth={2.5} />
         </button>
       </div>
     </BottomSheet>

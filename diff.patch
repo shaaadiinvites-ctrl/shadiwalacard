@@ -1,0 +1,514 @@
+﻿diff --git a/src/app/api/razorpay/verify-payment/route.ts b/src/app/api/razorpay/verify-payment/route.ts
+index 1acef28..eca83c8 100644
+--- a/src/app/api/razorpay/verify-payment/route.ts
++++ b/src/app/api/razorpay/verify-payment/route.ts
+@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
+       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
+     }
+ 
+-    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, email } = await req.json();
++    const { paymentOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, email, phone } = await req.json();
+ 
+     if (!paymentOrderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+       return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
+@@ -57,9 +57,10 @@ export async function POST(req: NextRequest) {
+ 
+     // Send setup email if we got the email
+     if (email) {
+-      const origin = req.headers.get("origin") || "https://shaadiwala.in";
+-      const setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
+-      // Import dynamically or we can add it to the top
++      const origin = req.headers.get("origin") || "https://shadiwalacard.com";
++      let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}&e=${encodeURIComponent(email)}`;
++      if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
++      
+       const { sendSetupLinkEmail } = await import("@/lib/email");
+       // Fire and forget (don't await so we don't slow down the response)
+       sendSetupLinkEmail(email, setupUrl).catch(console.error);
+diff --git a/src/app/cart/page.tsx b/src/app/cart/page.tsx
+index e7b1c74..c0be3e0 100644
+--- a/src/app/cart/page.tsx
++++ b/src/app/cart/page.tsx
+@@ -252,13 +252,14 @@ function CartPageContent() {
+               razorpay_payment_id: response.razorpay_payment_id,
+               razorpay_signature: response.razorpay_signature,
+               email: email,
++              phone: phone,
+             }),
+           });
+ 
+           const verifyData = await verifyRes.json();
+           if (verifyRes.ok && verifyData.verified) {
+             // Payment success -> Redirect to success page!
+-            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}`);
++            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}&e=${encodeURIComponent(email)}&p=${encodeURIComponent(phone)}`);
+           } else {
+             setIsProcessingPayment(false);
+             setError(verifyData.error || "Payment verification failed.");
+diff --git a/src/app/checkout/page.tsx b/src/app/checkout/page.tsx
+index f9a1f42..da0903b 100644
+--- a/src/app/checkout/page.tsx
++++ b/src/app/checkout/page.tsx
+@@ -100,7 +100,7 @@ function CheckoutInner() {
+         key: orderJson.keyId,
+         amount: orderJson.amountPaise,
+         currency: "INR",
+-        name: "Shadiwala Card",
++        name: "ShadiwalaCard",
+         description: `${template.name} invitation`,
+         order_id: orderJson.orderId,
+         handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+diff --git a/src/app/edit/[token]/page.tsx b/src/app/edit/[token]/page.tsx
+index 1f97f46..71eab39 100644
+--- a/src/app/edit/[token]/page.tsx
++++ b/src/app/edit/[token]/page.tsx
+@@ -23,6 +23,7 @@ export default async function EditWeddingPage({ params }: Props) {
+   const initialData: Partial<WeddingFormData> = {
+     brideName: data.bride_name,
+     groomName: data.groom_name,
++    nameOrder: data.name_order as "bride_first" | "groom_first",
+     hashtag: data.hashtag ?? "",
+     contactNumber: data.contact_number ?? "",
+     primaryEmail: data.primary_email ?? "",
+diff --git a/src/app/form/page.tsx b/src/app/form/page.tsx
+index 741b365..98209bc 100644
+--- a/src/app/form/page.tsx
++++ b/src/app/form/page.tsx
+@@ -1,5 +1,7 @@
+ import WeddingForm from "@/components/WeddingForm";
+ import ClientTracker from "@/components/ClientTracker";
++import { createServerSupabaseClient } from "@/lib/supabaseServer";
++import { redirect } from "next/navigation";
+ 
+ export const metadata = {
+   title: "Wedding Invitation Form",
+@@ -7,15 +9,45 @@ export const metadata = {
+ };
+ 
+ interface Props {
+-  searchParams: Promise<{ po?: string; template?: string }>;
++  searchParams: Promise<{ po?: string; template?: string; e?: string; p?: string }>;
+ }
+ 
+ export default async function FormPage({ searchParams }: Props) {
+-  const { po, template } = await searchParams;
++  const { po, template, e, p } = await searchParams;
++
++  if (po) {
++    const supabase = createServerSupabaseClient();
++    
++    // First, check if this payment order is already linked to a wedding
++    const { data: poRow } = await supabase
++      .from("payment_orders")
++      .select("wedding_id")
++      .eq("id", po)
++      .maybeSingle();
++
++    if (poRow?.wedding_id) {
++      // Fetch the edit_token for that wedding
++      const { data: wedding } = await supabase
++        .from("weddings")
++        .select("edit_token")
++        .eq("id", poRow.wedding_id)
++        .maybeSingle();
++
++      if (wedding?.edit_token) {
++        redirect(`/edit/${wedding.edit_token}`);
++      }
++    }
++  }
++
++  const initialData = {
++    primaryEmail: e || "",
++    contactNumber: p || "",
++  };
++
+   return (
+     <>
+       <ClientTracker eventName="form_viewed" properties={{ payment_order_id: po, template_id: template }} />
+-      <WeddingForm paymentOrderId={po} templateId={template} />
++      <WeddingForm paymentOrderId={po} templateId={template} initialData={initialData} />
+     </>
+   );
+ }
+diff --git a/src/app/success/page.tsx b/src/app/success/page.tsx
+index e421654..41ca220 100644
+--- a/src/app/success/page.tsx
++++ b/src/app/success/page.tsx
+@@ -10,14 +10,19 @@ export const metadata = {
+ };
+ 
+ interface Props {
+-  searchParams: Promise<{ po?: string; template?: string }>;
++  searchParams: Promise<{ po?: string; template?: string; e?: string; p?: string }>;
+ }
+ 
+ export default async function SuccessPage({ searchParams }: Props) {
+-  const { po, template } = await searchParams;
++  const { po, template, e, p } = await searchParams;
+   const templateSlug = template || "royal-heritage";
+ 
+   const selectedTemplate = getTemplate(templateSlug);
++  
++  // Build the form URL preserving email and phone if they exist
++  let formUrl = `/form?po=${po}&template=${templateSlug}`;
++  if (e) formUrl += `&e=${encodeURIComponent(e)}`;
++  if (p) formUrl += `&p=${encodeURIComponent(p)}`;
+   const templateImage = selectedTemplate.img;
+ 
+   if (!po) {
+@@ -102,7 +107,7 @@ export default async function SuccessPage({ searchParams }: Props) {
+             </Link>
+             
+             <Link 
+-              href={`/form?po=${po}&template=${template || "royal-heritage"}`} 
++              href={formUrl} 
+               className="w-full no-underline flex min-w-0 overflow-hidden"
+             >
+               <button className="w-full h-10 flex items-center justify-center px-1 text-white font-medium tracking-wide text-[0.75rem] bg-[#9d174d] border-none rounded-xl cursor-pointer hover:bg-[#831843] transition-colors whitespace-nowrap overflow-hidden">
+diff --git a/src/components/WeddingForm.tsx b/src/components/WeddingForm.tsx
+index a55a178..c3e87ff 100644
+--- a/src/components/WeddingForm.tsx
++++ b/src/components/WeddingForm.tsx
+@@ -1,6 +1,6 @@
+ "use client";
+ 
+-import { useState } from "react";
++import { useState, useEffect } from "react";
+ import { useForm, FieldPath } from "react-hook-form";
+ import { WeddingFormData, STEPS } from "@/types/wedding";
+ import { CheckCircle, Circle } from "lucide-react";
+@@ -44,6 +44,17 @@ export default function WeddingForm({
+   const [submitted, setSubmitted] = useState(false);
+   const [slug, setSlug] = useState<string | null>(existingSlug ?? null);
+   const [editUrl, setEditUrl] = useState<string | null>(null);
++  const [submitError, setSubmitError] = useState<string | null>(null);
++  const [ghostClickLock, setGhostClickLock] = useState(false);
++
++  useEffect(() => {
++    if (currentStep === STEPS.length) {
++      setGhostClickLock(true);
++      const timer = setTimeout(() => setGhostClickLock(false), 600);
++      return () => clearTimeout(timer);
++    }
++  }, [currentStep]);
++
+   const posthog = usePostHog();
+ 
+   // Payment gate: only applies to new submissions. This page should only
+@@ -81,7 +92,7 @@ export default function WeddingForm({
+     formState: { errors, isSubmitting },
+   } = useForm<WeddingFormData>({
+     mode: "onChange",
+-    defaultValues: mode === "edit" ? { ...DEFAULT_VALUES, ...initialData } : DEFAULT_VALUES,
++    defaultValues: { ...DEFAULT_VALUES, ...(initialData || {}) },
+   });
+ 
+   // Fields validated per step
+@@ -117,8 +128,6 @@ export default function WeddingForm({
+     window.scrollTo({ top: 0, behavior: "smooth" });
+   };
+ 
+-  const [submitError, setSubmitError] = useState<string | null>(null);
+-
+   const onSubmit = async (data: WeddingFormData) => {
+     // Prevent mobile keyboards from submitting the form early via 'Enter'/'Go'
+     if (currentStep < STEPS.length) {
+@@ -265,8 +274,9 @@ export default function WeddingForm({
+         <div className="flex items-center justify-between mb-2">
+           <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-1.5">
+             <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={24} height={24} className="object-contain rounded" />
+-            <span className="text-[#2e1065]">Shadiwala</span>
+-            <span className="text-[#9d174d]">Card</span>
++            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
++              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
++            </span>
+           </a>
+           <span className="text-[11px] font-extrabold text-[#9d174d] bg-[#9d174d]/10 px-3 py-1 rounded-full border border-[#9d174d]/20">
+             Step {currentStep} of {STEPS.length}
+@@ -289,10 +299,9 @@ export default function WeddingForm({
+         <div className="mb-8">
+           <a href="/" className="text-2xl font-extrabold tracking-tight flex items-center gap-2 mb-2 no-underline">
+             <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={32} height={32} className="object-contain rounded" />
+-            <div>
+-              <span className="text-[#2e1065]">Shadiwala</span>
+-              <span className="text-[#9d174d]">Card</span>
+-            </div>
++            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
++              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
++            </span>
+           </a>
+           <h1 className="text-xl font-bold text-[#1A202C]" style={{ fontFamily: "'Playfair Display', serif" }}>
+             {mode === "edit" ? "Edit Your Invite" : "Customize Your Invite"}
+@@ -349,7 +358,15 @@ export default function WeddingForm({
+ 
+       {/* ΓöÇΓöÇ Main Form Area ΓöÇΓöÇ */}
+       <main className="flex-1 flex flex-col min-w-0 md:min-h-screen">
+-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col justify-between">
++        <form 
++          onSubmit={(e) => {
++            e.preventDefault();
++            if (currentStep < STEPS.length) goNext();
++          }} 
++          className="flex-1 flex flex-col justify-between"
++        >
++          <input type="hidden" {...register("primaryEmail")} />
++          <input type="hidden" {...register("contactNumber")} />
+           <div className="flex-1 flex gap-0 w-full min-w-0">
+             <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
+               <div className="max-w-3xl mx-auto">
+@@ -360,7 +377,7 @@ export default function WeddingForm({
+                   <Step2Events register={register} errors={errors} control={control} setValue={setValue} />
+                 )}
+                 {currentStep === 3 && (
+-                  <Step3Media register={register} errors={errors} />
++                  <Step3Media register={register} errors={errors} watch={watch} setValue={setValue} />
+                 )}
+                 {currentStep === 4 && (
+                   <Step5RSVP register={register} errors={errors} />
+@@ -395,8 +412,9 @@ export default function WeddingForm({
+                 </button>
+               ) : (
+                 <button
+-                  type="submit"
+-                  disabled={isSubmitting}
++                  type="button"
++                  onClick={handleSubmit(onSubmit)}
++                  disabled={isSubmitting || ghostClickLock}
+                   className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 shrink-0"
+                 >
+                   {isSubmitting ? (mode === "edit" ? "SavingΓÇª" : "SubmittingΓÇª") : mode === "edit" ? "Save Changes Γ£ô" : "Submit Invite Γ£ô"}
+diff --git a/src/components/steps/Step2Events.tsx b/src/components/steps/Step2Events.tsx
+index 69dd2b7..82014ff 100644
+--- a/src/components/steps/Step2Events.tsx
++++ b/src/components/steps/Step2Events.tsx
+@@ -53,20 +53,20 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
+             </div>
+ 
+               <div className="flex items-center gap-3 mt-1 mb-2">
+-                <label className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80">
+-                  <input
+-                    type="radio"
+-                    value="true"
+-                    {...register(`events.${index}.isMainEvent`)}
+-                    checked={watchedEvents?.[index]?.isMainEvent === true}
+-                    onChange={() => {
+-                      // Deselect all others, select this one
+-                      watchedEvents?.forEach((_, i) => {
+-                        setValue(`events.${i}.isMainEvent`, i === index);
+-                      });
+-                    }}
+-                    className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
+-                  />
++                  <label className="flex items-center gap-2 mt-2 cursor-pointer bg-white p-2 rounded-lg border border-gray-100 shadow-sm hover:border-[#2e1065]/30 transition-all">
++                    <input
++                      type="radio"
++                      value="true"
++                      {...register(`events.${index}.isMainEvent`)}
++                      checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
++                      onChange={() => {
++                        // Deselect all others, select this one
++                        watchedEvents?.forEach((_, i) => {
++                          setValue(`events.${i}.isMainEvent`, i === index);
++                        });
++                      }}
++                      className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
++                    />
+                   <span className="font-semibold text-[#2e1065]">Set as Main Event</span>
+                 </label>
+                 <span className="text-xs text-gray-400">(Used for Countdown)</span>
+diff --git a/src/components/steps/Step3Media.tsx b/src/components/steps/Step3Media.tsx
+index 37b3009..483357c 100644
+--- a/src/components/steps/Step3Media.tsx
++++ b/src/components/steps/Step3Media.tsx
+@@ -1,15 +1,47 @@
+ "use client";
+ 
+-import { UseFormRegister, FieldErrors } from "react-hook-form";
++import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
+ import { WeddingFormData } from "@/types/wedding";
+ import { FieldWrapper, Input, Textarea } from "@/components/FormFields";
++import { useEffect, useState } from "react";
++import { X } from "lucide-react";
+ 
+ interface Props {
+   register: UseFormRegister<WeddingFormData>;
+   errors: FieldErrors<WeddingFormData>;
++  watch: UseFormWatch<WeddingFormData>;
++  setValue: UseFormSetValue<WeddingFormData>;
+ }
+ 
+-export default function Step3Media({ register, errors }: Props) {
++export default function Step3Media({ register, errors, watch, setValue }: Props) {
++  const galleryImages = watch("galleryImages");
++  const [previews, setPreviews] = useState<string[]>([]);
++
++  useEffect(() => {
++    if (!galleryImages || galleryImages.length === 0) {
++      setPreviews([]);
++      return;
++    }
++
++    const objectUrls = Array.from(galleryImages).map((file) => URL.createObjectURL(file));
++    setPreviews(objectUrls);
++
++    return () => {
++      objectUrls.forEach((url) => URL.revokeObjectURL(url));
++    };
++  }, [galleryImages]);
++
++  const removeImage = (indexToRemove: number) => {
++    if (!galleryImages) return;
++    const dt = new DataTransfer();
++    Array.from(galleryImages).forEach((file, idx) => {
++      if (idx !== indexToRemove) {
++        dt.items.add(file);
++      }
++    });
++    setValue("galleryImages", dt.files, { shouldValidate: true, shouldDirty: true });
++  };
++
+   return (
+     <div className="space-y-6">
+       <div>
+@@ -29,6 +61,26 @@ export default function Step3Media({ register, errors }: Props) {
+           multiple
+           className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#2e1065]/10 file:text-[#2e1065] hover:file:bg-[#2e1065]/20 cursor-pointer border border-[#2e1065]/20 rounded-xl p-1.5 shadow-xs transition"
+         />
++        {previews.length > 0 && (
++          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
++            {previews.map((preview, idx) => (
++              <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200">
++                <img
++                  src={preview}
++                  alt={`Preview ${idx + 1}`}
++                  className="w-full h-full object-cover"
++                />
++                <button
++                  type="button"
++                  onClick={() => removeImage(idx)}
++                  className="absolute top-1.5 right-1.5 bg-white/90 hover:bg-red-50 text-red-600 rounded-full p-1 shadow-sm backdrop-blur-sm transition-colors"
++                >
++                  <X size={14} strokeWidth={3} />
++                </button>
++              </div>
++            ))}
++          </div>
++        )}
+       </FieldWrapper>
+ 
+ 
+diff --git a/src/components/steps/Step5RSVP.tsx b/src/components/steps/Step5RSVP.tsx
+index 1b7c2ea..2c28712 100644
+--- a/src/components/steps/Step5RSVP.tsx
++++ b/src/components/steps/Step5RSVP.tsx
+@@ -20,15 +20,15 @@ export default function Step5RSVP({ register, errors }: Props) {
+       <div className="border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/70 space-y-5 shadow-inner">
+         <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">RSVP 1</h3>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+-          <FieldWrapper label="Contact Name" error={errors.rsvp1Name?.message}>
++          <FieldWrapper label="Contact Name *" error={errors.rsvp1Name?.message}>
+             <Input
+-              {...register("rsvp1Name")}
++              {...register("rsvp1Name", { required: "Please enter a contact name for RSVP" })}
+               placeholder="e.g. Mr. & Mrs. Sharma"
+             />
+           </FieldWrapper>
+-          <FieldWrapper label="Contact Number" error={errors.rsvp1Phone?.message}>
++          <FieldWrapper label="Contact Number *" error={errors.rsvp1Phone?.message}>
+             <Input
+-              {...register("rsvp1Phone")}
++              {...register("rsvp1Phone", { required: "Please enter a contact number for RSVP" })}
+               placeholder="e.g. +91 98765 43210"
+               type="tel"
+             />
+diff --git a/src/lib/email.ts b/src/lib/email.ts
+index 67fc1b3..bec3286 100644
+--- a/src/lib/email.ts
++++ b/src/lib/email.ts
+@@ -18,9 +18,9 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
+   }
+ 
+   const mailOptions = {
+-    from: `"Shaadiwala" <${process.env.EMAIL_USER}>`,
++    from: `"ShadiwalaCard" <${process.env.EMAIL_USER}>`,
+     to,
+-    subject: "Your Shaadiwala Website Setup Link \uD83D\uDC9D",
++    subject: "Your ShadiwalaCard Website Setup Link \uD83D\uDC9D",
+     html: `
+       <!DOCTYPE html>
+       <html>
+@@ -116,11 +116,11 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
+         <div class="wrapper">
+           <div class="container">
+             <div class="header">
+-              <h1>Shaadiwala</h1>
++              <h1>ShadiwalaCard</h1>
+             </div>
+             <div class="content">
+               <h2>Payment Successful! \uD83C\uDF89</h2>
+-              <p>Thank you for choosing Shaadiwala. We are so excited to help you create your beautiful digital wedding invitation!</p>
++              <p>Thank you for choosing ShadiwalaCard. We are so excited to help you create your beautiful digital wedding invitation!</p>
+               <p>You can start customizing your website right away, or come back to it later at any time using your secure link below.</p>
+               
+               <div style="margin: 32px 0;">
+@@ -133,7 +133,7 @@ export async function sendSetupLinkEmail(to: string, setupUrl: string) {
+               </p>
+             </div>
+             <div class="footer">
+-              &copy; ${new Date().getFullYear()} Shaadiwala. All rights reserved.<br>
++              &copy; ${new Date().getFullYear()} ShadiwalaCard. All rights reserved.<br>
+               If you need any help, simply reply to this email.
+             </div>
+           </div>
+diff --git a/src/lib/sendEmail.ts b/src/lib/sendEmail.ts
+index 9700d1c..c72545c 100644
+--- a/src/lib/sendEmail.ts
++++ b/src/lib/sendEmail.ts
+@@ -8,12 +8,14 @@ import nodemailer from "nodemailer";
+ // Failure to send must never block a paid submission from completing ΓÇö
+ // callers should fire-and-log this, not let it throw past them.
+ function getTransporter() {
+-  const user = process.env.GMAIL_USER;
+-  const pass = process.env.GMAIL_APP_PASSWORD;
++  const user = process.env.EMAIL_USER;
++  const pass = process.env.EMAIL_PASS;
+   if (!user || !pass) return null;
+ 
+   return nodemailer.createTransport({
+-    service: "gmail",
++    host: "smtp.zoho.in",
++    port: 465,
++    secure: true,
+     auth: { user, pass },
+   });
+ }
+@@ -65,15 +67,15 @@ export async function sendInviteReadyEmail(opts: {
+     lose it.</p>
+ 
+     <p style="margin-top: 32px; color: #888; font-size: 0.85em;">
+-      Sent by Shadiwala Card ┬╖ shaaadi.invites@gmail.com
++      Sent by ShadiwalaCard ┬╖ shaaadi.invites@gmail.com
+     </p>
+   </div>`;
+ 
+   try {
+     await transporter.sendMail({
+-      from: `"Shadiwala Card" <${process.env.GMAIL_USER}>`,
++      from: `"ShadiwalaCard" <${process.env.EMAIL_USER}>`,
+       to,
+-      subject: `Your wedding invite is live ΓÇö ${coupleNames}`,
++      subject: `Your wedding invite is live Γ£¿ ${coupleNames}`,
+       html,
+     });
+     return { sent: true };
+diff --git a/test-db.mjs b/test-db.mjs
+new file mode 100644
+index 0000000..d96bf53
+--- /dev/null
++++ b/test-db.mjs
+@@ -0,0 +1,4 @@
++import { createClient } from '@supabase/supabase-js'
++const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
++const { data, error } = await supabase.from('payment_orders').select('*').limit(1)
++console.log(data)

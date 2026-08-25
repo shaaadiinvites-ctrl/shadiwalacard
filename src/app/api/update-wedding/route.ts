@@ -9,7 +9,7 @@ const MEDIA_BUCKET = "wedding-media";
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_GALLERY_IMAGES = 15;
 
-type UpdateBody = WeddingFormData & { editToken?: string };
+type UpdateBody = WeddingFormData & { editToken?: string; existingGalleryUrls?: string[] };
 
 function extFromFile(file: File): string {
   const fromName = file.name?.match(/\.([a-zA-Z0-9]+)$/)?.[1];
@@ -87,9 +87,14 @@ export async function POST(req: NextRequest) {
       .filter((f): f is File => f instanceof File && f.size > 0)
       .slice(0, MAX_GALLERY_IMAGES);
 
-    // Only touch image columns when new files were actually uploaded —
-    // otherwise leave the existing URLs untouched.
     const imageUpdates: { cover_photo_url?: string; gallery_urls?: string[] } = {};
+
+    // If existingGalleryUrls is provided in the payload, start with those.
+    // If not, we don't update the gallery_urls column unless there are new files.
+    if (body.existingGalleryUrls !== undefined) {
+      imageUpdates.gallery_urls = [...body.existingGalleryUrls];
+    }
+
     try {
       if (coverPhotoFile) {
         imageUpdates.cover_photo_url = await uploadImage(
@@ -105,7 +110,11 @@ export async function POST(req: NextRequest) {
             await uploadImage(supabase, galleryFiles[i], `${existing.slug}/gallery-${i}-${Date.now()}.${extFromFile(galleryFiles[i])}`)
           );
         }
-        imageUpdates.gallery_urls = urls;
+        if (imageUpdates.gallery_urls) {
+          imageUpdates.gallery_urls.push(...urls);
+        } else {
+          imageUpdates.gallery_urls = urls;
+        }
       }
     } catch (uploadErr) {
       const message = uploadErr instanceof Error ? uploadErr.message : "Image upload failed.";

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@source "../components/originkit";
 :root {
   --background: #F2F4F8;
   --foreground: #1A202C;

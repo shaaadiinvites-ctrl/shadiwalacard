@@ -3,6 +3,7 @@
 import { UseFormRegister, FieldErrors, UseFormWatch } from "react-hook-form";
 import { WeddingFormData } from "@/types/wedding";
 import { FieldWrapper, Input } from "@/components/FormFields";
+import { clsx } from "clsx";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -18,7 +19,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Full Name" error={errors.brideName?.message}>
       <Input
         {...register("brideName", { required: "Required" })}
-        placeholder="e.g. Ananya Sharma" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -27,7 +28,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Full Name" error={errors.groomName?.message}>
       <Input
         {...register("groomName", { required: "Required" })}
-        placeholder="e.g. Aditya Verma" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -36,7 +37,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Mother's Name" error={errors.brideMotherName?.message}>
       <Input
         {...register("brideMotherName")}
-        placeholder="e.g. Mrs. Shalini Mittal" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -45,7 +46,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Bride's Father's Name" error={errors.brideFatherName?.message}>
       <Input
         {...register("brideFatherName")}
-        placeholder="e.g. Mr. Aakash Mittal" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -54,7 +55,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Mother's Name" error={errors.groomMotherName?.message}>
       <Input
         {...register("groomMotherName")}
-        placeholder="e.g. Mrs. Premika Kapoor" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -63,7 +64,7 @@ export default function Step1Basics({ register, errors, watch }: Props) {
     <FieldWrapper label="Groom's Father's Name" error={errors.groomFatherName?.message}>
       <Input
         {...register("groomFatherName")}
-        placeholder="e.g. Mr. Prem Kapoor" className="capitalize"
+        className="capitalize"
       />
     </FieldWrapper>
   );
@@ -71,30 +72,46 @@ export default function Step1Basics({ register, errors, watch }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>The Happy Couple</h2>
-        <p className="text-sm text-gray-500 mt-1">Tell us about the two of you to personalize your digital invite.</p>
+        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">The Happy Couple</h2>
+        <p className="text-[14px] font-normal text-gray-500">Tell us about the two of you to personalize your digital invite.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FieldWrapper label="Name Display Order" error={errors.nameOrder?.message}>
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80">
+            <label className={clsx(
+              "flex-1 flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+              !isBrideFirst ? "border-[#4a148c] bg-purple-50" : "border-gray-200 bg-white hover:border-[#4a148c]/30"
+            )}>
+              <div className="flex items-center gap-3">
+                <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", !isBrideFirst ? "border-[#4a148c]" : "border-gray-300")}>
+                  {!isBrideFirst && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
+                </div>
+                <span className={clsx("font-semibold text-[15px]", !isBrideFirst ? "text-[#4a148c]" : "text-gray-600")}>Groom First</span>
+              </div>
               <input
                 type="radio"
                 value="groom_first"
                 {...register("nameOrder", { required: "Required" })}
-                className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
+                className="sr-only"
               />
-              <span>Groom First</span>
             </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80">
+            <label className={clsx(
+              "flex-1 flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+              isBrideFirst ? "border-[#4a148c] bg-purple-50" : "border-gray-200 bg-white hover:border-[#4a148c]/30"
+            )}>
+              <div className="flex items-center gap-3">
+                <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", isBrideFirst ? "border-[#4a148c]" : "border-gray-300")}>
+                  {isBrideFirst && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
+                </div>
+                <span className={clsx("font-semibold text-[15px]", isBrideFirst ? "text-[#4a148c]" : "text-gray-600")}>Bride First</span>
+              </div>
               <input
                 type="radio"
                 value="bride_first"
                 {...register("nameOrder", { required: "Required" })}
-                className="w-4 h-4 text-[#2e1065] border-gray-300 focus:ring-[#2e1065]"
+                className="sr-only"
               />
-              <span>Bride First</span>
             </label>
           </div>
         </FieldWrapper>
@@ -104,14 +121,14 @@ export default function Step1Basics({ register, errors, watch }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {isBrideFirst ? (
           <>
-            <div className="space-y-5 border border-[#9d174d]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
-              <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Bride's Details</h3>
+            <div className="space-y-6 border border-gray-200 border-l-4 border-l-[#9d174d] rounded-xl p-6 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+              <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">Bride's Details</h3>
               {brideNameField}
               {brideMotherField}
               {brideFatherField}
             </div>
-            <div className="space-y-5 border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
-              <h3 className="text-sm font-extrabold text-[#2e1065] uppercase tracking-wider">Groom's Details</h3>
+            <div className="space-y-6 border border-gray-200 border-l-4 border-l-[#2e1065] rounded-xl p-6 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+              <h3 className="text-[12px] font-bold text-[#2e1065] uppercase tracking-widest">Groom's Details</h3>
               {groomNameField}
               {groomMotherField}
               {groomFatherField}
@@ -119,14 +136,14 @@ export default function Step1Basics({ register, errors, watch }: Props) {
           </>
         ) : (
           <>
-            <div className="space-y-5 border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
-              <h3 className="text-sm font-extrabold text-[#2e1065] uppercase tracking-wider">Groom's Details</h3>
+            <div className="space-y-6 border border-gray-200 border-l-4 border-l-[#2e1065] rounded-xl p-6 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+              <h3 className="text-[12px] font-bold text-[#2e1065] uppercase tracking-widest">Groom's Details</h3>
               {groomNameField}
               {groomMotherField}
               {groomFatherField}
             </div>
-            <div className="space-y-5 border border-[#9d174d]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
-              <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Bride's Details</h3>
+            <div className="space-y-6 border border-gray-200 border-l-4 border-l-[#9d174d] rounded-xl p-6 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+              <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">Bride's Details</h3>
               {brideNameField}
               {brideMotherField}
               {brideFatherField}
@@ -137,8 +154,8 @@ export default function Step1Basics({ register, errors, watch }: Props) {
 
       <FieldWrapper label="Wedding Hashtag" error={errors.hashtag?.message}>
         <Input
+          placeholder="e.g. #SharmaGayi, #Virushka"
           {...register("hashtag")}
-          placeholder="e.g. #AdityaKiAnanya (Leave empty if not required)"
         />
       </FieldWrapper>
     </div>
