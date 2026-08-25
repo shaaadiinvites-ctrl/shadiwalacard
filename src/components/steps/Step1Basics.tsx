@@ -101,16 +101,36 @@ export default function Step1Basics({ register, errors, watch }: Props) {
         <div className="hidden md:block"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {isBrideFirst ? (
           <>
-            {brideNameField}
-            {groomNameField}
+            <div className="space-y-5 border border-[#9d174d]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
+              <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Bride's Details</h3>
+              {brideNameField}
+              {brideMotherField}
+              {brideFatherField}
+            </div>
+            <div className="space-y-5 border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
+              <h3 className="text-sm font-extrabold text-[#2e1065] uppercase tracking-wider">Groom's Details</h3>
+              {groomNameField}
+              {groomMotherField}
+              {groomFatherField}
+            </div>
           </>
         ) : (
           <>
-            {groomNameField}
-            {brideNameField}
+            <div className="space-y-5 border border-[#2e1065]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
+              <h3 className="text-sm font-extrabold text-[#2e1065] uppercase tracking-wider">Groom's Details</h3>
+              {groomNameField}
+              {groomMotherField}
+              {groomFatherField}
+            </div>
+            <div className="space-y-5 border border-[#9d174d]/15 rounded-2xl p-5 bg-[#F2F4F8]/50 shadow-inner">
+              <h3 className="text-sm font-extrabold text-[#9d174d] uppercase tracking-wider">Bride's Details</h3>
+              {brideNameField}
+              {brideMotherField}
+              {brideFatherField}
+            </div>
           </>
         )}
       </div>
@@ -121,34 +141,6 @@ export default function Step1Basics({ register, errors, watch }: Props) {
           placeholder="e.g. #AdityaKiAnanya (Leave empty if not required)"
         />
       </FieldWrapper>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {isBrideFirst ? (
-          <>
-            {brideMotherField}
-            {groomMotherField}
-          </>
-        ) : (
-          <>
-            {groomMotherField}
-            {brideMotherField}
-          </>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {isBrideFirst ? (
-          <>
-            {brideFatherField}
-            {groomFatherField}
-          </>
-        ) : (
-          <>
-            {groomFatherField}
-            {brideFatherField}
-          </>
-        )}
-      </div>
     </div>
   );
 }

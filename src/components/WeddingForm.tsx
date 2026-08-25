@@ -46,6 +46,9 @@ export default function WeddingForm({
   const [editUrl, setEditUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ghostClickLock, setGhostClickLock] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+
 
   useEffect(() => {
     if (currentStep === STEPS.length) {
@@ -95,6 +98,25 @@ export default function WeddingForm({
     defaultValues: { ...DEFAULT_VALUES, ...(initialData || {}) },
   });
 
+  useEffect(() => {
+    if (mode === "create") {
+      try {
+        const draft = localStorage.getItem("weddingFormDraft");
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          const merged = { ...parsed, ...(initialData || {}) };
+          Object.keys(merged).forEach((key) => {
+            if (merged[key] !== undefined) {
+              setValue(key as FieldPath<WeddingFormData>, merged[key]);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Could not load draft", err);
+      }
+    }
+  }, [mode, initialData, setValue]);
+
   // Fields validated per step
   const STEP_FIELDS: Record<number, FieldPath<WeddingFormData>[]> = {
     1: ["brideName", "groomName", "nameOrder"],
@@ -118,6 +140,15 @@ export default function WeddingForm({
     }
 
     if (valid) {
+      if (mode === "create") {
+        try {
+          const { coverPhoto, galleryImages, ...textData } = getValues();
+          localStorage.setItem("weddingFormDraft", JSON.stringify(textData));
+        } catch (err) {
+          console.error("Could not save draft", err);
+        }
+      }
+
       setCurrentStep((s) => Math.min(s + 1, STEPS.length));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -173,25 +204,62 @@ export default function WeddingForm({
         Array.from(galleryImages).forEach((file) => formData.append("galleryImages", file));
       }
 
-      const res = await fetch(mode === "edit" ? "/api/update-wedding" : "/api/submit-wedding", {
-        method: "POST",
-        body: formData,
+      const endpoint = mode === "edit" ? "/api/update-wedding" : "/api/submit-wedding";
+      
+      const uploadPromise = new Promise<any>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percentComplete);
+          }
+        });
+        
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch (e) {
+              resolve({});
+            }
+          } else {
+            try {
+              reject(JSON.parse(xhr.responseText));
+            } catch (e) {
+              reject(new Error("Upload failed"));
+            }
+          }
+        });
+        
+        xhr.addEventListener("error", () => reject(new Error("Network error")));
+        
+        xhr.open("POST", endpoint);
+        xhr.send(formData);
       });
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        setSubmitError(json.error ?? "Something went wrong. Please try again.");
-        return;
-      }
+      const json = await uploadPromise;
 
       setSlug(json.slug);
       setEditUrl(json.editUrl ?? null);
       setSubmitted(true);
+      
+      if (mode === "create") {
+        try {
+          localStorage.removeItem("weddingFormDraft");
+        } catch (err) {
+          console.error("Could not clear draft", err);
+        }
+      }
+
       posthog?.capture("form_submitted", { mode, edit_token: editToken, template_id: templateId });
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      setSubmitError("Network error. Please check your connection and try again.");
+    } catch (err: any) {
+      if (err?.error) {
+        setSubmitError(err.error);
+      } else {
+        setSubmitError("Network error. Please check your connection and try again.");
+      }
     }
   };
 
@@ -269,6 +337,32 @@ export default function WeddingForm({
   return (
     <div className="min-h-screen relative flex flex-col md:flex-row font-sans text-[#1A202C]">
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
+      
+      {/* ── Full Screen Upload Overlay ── */}
+      {isSubmitting && uploadProgress > 0 && uploadProgress < 100 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full mx-auto text-center space-y-4 relative overflow-hidden">
+            {/* Animated background pulse */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2e1065]/5 to-[#9d174d]/5 animate-pulse" />
+            
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Uploading Media
+              </h3>
+              <p className="text-sm text-gray-500 mt-1 mb-6">Please wait while we securely upload your images. Do not close this tab.</p>
+              
+              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden relative shadow-inner">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="text-sm font-extrabold text-[#9d174d] mt-3">{uploadProgress}% Complete</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Mobile Top Header & Stepper (Visible only on mobile `< md`) ── */}
       <header className="md:hidden sticky top-0 z-30 border-b border-gray-200 px-4 py-3 shadow-sm bg-white">
         <div className="flex items-center justify-between mb-2">
@@ -411,14 +505,18 @@ export default function WeddingForm({
                   Continue →
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={isSubmitting || ghostClickLock}
-                  className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 shrink-0"
-                >
-                  {isSubmitting ? (mode === "edit" ? "Saving…" : "Submitting…") : mode === "edit" ? "Save Changes ✓" : "Submit Invite ✓"}
-                </button>
+                <div className="relative shrink-0 sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isSubmitting || ghostClickLock}
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#2e1065] to-[#9d174d] hover:opacity-95 text-white text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 shrink-0"
+                  >
+                    {isSubmitting 
+                      ? (mode === "edit" ? "Saving…" : "Submitting…")
+                      : (mode === "edit" ? "Save Changes" : "Submit Invite")}
+                  </button>
+                </div>
               )}
             </div>
           </div>

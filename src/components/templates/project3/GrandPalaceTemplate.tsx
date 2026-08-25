@@ -45,7 +45,7 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
       <CountdownSection wedding={wedding} />
 
       {/* OriginKit Coverflow Gallery with Mood Backgrounds & Grand Palace Footer */}
-      <GallerySection galleryUrls={wedding.gallery_urls || []} />
+      <GallerySection galleryUrls={wedding.gallery_urls || []} wedding={wedding} />
 
       {/* Action Bar (Edit Link / Payment info can go here later if needed) */}
     </main>

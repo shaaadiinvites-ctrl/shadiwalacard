@@ -360,13 +360,6 @@ export default function WeddingInvitePage({ wedding }: Props) {
                         {active.time && <Row label="Time" value={fmtTime(active.time)} />}
                         {active.venue && <Row label="Venue" value={active.venue} />}
                       </div>
-                      {active.notes && (
-                        <div className="mt-6 p-4" style={{ background: "#FDF8F0", borderLeft: "2px solid #C9A84C" }}>
-                          <p style={{ fontFamily: "var(--font-body)", color: "#7A5C3E", fontSize: "0.85rem", lineHeight: 1.7, fontStyle: "italic" }}>
-                            📌 {active.notes}
-                          </p>
-                        </div>
-                      )}
                       {active.mapsLink && (
                         <a href={active.mapsLink} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 mt-7 px-6 py-3 transition-colors duration-200"

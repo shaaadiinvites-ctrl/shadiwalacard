@@ -39,37 +39,29 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
         </p>
 
         {/* RSVP Details */}
-        <div className="flex flex-col items-center border-t border-gold-primary/30 pt-8 w-[min(800px,90vw)]">
-          <h3 className="font-montserrat font-bold text-xs tracking-[4px] text-[#FFD98A] uppercase mb-8">
-            R.S.V.P
-          </h3>
-          
-          <div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center justify-center w-full">
-            {(wedding?.rsvp1_name || wedding?.rsvp1_phone) ? (
-              <div className="text-center">
-                <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding.rsvp1_name || "Family"}</p>
-                <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding.rsvp1_phone}</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">Mr. &amp; Mrs. Sharma</p>
-                <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">+91 98765 43210</p>
-              </div>
-            )}
+        {(!wedding || wedding.rsvp1_name || wedding.rsvp1_phone || wedding.rsvp2_name || wedding.rsvp2_phone) && (
+          <div className="flex flex-col items-center border-t border-gold-primary/30 pt-8 w-[min(800px,90vw)]">
+            <h3 className="font-montserrat font-bold text-xs tracking-[4px] text-[#FFD98A] uppercase mb-8">
+              R.S.V.P
+            </h3>
             
-            {(wedding?.rsvp2_name || wedding?.rsvp2_phone) ? (
-              <div className="text-center">
-                <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding.rsvp2_name}</p>
-                <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding.rsvp2_phone}</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">The Verma Family</p>
-                <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">+91 87654 32109</p>
-              </div>
-            )}
+            <div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center justify-center w-full">
+              {(wedding ? (wedding.rsvp1_name || wedding.rsvp1_phone) : true) && (
+                <div className="text-center">
+                  <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding?.rsvp1_name || (!wedding ? "Mr. & Mrs. Sharma" : "Family")}</p>
+                  <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding?.rsvp1_phone || (!wedding ? "+91 98765 43210" : "")}</p>
+                </div>
+              )}
+              
+              {(wedding ? (wedding.rsvp2_name || wedding.rsvp2_phone) : true) && (
+                <div className="text-center">
+                  <p className="font-cinzel text-xl text-white drop-shadow-md mb-3">{wedding?.rsvp2_name || (!wedding ? "The Verma Family" : "")}</p>
+                  <p className="font-lora text-[#FFD98A]/80 text-sm transition-colors duration-300 hover:text-white cursor-pointer">{wedding?.rsvp2_phone || (!wedding ? "+91 87654 32109" : "")}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Back to Top Button */}
         <button 

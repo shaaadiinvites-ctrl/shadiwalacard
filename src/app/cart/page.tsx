@@ -105,19 +105,6 @@ function CartPageContent() {
     }
   };
 
-  useEffect(() => {
-    if (!template) return;
-    if (typeof window !== "undefined" && !(window as any).recaptchaVerifier) {
-      try {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-        });
-      } catch (e) {
-        console.error("Recaptcha Init Error:", e);
-      }
-    }
-  }, [template]);
-
   const sendOtp = async () => {
     if (!validatePhone(countryCode, phone)) {
       setError(`Please enter a valid phone number for ${countryCode}.`);
@@ -129,11 +116,20 @@ function CartPageContent() {
     setOtpArray(["", "", "", "", "", ""]);
     try {
       const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
-      const appVerifier = (window as any).recaptchaVerifier;
       
-      if (!appVerifier) {
-        throw new Error("Google reCAPTCHA failed to load. This usually happens if an Adblocker, Antivirus (like Kaspersky), or browser privacy setting is blocking it. Please disable it and refresh the page.");
+      // ALWAYS clear existing verifier before trying to make a new one to prevent stale DOM node errors
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {}
+        (window as any).recaptchaVerifier = null;
       }
+
+      // Re-initialize a fresh verifier attached to the current DOM node
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "invisible",
+      });
+      const appVerifier = (window as any).recaptchaVerifier;
 
       const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
       setConfirmationResult(result);

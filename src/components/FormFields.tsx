@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useEffect, useRef } from "react";
 import { clsx } from "clsx";
+import { Search } from "lucide-react";
 
 // ── Input ───────────────────────────────────────────────────────────────────
 export const Input = forwardRef<
@@ -176,7 +177,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
         <input
           id={inputId}
           className={clsx(
-            "w-full rounded-xl border border-[#2e1065]/20 bg-white px-3.5 py-3 text-base md:text-sm text-[#1A202C] placeholder-gray-400 shadow-xs",
+            "w-full rounded-xl border border-[#2e1065]/20 bg-white pl-3.5 pr-10 py-3 text-base md:text-sm text-[#1A202C] placeholder-gray-400 shadow-xs",
             "focus:outline-none focus:ring-2 focus:ring-[#9d174d]/30 focus:border-[#9d174d] transition duration-200",
             className
           )}
@@ -185,9 +186,9 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
           autoComplete="off"
         />
         {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 tracking-wider pointer-events-none">
-            MAPS SEARCH
-          </span>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+            <Search size={18} />
+          </div>
         )}
       </div>
     );

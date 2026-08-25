@@ -190,7 +190,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
             >
               <LocationInput
                 {...register(`events.${index}.venue`, { required: "Required" })}
-                placeholder="Map Search: Type venue name..."
+                placeholder="Search venue on Google Maps..."
                 onPlaceSelected={(address, url) => {
                   setValue(`events.${index}.venue`, address, { shouldValidate: true });
                   setValue(`events.${index}.mapsLink`, url, { shouldValidate: true });
@@ -198,27 +198,22 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
               />
             </FieldWrapper>
 
-            <FieldWrapper
-              label="Google Maps Link"
-              error={errors.events?.[index]?.mapsLink?.message}
-            >
-              <Input
-                {...register(`events.${index}.mapsLink`)}
-                placeholder="https://maps.google.com/..."
-                type="url"
-              />
-            </FieldWrapper>
+            <input type="hidden" {...register(`events.${index}.mapsLink`)} />
+            {watchedEvents?.[index]?.mapsLink && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-semibold text-[#1A202C]">Generated Google Maps Link</span>
+                <a 
+                  href={watchedEvents[index].mapsLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#9d174d] hover:text-[#2e1065] underline break-all line-clamp-2 w-fit"
+                >
+                  {watchedEvents[index].mapsLink}
+                </a>
+              </div>
+            )}
 
-            <FieldWrapper
-              label="Special Event Notes"
-              error={errors.events?.[index]?.notes?.message}
-            >
-              <Textarea
-                {...register(`events.${index}.notes`)}
-                placeholder='e.g. "Join us for dinner after the ceremony"'
-                rows={2}
-              />
-            </FieldWrapper>
+
           </div>
         ))}
       </div>
