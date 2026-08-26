@@ -2,7 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { MobileMenu } from '@/components/ui/mobile-menu';
 import Smooth3DSlideshow from '@/components/originkit/coverflowgallery';
+import RadialCardCarousel from '@/components/originkit/ui/spin-carousel';
 import KlarnaCarousel from '@/components/originkit/button-carousel';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { usePostHog } from 'posthog-js/react';
@@ -10,17 +12,21 @@ import { usePostHog } from 'posthog-js/react';
 import { TEMPLATES as templates } from '@/lib/templates';
 
 const reviews = [
-  { name: 'Priya & Arjun',    city: 'New Delhi',  date: 'Dec 2024', quote: "Sending the invite on WhatsApp was so easy. Our relatives couldn't stop praising the beautiful design and the countdown timer!" },
-  { name: 'Ananya & Rohan',   city: 'Mumbai',     date: 'Nov 2024', quote: "The Google Maps feature is a lifesaver! Not a single guest got lost finding the banquet hall. Best decision ever." },
-  { name: 'Kavitha & Vikram', city: 'Bengaluru',  date: 'Jan 2025', quote: "It felt so premium! The 3D photo gallery made our pre-wedding pictures look absolutely stunning on mobile screens." },
-  { name: 'Neha & Siddharth', city: 'Pune',       date: 'Feb 2025', quote: "Our guests loved the virtual attendance link. It made everyone feel included, even those who couldn't travel." },
-  { name: 'Aarti & Rahul',    city: 'Chennai',    date: 'Mar 2025', quote: "The best part was the RSVP form. It saved us so much time in finalizing the guest list and catering numbers!" },
+  { name: 'Priya & Arjun',    city: 'New Delhi',  date: 'Dec 2024', quote: "Honestly, sending this on WhatsApp was a breeze. Everyone kept asking where we got it made, especially the older relatives who loved the countdown timer! 😂" },
+  { name: 'Ananya & Rohan',   city: 'Mumbai',     date: 'Nov 2024', quote: "The Google Maps link was literally a lifesaver. Usually half the guests call asking for directions, but this time not a single person got lost. 10/10 recommend." },
+  { name: 'Kavitha & Vikram', city: 'Bengaluru',  date: 'Jan 2025', quote: "It looked so premium on the phone! We added our pre-wedding shoot to the gallery and all our friends were obsessing over how it looked." },
+  { name: 'Neha & Siddharth', city: 'Pune',       date: 'Feb 2025', quote: "We had a lot of family who couldn't travel for the wedding, so the virtual attendance link was a really sweet touch. Made everyone feel included." },
+  { name: 'Aarti & Rahul',    city: 'Chennai',    date: 'Mar 2025', quote: "Getting these done was the quickest part of our wedding planning! We just entered our details, added photos, and WhatsApped them to 300 people in one evening. So much better than paper cards." },
 ];
 
 export default function StarfallPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
+  
   const [windowWidth, setWindowWidth] = useState(1200);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const posthog = usePostHog();
@@ -43,7 +49,6 @@ export default function StarfallPage() {
     const handleScrollMenuClose = () => {
       setIsMenuOpen(false);
     };
-    // Defer attaching listener slightly so Opening taps during momentum/bounce don't close it immediately
     const timer = setTimeout(() => {
       window.addEventListener('scroll', handleScrollMenuClose, { passive: true });
     }, 150);
@@ -53,32 +58,167 @@ export default function StarfallPage() {
     };
   }, [isMenuOpen]);
 
+  const isSwipingRef = useRef(false);
+
   useEffect(() => {
     const handleScroll = () => {
       if (!scrollRef.current || !stickyRef.current) return;
+      if (isSwipingRef.current) return; // Prevent scroll event from overriding our manual swipe!
       
       const { top: sectionTop } = scrollRef.current.getBoundingClientRect();
       const { top: stickyTop } = stickyRef.current.getBoundingClientRect();
       
       let index = 0;
       
-      // On mobile browsers, stickyTop might sit at 0.5 or 1 due to URL bars or retina sub-pixels.
-      // Checking <= 2 guarantees we only start when it's visually pinned to the top.
       if (stickyTop <= 2) {
-        // How far we've scrolled past the start of the section
         const scrolled = Math.max(0, -sectionTop);
-        
-        // Use 500px per card to prevent trackpad "double skipping"
         index = Math.floor(scrolled / 500);
         index = Math.max(0, Math.min(2, index));
       }
       
-      setActiveIndex(index);
+      if (activeIndexRef.current !== index) {
+        activeIndexRef.current = index;
+        setActiveIndex(index);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Map horizontal swipes to vertical scrolling with 1:1 finger tracking
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isHorizontalSwipe = false;
+    let wheelTimeout: NodeJS.Timeout;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 20) {
+        e.preventDefault();
+        
+        clearTimeout(wheelTimeout);
+        wheelTimeout = setTimeout(() => {
+          isSwipingRef.current = true;
+          const sectionTop = el.offsetTop;
+          const currentIndex = activeIndexRef.current;
+          
+          let nextIndex = currentIndex;
+          if (e.deltaX > 0) nextIndex = Math.min(2, currentIndex + 1);
+          else nextIndex = Math.max(0, currentIndex - 1);
+          
+          if (nextIndex !== currentIndex) {
+            activeIndexRef.current = nextIndex;
+            setActiveIndex(nextIndex);
+            
+            setTimeout(() => {
+              const targetScroll = sectionTop + (nextIndex * 500) + 50;
+              window.scrollTo({ top: targetScroll, behavior: 'auto' });
+              
+              setTimeout(() => {
+                isSwipingRef.current = false;
+              }, 800); // Wait for transition and momentum to completely settle
+            }, 50);
+          } else {
+            isSwipingRef.current = false;
+          }
+        }, 50);
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isHorizontalSwipe = false;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      
+      const deltaX = Math.abs(touchStartX - touchX);
+      const deltaY = Math.abs(touchStartY - touchY);
+
+      if (!isHorizontalSwipe && deltaX > deltaY && deltaX > 5) {
+        isHorizontalSwipe = true;
+        isSwipingRef.current = true; // Lock vertical scroll event
+        setIsDragging(true); // Disable CSS transitions for 1:1 tracking
+      }
+
+      if (isHorizontalSwipe) {
+        if (e.cancelable) e.preventDefault();
+        let moveX = touchStartX - touchX;
+        
+        const currentIndex = activeIndexRef.current;
+        // Add heavy resistance (rubber-banding) if trying to swipe past the first or last card
+        if (currentIndex === 0 && moveX < 0) {
+          moveX = moveX * 0.15; // 85% resistance when dragging right on the first card
+        } else if (currentIndex === templates.length - 1 && moveX > 0) {
+          moveX = moveX * 0.15; // 85% resistance when dragging left on the last card
+        }
+
+        const boundedMoveX = Math.max(-window.innerWidth, Math.min(window.innerWidth, moveX));
+        setSwipeOffset(boundedMoveX);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isHorizontalSwipe) return;
+      
+      const touchEndX = e.changedTouches[0].clientX;
+      const deltaX = touchStartX - touchEndX;
+      
+      // Re-enable smooth CSS snapping
+      setIsDragging(false);
+      setSwipeOffset(0);
+
+      const sectionTop = el.offsetTop;
+      const currentIndex = activeIndexRef.current;
+
+      // 30px swipe threshold
+      if (Math.abs(deltaX) > 30) {
+        let nextIndex = currentIndex;
+        if (deltaX > 0) nextIndex = Math.min(2, currentIndex + 1);
+        else nextIndex = Math.max(0, currentIndex - 1);
+        
+        // Update the card index instantly
+        activeIndexRef.current = nextIndex;
+        setActiveIndex(nextIndex);
+        
+        // Bypass iOS scroll-lock by waiting a fraction of a second before scrolling the window
+        setTimeout(() => {
+          const targetScroll = sectionTop + (nextIndex * 500) + 50;
+          window.scrollTo({ top: targetScroll, behavior: 'auto' });
+          
+          // Wait 800ms (more than the 500ms CSS transition) before allowing scroll event to override again
+          setTimeout(() => {
+            isSwipingRef.current = false;
+          }, 800);
+        }, 50);
+      } else {
+        // Snap back to current card
+        activeIndexRef.current = currentIndex;
+        setActiveIndex(currentIndex);
+        isSwipingRef.current = false;
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      clearTimeout(wheelTimeout);
+      el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
   }, []);
 
   return (
@@ -343,7 +483,7 @@ export default function StarfallPage() {
 
 
         {/* Sticky Visual Content */}
-        <div ref={stickyRef} style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div ref={stickyRef} style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', touchAction: 'pan-y' }}>
         <div className="sf-container" style={{ flexShrink: 0, paddingTop: '80px', paddingBottom: '12px' }}>
           <h2 className="sf-section-h2" style={{ textAlign: 'center', fontFamily: "'Playfair Display', serif", fontWeight: 300, color: '#2e1065', margin: 0, letterSpacing: '-0.5px' }}>
             Choose the perfect theme for your <em style={{ color: '#9d174d' }}>Shadi.</em>
@@ -357,11 +497,13 @@ export default function StarfallPage() {
             width: 'max-content',
             paddingLeft: 'calc(50vw - (min(75vw, 310px) / 2))',
             paddingRight: 'calc(50vw - (min(75vw, 310px) / 2))',
-            transform: `translateX(calc(-${activeIndex} * min(75vw, 310px)))`,
-            transition: 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)', 
+            transform: `translateX(calc(-${activeIndex} * min(75vw, 310px) - ${swipeOffset}px))`,
+            transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)', 
             willChange: 'transform'
           }}>
-            {templates.map(t => (
+            {templates.map(t => {
+              const isLocked = t.id !== 'grand-palace';
+              return (
               <div key={t.id} style={{ width: 'min(75vw, 310px)', display: 'flex', justifyContent: 'center', padding: '0 10px', flexShrink: 0 }}>
                 <div className="sf-tcard" style={{ 
                   width: '100%', 
@@ -375,7 +517,8 @@ export default function StarfallPage() {
                   boxShadow: 'inset 0 -2px 5px rgba(255, 255, 255, 0.35), 0 20px 45px -8px rgba(157, 23, 77, 0.35), 0 10px 25px -5px rgba(46, 16, 101, 0.25)', 
                   display: 'flex', 
                   flexDirection: 'column',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  opacity: isLocked ? 0.85 : 1
                 }}>
                   {/* 3D Photo Sheet: borderless at top half, fading side borders starting halfway down, resting on platform with 3D shadow */}
                   <div style={{ 
@@ -388,7 +531,17 @@ export default function StarfallPage() {
                     boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)'
                   }}>
                     <Image src={t.img} alt={t.name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw" />
-                    <div style={{ position: 'absolute', top: 12, left: 12, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.35)', color: '#FFFFFF', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 20, zIndex: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}>{t.badge}</div>
+                    {isLocked && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(30,10,50,0.4)', backdropFilter: 'blur(8px) saturate(120%)', WebkitBackdropFilter: 'blur(8px) saturate(120%)', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', top: 12, left: 12, background: isLocked ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.65)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.35)', color: isLocked ? 'rgba(255,255,255,0.7)' : '#FFFFFF', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 20, zIndex: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}>{isLocked ? "⏳ LAUNCHING SOON" : t.badge}</div>
                     <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 2 }} />
 
                     {/* Left side border: invisible at top half, starts fading in halfway down towards bottom corner */}
@@ -403,30 +556,45 @@ export default function StarfallPage() {
                     <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 10px', letterSpacing: '-0.3px', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{t.name}</h3>
                     
                     {/* Centered Price & Discount Row */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18, width: '100%', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'line-through', fontWeight: 500 }}>{t.mrp}</span>
-                      <span style={{ fontSize: '0.625rem', color: '#FFFFFF', background: 'rgba(255, 255, 255, 0.25)', border: '1px solid rgba(255,255,255,0.35)', padding: '2px 6px', borderRadius: 6, fontWeight: 700, letterSpacing: '0.3px', backdropFilter: 'blur(6px)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4)' }}>{t.discount}</span>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.4rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1, textShadow: '0 2px 4px rgba(0,0,0,0.25)' }}>₹{t.priceInr}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18, width: '100%', flexWrap: 'wrap', opacity: isLocked ? 0.5 : 1 }}>
+                      {isLocked ? (
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.4rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1, textShadow: '0 2px 4px rgba(0,0,0,0.25)' }}>₹1,500</span>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'line-through', fontWeight: 500 }}>{t.mrp}</span>
+                          <span style={{ fontSize: '0.625rem', color: '#FFFFFF', background: 'rgba(255, 255, 255, 0.25)', border: '1px solid rgba(255,255,255,0.35)', padding: '2px 6px', borderRadius: 6, fontWeight: 700, letterSpacing: '0.3px', backdropFilter: 'blur(6px)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4)' }}>{t.discount}</span>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.4rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1, textShadow: '0 2px 4px rgba(0,0,0,0.25)' }}>₹{t.priceInr}</span>
+                        </>
+                      )}
                     </div>
 
-                    {/* Action Buttons Row with strictly contained minmax(0, 1fr) columns for mobile */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', width: '100%', alignItems: 'stretch', boxSizing: 'border-box' }}>
-                      <Link href={t.id === 'grand-palace' ? `/demo/grand-palace` : `/checkout?template=${t.id}`} onClick={() => posthog?.capture('demo_clicked', { template_id: t.id })} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 4px', height: '40px', fontSize: '0.75rem', fontWeight: 400, letterSpacing: '0.2px', background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 9999, color: '#FFFFFF', textDecoration: 'none', backdropFilter: 'blur(8px)', boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.4)', transition: 'all 0.2s ease', minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        View Demo
-                      </Link>
-                      <Link href={`/cart?template=${t.id}`} onClick={() => posthog?.capture('buy_now_clicked', { template_id: t.id })} style={{ width: '100%', textDecoration: 'none', display: 'flex', minWidth: 0, overflow: 'hidden' }}>
-                        <LiquidButton 
-                          size="sm" 
-                          style={{ width: '100%', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', color: '#3d0221', fontWeight: 400, letterSpacing: '0.3px', fontSize: '0.75rem', backdropFilter: 'blur(20px) saturate(180%)', background: 'rgba(255, 255, 255, 0.45)', border: '2px solid rgba(255, 255, 255, 0.85)', boxShadow: '0 16px 40px -6px rgba(0, 0, 0, 0.35)', minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}
-                        >
-                          Buy Now
-                        </LiquidButton>
-                      </Link>
-                    </div>
+                    {/* Action Buttons Row */}
+                    {!isLocked ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', width: '100%', alignItems: 'stretch', boxSizing: 'border-box' }}>
+                        <Link href={t.id === 'grand-palace' ? `/demo/grand-palace` : `/checkout?template=${t.id}`} onClick={() => posthog?.capture('demo_clicked', { template_id: t.id })} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 4px', height: '40px', fontSize: '0.75rem', fontWeight: 400, letterSpacing: '0.2px', background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 9999, color: '#FFFFFF', textDecoration: 'none', backdropFilter: 'blur(8px)', boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.4)', transition: 'all 0.2s ease', minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                          View Demo
+                        </Link>
+                        <Link href={`/cart?template=${t.id}`} onClick={() => posthog?.capture('buy_now_clicked', { template_id: t.id })} style={{ width: '100%', textDecoration: 'none', display: 'flex', minWidth: 0, overflow: 'hidden' }}>
+                          <LiquidButton 
+                            size="sm" 
+                            style={{ width: '100%', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', color: '#3d0221', fontWeight: 400, letterSpacing: '0.3px', fontSize: '0.75rem', backdropFilter: 'blur(20px) saturate(180%)', background: 'rgba(255, 255, 255, 0.45)', border: '2px solid rgba(255, 255, 255, 0.85)', boxShadow: '0 16px 40px -6px rgba(0, 0, 0, 0.35)', minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}
+                          >
+                            Buy Now
+                          </LiquidButton>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div style={{ width: '100%' }}>
+                        <button disabled style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40px', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.5px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 9999, color: 'rgba(255,255,255,0.5)', cursor: 'not-allowed', transition: 'none' }}>
+                          Coming Soon
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Mobile Pagination with Next & Previous controls */}
@@ -525,6 +693,60 @@ export default function StarfallPage() {
         </div>
       </section>
 
+
+      {/* ─────────────────── MOVING MARQUEE BANNER ─────────────────── */}
+      <div style={{ background: 'linear-gradient(90deg, #2e1065, #581c87, #9d174d, #2e1065)', overflow: 'hidden', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex' }}>
+        <div style={{ display: 'flex', width: 'max-content', animation: 'sfMarquee 25s linear infinite', color: '#FFFFFF', fontSize: '0.875rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+          {[...Array(2)].map((_, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '32px', paddingRight: '32px' }}>
+              <span>✓ ZERO WHATSAPP SPAM</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span>✓ INSTANT DELIVERY</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span>✓ SEAMLESS MOBILE VIEW</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span>✓ UNLIMITED GUEST SHARES</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ─────────────────── HOW IT WORKS ─────────────────── */}
+      <section style={{ background: '#F2F4F8', padding: '80px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="sf-container" style={{ maxWidth: 1000, width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '5px', color: 'rgba(157, 23, 77,0.8)', textTransform: 'uppercase', marginBottom: 12 }}>Simple Process</p>
+            <h2 className="sf-section-h2" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 300, color: '#2e1065', margin: 0, letterSpacing: '-0.5px' }}>
+              How it <em style={{ color: '#9d174d' }}>Works.</em>
+            </h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24 }}>
+            {/* Step 1 */}
+            <div style={{ background: '#fff', borderRadius: 24, padding: '40px 32px', textAlign: 'center', boxShadow: '0 4px 24px rgba(46, 16, 101, 0.04)', border: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#fce7f3', color: '#9d174d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600, margin: '0 auto 24px' }}>1</div>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', marginBottom: 12, fontWeight: 500 }}>Choose a Theme</h3>
+              <p style={{ fontSize: '0.9rem', color: 'rgba(26,32,44,0.7)', lineHeight: 1.6 }}>Browse our premium collection of digital invitation designs and find the perfect match for your vibe.</p>
+            </div>
+            
+            {/* Step 2 */}
+            <div style={{ background: '#fff', borderRadius: 24, padding: '40px 32px', textAlign: 'center', boxShadow: '0 4px 24px rgba(46, 16, 101, 0.04)', border: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#fce7f3', color: '#9d174d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600, margin: '0 auto 24px' }}>2</div>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', marginBottom: 12, fontWeight: 500 }}>Enter Details</h3>
+              <p style={{ fontSize: '0.9rem', color: 'rgba(26,32,44,0.7)', lineHeight: 1.6 }}>Fill in your event details, upload your favorite couple photos, and customize the text to make it yours.</p>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{ background: '#fff', borderRadius: 24, padding: '40px 32px', textAlign: 'center', boxShadow: '0 4px 24px rgba(46, 16, 101, 0.04)', border: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#fce7f3', color: '#9d174d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600, margin: '0 auto 24px' }}>3</div>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', marginBottom: 12, fontWeight: 500 }}>Share Instantly</h3>
+              <p style={{ fontSize: '0.9rem', color: 'rgba(26,32,44,0.7)', lineHeight: 1.6 }}>Get your live invitation link immediately and share it with your guests effortlessly via WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─────────────────── VENUE SECTION (PARALLAX BACKGROUND) ─────────────────── */}
       <section id="sf-venue" className="sf-sec" style={{ 
         position: 'relative', textAlign: 'center', overflow: 'hidden',
@@ -565,24 +787,6 @@ export default function StarfallPage() {
           </p>
         </div>
       </section>
-
-      {/* ─────────────────── MOVING MARQUEE BANNER ─────────────────── */}
-      <div style={{ background: 'linear-gradient(90deg, #2e1065, #581c87, #9d174d, #2e1065)', overflow: 'hidden', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex' }}>
-        <div style={{ display: 'flex', width: 'max-content', animation: 'sfMarquee 25s linear infinite', color: '#FFFFFF', fontSize: '0.875rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-          {[...Array(2)].map((_, i) => (
-            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '32px', paddingRight: '32px' }}>
-              <span>✓ ZERO WHATSAPP SPAM</span>
-              <span style={{ opacity: 0.5 }}>•</span>
-              <span>✓ INSTANT DELIVERY</span>
-              <span style={{ opacity: 0.5 }}>•</span>
-              <span>✓ SEAMLESS MOBILE VIEW</span>
-              <span style={{ opacity: 0.5 }}>•</span>
-              <span>✓ UNLIMITED GUEST SHARES</span>
-              <span style={{ opacity: 0.5 }}>•</span>
-            </span>
-          ))}
-        </div>
-      </div>
 
       {/* ─────────────────── PRE-WEDDING GALLERY (ORIGINKIT 3D SLIDESHOW) ─────────────────── */}
       <section id="sf-gallery" className="sf-sec-split-b" style={{ background: '#F2F4F8', overflow: 'hidden' }}>
@@ -625,6 +829,7 @@ export default function StarfallPage() {
               quoteColor="#1A202C"
               autoplay={true}
               autoplayInterval={4000}
+              curve={2}
               imageWidth={windowWidth < 768 ? windowWidth * 0.9 : 600}
               imageHeight={280}
               labelColor="#9d174d"
@@ -646,47 +851,52 @@ export default function StarfallPage() {
       </section>
 
       {/* ─────────────────── FINAL CONVERSION (CLIMAX CTA) SECTION ─────────────────── */}
-      <section style={{ background: '#F2F4F8', padding: '60px 20px 120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="sf-container" style={{ maxWidth: 960 }}>
-          <div style={{
-            position: 'relative',
-            background: 'linear-gradient(135deg, rgba(46, 16, 101, 0.92) 0%, rgba(88, 28, 135, 0.88) 50%, rgba(157, 23, 77, 0.92) 100%)',
-            backdropFilter: 'blur(32px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-            borderRadius: 32,
-            padding: '64px 28px',
-            textAlign: 'center',
-            boxShadow: '0 24px 64px -12px rgba(46, 16, 101, 0.35), 0 12px 32px -8px rgba(157, 23, 77, 0.25)',
-            overflow: 'hidden',
-            border: '1.5px solid rgba(255, 255, 255, 0.3)'
-          }}>
-            {/* Ambient inner sheen */}
-            <div aria-hidden style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
+      <section style={{ 
+        position: 'relative',
+        background: 'linear-gradient(135deg, rgba(46, 16, 101, 1) 0%, rgba(88, 28, 135, 1) 50%, rgba(157, 23, 77, 1) 100%)',
+        padding: '100px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        {/* Ambient inner sheen */}
+        <div aria-hidden style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)', pointerEvents: 'none', zIndex: 0 }} />
 
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 600, color: '#FFFFFF', margin: '0 auto 20px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.25)' }}>
-                Ready to give your Shadi the royal invite it deserves?
-              </h2>
+        <div className="sf-container" style={{ maxWidth: 1200, position: 'relative', zIndex: 2, textAlign: 'center' }}>
+          <h2 style={{ position: 'relative', zIndex: 10, fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 600, color: '#FFFFFF', margin: '0 auto 20px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.25)' }}>
+            Ready to give your Shadi the royal invite it deserves?
+          </h2>
 
-              <p style={{ fontSize: '1.15rem', color: 'rgba(255, 255, 255, 0.92)', maxWidth: 620, margin: '0 auto 42px', lineHeight: 1.6, fontWeight: 400 }}>
-                Join thousands of smart couples. Get your personalized, interactive web invitation live with zero hassle.
-              </p>
+          <div style={{ margin: '120px auto 60px', position: 'relative', width: '100%', maxWidth: '1200px', height: '480px' }}>
+            <RadialCardCarousel 
+              background="transparent"
+              items={[
+                '/uploads/shadi_image1.png',
+                '/uploads/shadi_image1.png',
+                '/uploads/shadi_image1.png',
+                '/uploads/shadi_image1.png',
+              ]}
+              scale={200}
+              aspect={133} // 3:4 vertical (4/3 * 100) = 133.3%
+              speed={20}
+            />
+          </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <LiquidButton
-                  style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', height: '52px', color: '#3d0221', fontWeight: 400, letterSpacing: '0.3px', fontSize: '1rem', backdropFilter: 'blur(20px) saturate(180%)', background: 'rgba(255, 255, 255, 0.45)', border: '2px solid rgba(255, 255, 255, 0.85)', boxShadow: '0 16px 40px -6px rgba(0, 0, 0, 0.35)' }}
-                  onClick={() => {
-                    const el = document.getElementById('sf-collection');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  Get web invite now
-                </LiquidButton>
-              </div>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            <LiquidButton
+              style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', height: '52px', color: '#3d0221', fontWeight: 400, letterSpacing: '0.3px', fontSize: '1rem', backdropFilter: 'blur(20px) saturate(180%)', background: 'rgba(255, 255, 255, 0.45)', border: '2px solid rgba(255, 255, 255, 0.85)', boxShadow: '0 16px 40px -6px rgba(0, 0, 0, 0.35)' }}
+              onClick={() => {
+                const el = document.getElementById('sf-collection');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Get web invite now
+            </LiquidButton>
           </div>
         </div>
       </section>
+
 
       {/* ─────────────────── FOOTER ─────────────────── */}
       <footer style={{ borderTop: '1px solid rgba(26,32,44,0.15)', padding: '40px 0', background: '#F2F4F8' }}>

@@ -20,7 +20,7 @@ export interface TemplateMeta {
 export const TEMPLATES: TemplateMeta[] = [
   {
     id: "grand-palace",
-    name: "The Grand Palace Theme",
+    name: "The Grand Palace",
     tagline: "A breathtaking digital journey through a majestic royal palace",
     priceInr: 799,
     mrp: "₹1,299",
@@ -32,9 +32,9 @@ export const TEMPLATES: TemplateMeta[] = [
   },
   {
     id: "modern-minimal",
-    name: "Aarav & Priya",
+    name: "The Royal Darbar",
     tagline: "Customized golden name overlay beneath floral canopy",
-    priceInr: 799,
+    priceInr: 1500,
     mrp: "₹1,299",
     discount: "38% OFF",
     badge: "👑 ROYAL PREFERENCE",
@@ -44,13 +44,13 @@ export const TEMPLATES: TemplateMeta[] = [
   },
   {
     id: "floral-romance",
-    name: "Cosmic Shadi",
+    name: "The Velvet Night",
     tagline: "Modern starry night theme for contemporary couples",
-    priceInr: 799,
+    priceInr: 1500,
     mrp: "₹1,299",
     discount: "38% OFF",
     badge: "💖 INSTAGRAM FAVORITE",
-    img: "/uploads/hero-bg-custom.png",
+    img: "/uploads/couple_card_2.jpg",
     swatch: ["#0f172a", "#38bdf8", "#FFFFFF"],
     fontVibe: "Modern · Instagram Favorite",
   },
