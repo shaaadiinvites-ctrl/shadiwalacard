@@ -285,7 +285,7 @@ export default function LandingPageV2() {
           <header style={{
             position: 'absolute', top: '10px', left: 0, right: 0, zIndex: 40,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '14px clamp(16px, 5vw, 36px)',
+            padding: '14px clamp(12px, 4.5vw, 36px)',
             background: 'transparent'
           }}>
             {/* Logo */}
@@ -295,7 +295,7 @@ export default function LandingPageV2() {
                 alt="ShadiwalaCard Logo" 
                 style={{ height: '32px', width: 'auto', objectFit: 'contain' }} 
               />
-              <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', color: '#FFFFFF', letterSpacing: '-0.5px', fontWeight: 600 }}>
+              <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: 'clamp(1.05rem, 3.8vw, 1.25rem)', color: '#FFFFFF', letterSpacing: '-0.5px', fontWeight: 600 }}>
                 ShadiwalaCard
               </span>
             </Link>
