@@ -49,13 +49,6 @@ export default function LandingPageV2() {
       priceValidUntil: '2027-12-31',
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition'
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '128',
-      bestRating: '5',
-      worstRating: '1'
     }
   };
 
@@ -312,8 +305,8 @@ export default function LandingPageV2() {
         whiteSpace: 'nowrap',
         overflow: 'hidden'
       }}>
-        <span className="sf-top-banner-hide-mobile" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: '#e11d48', fontSize: '0.85rem' }}>★</span> 100% UNLIMITED FREE REVISIONS
+        <span className="sf-top-banner-hide-mobile" style={{ display: 'inline-flex', alignItems: 'center' }}>
+          100% UNLIMITED FREE REVISIONS
         </span>
         <span className="sf-top-banner-dot" style={{ opacity: 0.5 }}>•</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
