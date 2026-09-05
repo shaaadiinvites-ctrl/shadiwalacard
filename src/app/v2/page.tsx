@@ -593,25 +593,8 @@ export default function LandingPageV2() {
           <div className="sf-container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 900 }}>
             <h1 className="sf-hero-h1 sf-fade-1" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 500, lineHeight: 1.0, color: '#FFFFFF' }}>
               India's Most Premium<br />
-              <span className="relative inline-block font-normal italic text-[#FFFFFF]" style={{ paddingBottom: '4px' }}>
+              <span className="inline-block font-normal italic text-[#FFFFFF]">
                 Digital Wedding Card.
-                <svg 
-                  style={{ 
-                    position: 'absolute', 
-                    bottom: '-0.32em', 
-                    left: 0, 
-                    width: '100%', 
-                    height: '14px', 
-                    overflow: 'visible',
-                    pointerEvents: 'none'
-                  }} 
-                  viewBox="0 0 320 14" 
-                  fill="none" 
-                  preserveAspectRatio="none" 
-                  aria-hidden="true"
-                >
-                  <path d="M4 11 C 70 4 240 4 316 10" stroke="#ffbc4b" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
-                </svg>
               </span>
             </h1>
 
