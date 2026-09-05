@@ -244,8 +244,6 @@ export default function LandingPageV2() {
             background-attachment: scroll !important;
             background-position: center center !important;
           }
-          .sf-top-banner-hide-mobile { display: none !important; }
-          .sf-top-banner-dot { display: none !important; }
         }
 
         /* Floating Sticky Bar on Mobile */
@@ -305,10 +303,6 @@ export default function LandingPageV2() {
         whiteSpace: 'nowrap',
         overflow: 'hidden'
       }}>
-        <span className="sf-top-banner-hide-mobile" style={{ display: 'inline-flex', alignItems: 'center' }}>
-          100% UNLIMITED FREE REVISIONS
-        </span>
-        <span className="sf-top-banner-dot" style={{ opacity: 0.5 }}>•</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" role="img" aria-label="Flag of India" style={{ display: 'inline-block', borderRadius: 2, flexShrink: 0 }}>
             <rect width="900" height="200" fill="#FF9933"/>
