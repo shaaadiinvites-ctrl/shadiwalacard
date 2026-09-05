@@ -245,6 +245,7 @@ export default function HomePage() {
         .sf-sec         { padding: 120px 0 !important; }
         .sf-section-h2  { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.5px; line-height: 1.05; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s ease; }
         .sf-section-h2:hover { transform: translateY(-3px); text-shadow: 0 10px 30px rgba(225, 29, 72, 0.25); }
+        .sf-venue-h2    { font-size: clamp(2.2rem, 5.5vw, 3.8rem); letter-spacing: -0.5px; line-height: 1.12; }
         .sf-nav-links   { display: none !important; }
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         /* Template Showcase Content: Mobile Center-Aligned & Equal Margins */
@@ -1110,14 +1111,22 @@ export default function HomePage() {
             <div className="sf-radar" style={{ width: 32, height: 12, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.4)', marginTop: -6 }} />
           </div>
 
-          <h2 className="sf-venue-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 0 18px', letterSpacing: '-0.5px', lineHeight: 1.15 }}>
+          <h2 className="sf-venue-h2" style={{ 
+            fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
+            fontSize: 'clamp(2.2rem, 5.5vw, 3.8rem)', 
+            fontWeight: 700, 
+            color: '#FFFFFF', 
+            margin: '0 0 18px', 
+            letterSpacing: '-0.5px', 
+            lineHeight: 1.12 
+          }}>
             No more <br/>
             <span style={{ fontStyle: 'italic', color: '#e11d48' }}>
-              "location bhejna"
+              &ldquo;location bhejna&rdquo;
             </span>
           </h2>
 
-          <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: '0 auto 0' }}>
+          <p style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.2rem)', color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, margin: '0 auto', maxWidth: 600 }}>
             Your digital invite includes integrated Google Maps, giving guests instant, 1-tap navigation straight to the venue.
           </p>
         </div>
