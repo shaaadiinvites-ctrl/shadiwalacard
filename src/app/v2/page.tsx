@@ -19,18 +19,19 @@ const faqs = [
   { q: "Are there any hidden hosting fees?", a: "No hidden fees. You pay a one-time flat price, and we host your digital invite securely for 6 months after your wedding date." }
 ];
 
-const reviews = [
-  { name: 'Priya & Arjun',    city: 'New Delhi',  date: 'Dec 2024', quote: "Honestly, sending this on WhatsApp was a breeze. Everyone kept asking where we got it made, especially the older relatives who loved the countdown timer! 😂" },
-  { name: 'Ananya & Rohan',   city: 'Mumbai',     date: 'Nov 2024', quote: "The Google Maps link was literally a lifesaver. Usually half the guests call asking for directions, but this time not a single person got lost. 10/10 recommend." },
-  { name: 'Kavitha & Vikram', city: 'Bengaluru',  date: 'Jan 2025', quote: "It looked so premium on the phone! We added our pre-wedding shoot to the gallery and all our friends were obsessing over how it looked." },
-  { name: 'Neha & Siddharth', city: 'Pune',       date: 'Feb 2025', quote: "We had a lot of family who couldn't travel for the wedding, so the virtual attendance link was a really sweet touch. Made everyone feel included." },
-  { name: 'Aarti & Rahul',    city: 'Chennai',    date: 'Mar 2025', quote: "Getting these done was the quickest part of our wedding planning! We just entered our details, added photos, and WhatsApped them to 300 people in one evening. So much better than paper cards." },
-];
-
 export default function StarfallPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
+  const [showStickyBar, setShowStickyBar] = useState(false);
   const posthog = usePostHog();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyBar(window.scrollY > 480);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (posthog) {
@@ -152,7 +153,7 @@ export default function StarfallPage() {
 
         /* Base: 412px (Pixel 7) */
         h2              { font-size: 2rem; }
-        .sf-hero-h1     { font-size: clamp(2.5rem, 8vw, 4rem); letter-spacing: -0.5px; line-height: 1.0; margin-bottom: 24px !important; }
+        .sf-hero-h1     { font-size: clamp(2.3rem, 7.5vw, 4rem); letter-spacing: -0.5px; line-height: 1.05; margin-bottom: 24px !important; }
         .sf-hero-sub    { font-size: 0.875rem; }
         .sf-section-pad { padding: 120px 0 !important; }
         .sf-sec         { padding: 120px 0 !important; }
@@ -164,15 +165,53 @@ export default function StarfallPage() {
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         .sf-venue-h2    { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
         .sf-review-grid { grid-template-columns: 1fr; }
-        .sf-cta-pair    { flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
-        .sf-cta-pair a  { text-align: center; }
+        .sf-cta-pair    { flex-direction: column; gap: 12px; align-items: center; justify-content: center; width: 100%; }
+        .sf-cta-pair > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
+        .sf-showcase-actions { flex-direction: column; gap: 12px; width: 100%; align-items: center; justify-content: center; }
+        .sf-showcase-actions > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
         
         .sf-step-card   { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(225, 29, 72, 0.15) !important; }
 
+        /* iOS Safari fixed-background override & mobile performance */
+        @media (max-width: 767px) {
+          #sf-venue {
+            background-attachment: scroll !important;
+            background-position: center center !important;
+          }
+          .sf-top-banner-hide-mobile { display: none !important; }
+          .sf-top-banner-dot { display: none !important; }
+        }
+
+        /* Floating Sticky Bar on Mobile */
+        .sf-sticky-mobile-bar { display: none; }
+        @media (max-width: 767px) {
+          .sf-sticky-mobile-bar {
+            display: flex;
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            z-index: 900;
+            background: rgba(18, 10, 14, 0.92);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            padding: 8px 14px;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(225, 29, 72, 0.2);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+          }
+        }
+
         /* sm: 540px+ */
         @media (min-width: 540px) {
-          .sf-cta-pair   { flex-direction: row; align-items: center; justify-content: center; }
+          .sf-cta-pair   { flex-direction: row; align-items: center; justify-content: center; width: auto; }
+          .sf-cta-pair > * { width: auto !important; max-width: none !important; }
+          .sf-showcase-actions { flex-direction: row; align-items: center; justify-content: flex-start; width: auto; gap: 20px; }
+          .sf-showcase-actions > * { width: auto !important; max-width: none !important; }
         }
 
         /* md: 768px+ tablet */
@@ -197,20 +236,22 @@ export default function StarfallPage() {
         color: '#FFFFFF', 
         fontSize: '0.688rem', 
         fontWeight: 700, 
-        letterSpacing: '1.5px', 
+        letterSpacing: '1.2px', 
         textTransform: 'uppercase', 
-        padding: '8px 20px',
+        padding: '8px 16px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 12
+        gap: 10,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden'
       }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: '#e11d48', fontSize: '0.85rem' }}>★</span> RATED 4.9/5 BY INDIAN COUPLES
+        <span className="sf-top-banner-hide-mobile" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#e11d48', fontSize: '0.85rem' }}>★</span> 100% UNLIMITED FREE REVISIONS
         </span>
-        <span style={{ opacity: 0.5 }}>•</span>
+        <span className="sf-top-banner-dot" style={{ opacity: 0.5 }}>•</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2 }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2, flexShrink: 0 }}>
             <rect width="900" height="200" fill="#FF9933"/>
             <rect y="200" width="900" height="200" fill="#FFFFFF"/>
             <rect y="400" width="900" height="200" fill="#138808"/>
@@ -330,16 +371,108 @@ export default function StarfallPage() {
           </div>
           </header>
 
+          {/* Backdrop Dismiss Overlay */}
+          {isMenuOpen && (
+            <div 
+              aria-hidden
+              onClick={() => setIsMenuOpen(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.75)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                zIndex: 998
+              }}
+            />
+          )}
+
           {/* Mobile Dropdown Menu */}
           {isMenuOpen && (
             <div style={{
-              position: 'absolute', top: '70px', left: '12px', right: '12px',
-              background: '#000000', borderRadius: '16px', zIndex: 999,
-              border: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex', flexDirection: 'column', padding: '32px 20px', gap: 28, textAlign: 'center'
+              position: 'fixed', top: '76px', left: '16px', right: '16px',
+              background: 'linear-gradient(145deg, rgba(24, 12, 18, 0.98) 0%, rgba(10, 5, 8, 0.98) 100%)',
+              backdropFilter: 'blur(28px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+              borderRadius: '24px', zIndex: 999,
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.9), 0 0 40px rgba(225, 29, 72, 0.2)',
+              display: 'flex', flexDirection: 'column', padding: '24px 20px', gap: '8px'
             }}>
-              <Link href="#sf-collection" onClick={() => setIsMenuOpen(false)} style={{ color: '#FFFFFF', fontSize: '0.875rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Our web invites</Link>
-              <Link href="/contact-us"    onClick={() => setIsMenuOpen(false)} style={{ color: '#FFFFFF', fontSize: '0.875rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Contact Us</Link>
+              <Link 
+                href="/demo/grand-palace" 
+                onClick={() => setIsMenuOpen(false)} 
+                style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '14px 18px', borderRadius: '14px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#FFFFFF', fontSize: '0.938rem', fontWeight: 600,
+                  textDecoration: 'none'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffbc4b"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                  Explore Live Demo
+                </span>
+                <span style={{ fontSize: '0.75rem', background: '#ffbc4b', color: '#050505', padding: '3px 8px', borderRadius: '6px', fontWeight: 800 }}>LIVE</span>
+              </Link>
+
+              <Link 
+                href="#sf-collection" 
+                onClick={() => setIsMenuOpen(false)} 
+                style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '14px 18px', borderRadius: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.938rem', fontWeight: 500,
+                  textDecoration: 'none'
+                }}
+              >
+                <span>The Grand Palace & Inclusions</span>
+                <span style={{ color: '#ffbc4b', fontWeight: 700 }}>₹799</span>
+              </Link>
+
+              <Link 
+                href="#sf-devices" 
+                onClick={() => setIsMenuOpen(false)} 
+                style={{ 
+                  display: 'flex', alignItems: 'center',
+                  padding: '14px 18px', borderRadius: '14px',
+                  color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.938rem', fontWeight: 500,
+                  textDecoration: 'none'
+                }}
+              >
+                Mobile Experience
+              </Link>
+
+              <Link 
+                href="/contact-us" 
+                onClick={() => setIsMenuOpen(false)} 
+                style={{ 
+                  display: 'flex', alignItems: 'center',
+                  padding: '14px 18px', borderRadius: '14px',
+                  color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.938rem', fontWeight: 500,
+                  textDecoration: 'none'
+                }}
+              >
+                Contact Us
+              </Link>
+
+              <div style={{ marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <Link 
+                  href="/cart?template=grand-palace" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  style={{ 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    width: '100%', padding: '14px 20px', borderRadius: '999px',
+                    background: '#FFFFFF', color: '#050505',
+                    fontSize: '0.938rem', fontWeight: 700,
+                    textDecoration: 'none', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
+                  }}
+                >
+                  Get Yours Now · ₹799
+                </Link>
+              </div>
             </div>
           )}
 
@@ -393,7 +526,7 @@ export default function StarfallPage() {
             </h1>
 
             <p className="sf-hero-sub sf-fade-2" style={{ lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.85)', margin: '0 auto 36px' }}>
-              Wow your guests with stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
+              Wow your guests with a stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
             </p>
 
             <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -452,7 +585,7 @@ export default function StarfallPage() {
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '80px' }}>
+        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(40px, 6vw, 80px)' }}>
           
           {/* Left: The Card */}
           <div style={{ flex: '1 1 350px', display: 'flex', justifyContent: 'center', maxWidth: 420 }}>
@@ -466,7 +599,7 @@ export default function StarfallPage() {
               boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(225, 140, 20, 0.25), inset 0 1px 0 rgba(255,255,255,0.2)', 
               display: 'flex', 
               flexDirection: 'column',
-              transform: 'rotateY(-5deg) rotateX(5deg)',
+              transform: windowWidth < 768 ? 'none' : 'rotateY(-5deg) rotateX(5deg)',
               transformStyle: 'preserve-3d',
               transition: 'transform 0.5s ease',
             }}>
@@ -480,7 +613,28 @@ export default function StarfallPage() {
                 boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)'
               }}>
                 <Image src="/project3-assets/cover.jpg" alt="The Grand Palace" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
-                <div style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.35)', color: '#FFFFFF', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '6px 14px', borderRadius: 20, zIndex: 3 }}>🔥 #1 NEW ARRIVAL</div>
+                <div style={{ 
+                  position: 'absolute', top: 16, left: 16, 
+                  background: 'rgba(10, 5, 8, 0.8)', 
+                  backdropFilter: 'blur(16px)', 
+                  border: '1px solid rgba(255, 188, 75, 0.4)', 
+                  color: '#FFFFFF', 
+                  fontSize: '0.688rem', 
+                  fontWeight: 700, 
+                  letterSpacing: '1px', 
+                  textTransform: 'uppercase', 
+                  padding: '6px 14px', 
+                  borderRadius: 20, 
+                  zIndex: 3,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffbc4b">
+                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+                  </svg>
+                  SIGNATURE EDITION · THE GRAND PALACE
+                </div>
                 <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 2 }} />
               </div>
               
@@ -574,7 +728,7 @@ export default function StarfallPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace' }); window.location.href = '/cart?template=grand-palace'; }}>
                     Get Yours Now
                   </LiquidButton>
@@ -649,7 +803,7 @@ export default function StarfallPage() {
             backgroundColor="#050505"
             lineColor="#ffbc4b"
             lineWidth={1.2}
-            lineCount={56}
+            lineCount={windowWidth < 768 ? 26 : 56}
             speed={3.5}
             glow={14}
             interactive={true}
@@ -813,8 +967,8 @@ export default function StarfallPage() {
            <Smooth3DSlideshow 
               autoplay={true} 
               showTitle={false}
-              cardWidth={windowWidth < 768 ? windowWidth * 0.75 : 557}
-              cardHeight={windowWidth < 768 ? windowWidth * 0.9 : 420}
+              cardWidth={windowWidth < 768 ? Math.min(windowWidth * 0.75, 340) : 557}
+              cardHeight={windowWidth < 768 ? Math.min(windowWidth * 0.88, 390) : 420}
               gap={windowWidth < 768 ? 4 : 7}
               slides={[
                 { image: { src: '/uploads/prewedding_sunset.jpg' } },
@@ -932,6 +1086,57 @@ export default function StarfallPage() {
           </span>
         </div>
       </footer>
+
+      {/* ─────────────────── MOBILE FLOATING STICKY ACTION BAR ─────────────────── */}
+      <div 
+        className="sf-sticky-mobile-bar"
+        style={{
+          transform: showStickyBar ? 'translateY(0)' : 'translateY(140%)',
+          opacity: showStickyBar ? 1 : 0,
+          pointerEvents: showStickyBar ? 'auto' : 'none',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', textAlign: 'left', minWidth: 0 }}>
+          <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '0.813rem', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            The Grand Palace
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through' }}>₹1,299</span>
+            <span style={{ fontSize: '0.813rem', fontWeight: 800, color: '#ffbc4b' }}>₹799</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <Link
+            href="/demo/grand-palace"
+            onClick={() => posthog?.capture('demo_clicked', { template_id: 'grand-palace', source: 'mobile_sticky_bar' })}
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#FFFFFF', textDecoration: 'none'
+            }}
+            aria-label="View demo"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+            </svg>
+          </Link>
+          <Link
+            href="/cart?template=grand-palace"
+            onClick={() => posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'mobile_sticky_bar' })}
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              background: '#FFFFFF', color: '#050505',
+              fontSize: '0.813rem', fontWeight: 700,
+              padding: '9px 18px', borderRadius: '999px',
+              textDecoration: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)'
+            }}
+          >
+            Get Yours Now
+          </Link>
+        </div>
+      </div>
 
     </main>
   );
