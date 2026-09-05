@@ -208,7 +208,7 @@ export default function LandingPageV2() {
           .sf-sticky-mobile-bar {
             display: flex;
             position: fixed;
-            bottom: 16px;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
             left: 16px;
             right: 16px;
             z-index: 900;
