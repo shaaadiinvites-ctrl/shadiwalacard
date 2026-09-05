@@ -519,7 +519,7 @@ export default function LandingPageV2() {
                     textDecoration: 'none', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
                   }}
                 >
-                  Get Yours Now · ₹799
+                  Buy Now · ₹799
                 </Link>
               </div>
             </div>
@@ -718,7 +718,7 @@ export default function LandingPageV2() {
                   router.push('/cart?template=grand-palace'); 
                 }}
               >
-                Get Yours Now
+                Buy Now
               </LiquidButton>
               
               <Link href="/demo/grand-palace" onClick={() => posthog?.capture('demo_clicked', { template_id: 'grand-palace' })} style={{ 
@@ -1030,7 +1030,7 @@ export default function LandingPageV2() {
                 router.push('/cart?template=grand-palace'); 
               }}
             >
-              Get Yours Now
+              Buy Now
             </LiquidButton>
           </div>
         </div>
@@ -1140,7 +1140,7 @@ export default function LandingPageV2() {
               textDecoration: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)'
             }}
           >
-            Get Yours Now
+            Buy Now
           </Link>
         </div>
       </div>
