@@ -532,42 +532,31 @@ export default function StarfallPage() {
               Wow your guests with a stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
             </p>
 
-            <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <LiquidButton 
                 size="xl" 
-                style={{ padding: '0 32px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }}
-                onClick={() => {
-                  posthog?.capture('demo_clicked', { template_id: 'grand-palace', source: 'hero_primary' });
-                  window.location.href = '/demo/grand-palace';
-                }}
-              >
-                Explore Live Demo
-              </LiquidButton>
-              <button
-                style={{
-                  padding: '16px 28px',
-                  borderRadius: '999px',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#FFFFFF',
-                  fontSize: '0.938rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                style={{ 
+                  padding: '0 36px', 
+                  color: '#050505', 
+                  fontWeight: 600, 
+                  background: '#FFFFFF', 
+                  border: 'none', 
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.2)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.35)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'; }}
                 onClick={() => {
+                  posthog?.capture('scroll_to_collection_clicked', { source: 'hero_single_cta' });
                   const el = document.getElementById('sf-collection');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                View Pricing & Inclusions · ₹799
-              </button>
+                <span>See What's Included</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 13l5 5 5-5M12 4v14"/>
+                </svg>
+              </LiquidButton>
             </div>
           </div>
         </div>
