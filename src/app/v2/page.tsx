@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import Smooth3DSlideshow from '@/components/originkit/coverflowgallery';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { FaqSection } from '@/components/ui/faq';
@@ -11,7 +12,7 @@ import { usePostHog } from 'posthog-js/react';
 
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
-  { q: "Can I add separate events like Haldi, Mehndi, and Sangeet?", a: "Yes! You can configure every ceremony with its own date, timing, dress code, and dedicated 1-tap Google Maps pin." },
+  { q: "Can I add separate events like Haldi, Mehndi, and Sangeet?", a: "Yes! You can configure every ceremony with its own date, timing, and dedicated 1-tap Google Maps pin." },
   { q: "How long does it take to get my invite?", a: "Instantly. Once you complete the checkout and upload your photos, your custom web invite is generated and ready to share in seconds." },
   { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." },
   { q: "Is there a limit to how many guests or groups I can send it to?", a: "Zero limits. You can forward your link to 50 guests or 5,000 guests across WhatsApp, Instagram, or SMS with unlimited views." }
@@ -24,10 +25,52 @@ const gallerySlides = [
 ];
 
 export default function LandingPageV2() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const posthog = usePostHog();
+
+  const jsonLdProduct = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'The Grand Palace — Digital Wedding Invitation',
+    image: 'https://shadiwalacard.com/project3-assets/cover.jpg',
+    description: 'Ultra-premium digital wedding card featuring 1-tap Google Maps navigation, live countdown & timeline, HD couple photo gallery, and instant WhatsApp link delivery.',
+    brand: {
+      '@type': 'Brand',
+      name: 'ShadiwalaCard'
+    },
+    offers: {
+      '@type': 'Offer',
+      url: 'https://shadiwalacard.com/cart?template=grand-palace',
+      priceCurrency: 'INR',
+      price: '799',
+      priceValidUntil: '2027-12-31',
+      availability: 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/NewCondition'
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '128',
+      bestRating: '5',
+      worstRating: '1'
+    }
+  };
+
+  const jsonLdFaq = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a
+      }
+    }))
+  };
 
   useEffect(() => {
     let ticking = false;
@@ -85,6 +128,15 @@ export default function LandingPageV2() {
 
   return (
     <main style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif", minHeight: '100vh' }}>
+      {/* ─────────────────── STRUCTURED DATA (JSON-LD) ─────────────────── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdProduct) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }}
+      />
 
       {/* ─────────────────── PAGE STYLES ─────────────────── */}
       <style>{`
@@ -671,7 +723,14 @@ export default function LandingPageV2() {
             </div>
 
             <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', marginBottom: '22px' }}>
-              <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace' }); window.location.href = '/cart?template=grand-palace'; }}>
+              <LiquidButton 
+                size="xl" 
+                style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
+                onClick={() => { 
+                  posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'showcase_section' }); 
+                  router.push('/cart?template=grand-palace'); 
+                }}
+              >
                 Get Yours Now
               </LiquidButton>
               
@@ -976,7 +1035,14 @@ export default function LandingPageV2() {
           </h2>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-            <LiquidButton size="xl" style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'climax_cta' }); window.location.href = '/cart?template=grand-palace'; }}>
+            <LiquidButton 
+              size="xl" 
+              style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
+              onClick={() => { 
+                posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'climax_cta' }); 
+                router.push('/cart?template=grand-palace'); 
+              }}
+            >
               Get Yours Now
             </LiquidButton>
           </div>
@@ -1045,9 +1111,9 @@ export default function LandingPageV2() {
       <div 
         className="sf-sticky-mobile-bar"
         style={{
-          transform: showStickyBar ? 'translateY(0)' : 'translateY(140%)',
-          opacity: showStickyBar ? 1 : 0,
-          pointerEvents: showStickyBar ? 'auto' : 'none',
+          transform: (showStickyBar && !isMenuOpen) ? 'translateY(0)' : 'translateY(140%)',
+          opacity: (showStickyBar && !isMenuOpen) ? 1 : 0,
+          pointerEvents: (showStickyBar && !isMenuOpen) ? 'auto' : 'none',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', textAlign: 'left', minWidth: 0 }}>
