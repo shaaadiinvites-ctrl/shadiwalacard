@@ -16,15 +16,28 @@ const faqs = [
   { q: "Are there any hidden hosting fees?", a: "No hidden fees. You pay a one-time flat price, and we host your digital invite securely for 6 months after your wedding date." }
 ];
 
-export default function StarfallPage() {
+const gallerySlides = [
+  { image: { src: '/uploads/prewedding_sunset.jpg', alt: 'Pre-wedding sunset couple portrait' } },
+  { image: { src: '/uploads/prewedding_candid.jpg', alt: 'Pre-wedding candid moment' } },
+  { image: { src: '/uploads/prewedding_palace.jpg', alt: 'Pre-wedding palace photoshoot' } }
+];
+
+export default function LandingPageV2() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const posthog = usePostHog();
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setShowStickyBar(window.scrollY > 480);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setShowStickyBar(window.scrollY > 480);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -54,15 +67,16 @@ export default function StarfallPage() {
 
   useEffect(() => {
     if (!isMenuOpen) return;
-    const handleScrollMenuClose = () => {
-      setIsMenuOpen(false);
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
     };
-    const timer = setTimeout(() => {
-      window.addEventListener('scroll', handleScrollMenuClose, { passive: true });
-    }, 150);
+
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', handleScrollMenuClose);
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isMenuOpen]);
 
@@ -73,12 +87,7 @@ export default function StarfallPage() {
 
       {/* ─────────────────── PAGE STYLES ─────────────────── */}
       <style>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         button, a, .sf-tcard, .sf-step-card { caret-color: transparent; }
-        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-        body { overflow-x: clip; }
-        a { text-decoration: none; color: inherit; }
-        img { max-width: 100%; display: block; }
 
         /* ── Container for uniform grid alignment ── */
         .sf-container {
@@ -100,23 +109,16 @@ export default function StarfallPage() {
         .sf-fade-1 { animation: sfFadeUp 0.7s 0.0s ease both; }
         .sf-fade-2 { animation: sfFadeUp 0.7s 0.15s ease both; }
         .sf-fade-3 { animation: sfFadeUp 0.7s 0.3s ease both; }
-        .sf-fade-4 { animation: sfFadeUp 0.7s 0.45s ease both; }
 
-        /* ── Section divider ── */
-        .sf-divider {
-          display: flex; align-items: center; justify-content: center;
-          padding: 0 20px;
+        /* ── Template card hover & responsive 3D tilt ── */
+        .sf-tcard {
+          transition: transform 0.5s ease, box-shadow 0.3s ease;
+          transform: rotateY(-5deg) rotateX(5deg);
         }
-        .sf-divider::before, .sf-divider::after {
-          content: ''; flex: 1; height: 1px;
-        }
-        .sf-divider::before { background: linear-gradient(to right, transparent, rgba(225, 29, 72,0.25)); }
-        .sf-divider::after  { background: linear-gradient(to left,  transparent, rgba(225, 29, 72,0.25)); }
-        .sf-divider span { padding: 0 16px; color: rgba(225, 29, 72,0.6); font-size: 1rem; }
-
-        /* ── Template card hover ── */
-        .sf-tcard { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-tcard:active { transform: scale(0.98); }
+        @media (max-width: 767px) {
+          .sf-tcard { transform: none !important; }
+        }
 
         /* ── Venue pin ── */
         .sf-pin-bounce { animation: sfPinBounce 2s ease-in-out infinite; }
@@ -125,16 +127,28 @@ export default function StarfallPage() {
 
         /* ── Mobile nav menu toggle ── */
         @media (max-width: 767px) { .sf-mobile-demo-btn { display: inline-flex !important; } }
-        .sf-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
+        .sf-hamburger {
+          display: none;
+          flex-direction: column;
+          gap: 5px;
+          cursor: pointer;
+          padding: 12px;
+          margin: -8px;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+          outline: none;
+          background: transparent;
+          border: none;
+        }
         .sf-hamburger span { width: 22px; height: 1.5px; background: #FFFFFF; display: block; transition: all 0.3s; pointer-events: none; }
         .sf-mobile-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
         @media (min-width: 768px) { .sf-mobile-controls { display: none !important; } }
         .sf-nav-links { display: flex; align-items: center; gap: 20px; margin-left: auto; }
+        .sf-arrow-hint { display: none; }
 
         /* ── RESPONSIVE BREAKPOINTS — mobile-first ── */
 
         /* Base: 412px (Pixel 7) */
-        h2              { font-size: 2rem; }
         .sf-hero-h1     { font-size: clamp(2.3rem, 7.5vw, 4rem); letter-spacing: -0.5px; line-height: 1.05; margin-bottom: clamp(38px, 5.5vw, 54px) !important; }
         .sf-hero-sub    { font-size: 0.875rem; }
         .sf-hero-cta    {
@@ -171,8 +185,6 @@ export default function StarfallPage() {
         .sf-nav-links   { display: none !important; }
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         .sf-venue-h2    { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
-        .sf-cta-pair    { flex-direction: column; gap: 12px; align-items: center; justify-content: center; width: 100%; }
-        .sf-cta-pair > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
         .sf-showcase-actions { flex-direction: column; gap: 12px; width: 100%; align-items: center; justify-content: center; }
         .sf-showcase-actions > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
         .sf-showcase-trust { justify-content: center; text-align: center; }
@@ -215,8 +227,6 @@ export default function StarfallPage() {
 
         /* sm: 540px+ */
         @media (min-width: 540px) {
-          .sf-cta-pair   { flex-direction: row; align-items: center; justify-content: center; width: auto; }
-          .sf-cta-pair > * { width: auto !important; max-width: none !important; }
           .sf-showcase-actions { flex-direction: row; align-items: center; justify-content: flex-start; width: auto; gap: 20px; }
           .sf-showcase-actions > * { width: auto !important; max-width: none !important; }
           .sf-showcase-trust { justify-content: flex-start; text-align: left; }
@@ -226,6 +236,7 @@ export default function StarfallPage() {
         @media (min-width: 768px) {
           .sf-hero-sub   { font-size: 1.125rem; }
           .sf-nav-links  { display: flex !important; }
+          .sf-arrow-hint { display: flex !important; }
           .sf-mobile-controls { display: none !important; }
           .sf-hamburger  { display: none !important; }
         }
@@ -305,17 +316,16 @@ export default function StarfallPage() {
                   View Demo
                 </Link>
                 {/* Hand-drawn arrow hint */}
-                <div className="sf-nav-links" style={{ 
+                <div className="sf-arrow-hint" style={{ 
                   position: 'absolute', 
                   top: '100%', 
                   right: '0', 
-                  display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center', 
-                  pointerEvents: 'none',
-                  color: '#FFFFFF',
-                  transform: 'rotate(-6deg) translateX(10px)',
-                  zIndex: 50
+                  pointerEvents: 'none', 
+                  color: '#FFFFFF', 
+                  transform: 'rotate(-6deg) translateX(10px)', 
+                  zIndex: 50 
                 }}>
                   <svg width="24" height="36" viewBox="0 0 48 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-15deg) translateX(-8px)' }}>
                     <path d="M8 64c6-1 28-10 28-46" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
@@ -325,11 +335,11 @@ export default function StarfallPage() {
                     fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
                     fontSize: '1.25rem', 
                     fontWeight: 700, 
-                    whiteSpace: 'nowrap',
-                    marginTop: '-4px',
-                    letterSpacing: '0.5px',
-                    color: '#FFFFFF',
-                    transform: 'translateX(-70px)'
+                    whiteSpace: 'nowrap', 
+                    marginTop: '-4px', 
+                    letterSpacing: '0.5px', 
+                    color: '#FFFFFF', 
+                    transform: 'translateX(-70px)' 
                   }}>
                     Get the full experience
                   </span>
@@ -356,21 +366,18 @@ export default function StarfallPage() {
                 </svg>
                 Demo
               </Link>
-              <div 
+              <button 
+                type="button"
                 className="sf-hamburger" 
-                role="button"
-                tabIndex={0}
                 aria-label="Toggle navigation menu" 
                 aria-expanded={isMenuOpen}
                 onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsMenuOpen(!isMenuOpen); } }}
-                style={{ cursor: 'pointer' }}
               >
-              <span style={{ transform: isMenuOpen ? 'rotate(45deg) translate(4px, 5px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
-              <span style={{ opacity: isMenuOpen ? 0 : 1, width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', margin: '5px 0', transition: 'all 0.3s', pointerEvents: 'none' }} />
-              <span style={{ transform: isMenuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
+                <span style={{ transform: isMenuOpen ? 'rotate(45deg) translate(4px, 5px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
+                <span style={{ opacity: isMenuOpen ? 0 : 1, width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', margin: '5px 0', transition: 'all 0.3s', pointerEvents: 'none' }} />
+                <span style={{ transform: isMenuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
+              </button>
             </div>
-          </div>
           </header>
 
           {/* Backdrop Dismiss Overlay */}
@@ -576,9 +583,7 @@ export default function StarfallPage() {
               boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(225, 140, 20, 0.25), inset 0 1px 0 rgba(255,255,255,0.2)', 
               display: 'flex', 
               flexDirection: 'column',
-              transform: windowWidth < 768 ? 'none' : 'rotateY(-5deg) rotateX(5deg)',
               transformStyle: 'preserve-3d',
-              transition: 'transform 0.5s ease',
             }}>
               {/* 3D Photo Sheet */}
               <div style={{ 
@@ -589,7 +594,7 @@ export default function StarfallPage() {
                 overflow: 'hidden', 
                 boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)'
               }}>
-                <Image src="/project3-assets/cover.jpg" alt="The Grand Palace" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
+                <Image src="/project3-assets/cover.jpg" alt="The Grand Palace" fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
                 <div style={{ 
                   position: 'absolute', top: 16, left: 16, 
                   background: 'rgba(10, 5, 8, 0.8)', 
@@ -718,13 +723,13 @@ export default function StarfallPage() {
             letterSpacing: '0.5px',
             display: 'inline-block'
           }}>
-            ..and more beautiful cards coming soon
+            ...and more beautiful cards coming soon
           </span>
         </div>
       </section>
 
       {/* ─────────────────── MOVING MARQUEE BANNER ─────────────────── */}
-      <div style={{ background: 'linear-gradient(90deg, #050505, #17070a, #4a0e1b, #050505)', overflow: 'hidden', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex' }}>
+      <div aria-hidden="true" style={{ background: 'linear-gradient(90deg, #050505, #17070a, #4a0e1b, #050505)', overflow: 'hidden', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex' }}>
         <div style={{ display: 'flex', width: 'max-content', animation: 'sfMarquee 100s linear infinite', color: '#FFFFFF', fontSize: '0.875rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
           {[...Array(4)].map((_, i) => (
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '32px', paddingRight: '32px' }}>
@@ -922,18 +927,14 @@ export default function StarfallPage() {
         
         {/* 3D Slideshow Component */}
         <div style={{ height: windowWidth < 768 ? '360px' : '500px', width: '100%', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-           <Smooth3DSlideshow 
+            <Smooth3DSlideshow 
               autoplay={true} 
               showTitle={false}
               cardWidth={windowWidth < 768 ? Math.min(windowWidth * 0.75, 340) : 557}
               cardHeight={windowWidth < 768 ? Math.min(windowWidth * 0.88, 390) : 420}
               gap={windowWidth < 768 ? 4 : 7}
-              slides={[
-                { image: { src: '/uploads/prewedding_sunset.jpg' } },
-                { image: { src: '/uploads/prewedding_candid.jpg' } },
-                { image: { src: '/uploads/prewedding_palace.jpg' } }
-              ]}
-           />
+              slides={gallerySlides}
+            />
         </div>
       
         {/* ------------------- HANDWRITTEN NOTE 2 (INSIDE GALLERY) ------------------- */}
@@ -946,7 +947,7 @@ export default function StarfallPage() {
             letterSpacing: '0.5px',
             display: 'inline-block'
           }}>
-            ..because your story deserves to be celebrated
+            ...because your story deserves to be celebrated
           </span>
         </div>
       </section>
@@ -973,7 +974,7 @@ export default function StarfallPage() {
           <div aria-hidden style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.05) 0%, transparent 50%)', pointerEvents: 'none', zIndex: 1 }} />
 
         <div className="sf-container" style={{ maxWidth: 1200, position: 'relative', zIndex: 2, textAlign: 'center' }}>
-          <h2 style={{ position: 'relative', zIndex: 10, fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 600, color: '#FFFFFF', margin: '0 auto 40px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+          <h2 className="sf-section-h2" style={{ position: 'relative', zIndex: 10, fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 auto 40px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
             Ready to create your perfect Shadi invite?
           </h2>
 
