@@ -696,46 +696,9 @@ export default function LandingPageV2() {
               </span>
             </div>
 
-            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.55, marginBottom: '22px', maxWidth: 480 }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: '32px', maxWidth: 480 }}>
               The Grand Palace is our flagship digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
-
-            {/* Sleek, Modern Feature Chips */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '26px', maxWidth: 500 }}>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                padding: '8px 14px', borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
-                fontWeight: 500
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>1-Tap Google Maps</span>
-              </div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                padding: '8px 14px', borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
-                fontWeight: 500
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Live Countdown &amp; Events</span>
-              </div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                padding: '8px 14px', borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
-                fontWeight: 500
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span>HD Couple Gallery</span>
-              </div>
-            </div>
 
             <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '18px' }}>
               <LiquidButton 
