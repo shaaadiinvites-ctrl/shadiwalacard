@@ -147,7 +147,9 @@ export default function StarfallPage() {
         @media (max-width: 767px) { .sf-mobile-demo-btn { display: inline-flex !important; } }
         .sf-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         .sf-hamburger span { width: 22px; height: 1.5px; background: #1A202C; display: block; transition: all 0.3s; pointer-events: none; }
-        .sf-nav-links { display: flex; }
+        .sf-mobile-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+        @media (min-width: 768px) { .sf-mobile-controls { display: none !important; } }
+        .sf-nav-links { display: flex; align-items: center; gap: 20px; margin-left: auto; }
 
         /* ── RESPONSIVE BREAKPOINTS — mobile-first ── */
 
@@ -219,6 +221,7 @@ export default function StarfallPage() {
           .sf-hero-sub   { font-size: 1.125rem; }
           .sf-cta-btn    { font-size: 1rem !important; padding: 16px 36px !important; }
           .sf-nav-links  { display: flex !important; }
+          .sf-mobile-controls { display: none !important; }
           .sf-hamburger  { display: none !important; }
           .sf-review-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -336,7 +339,7 @@ export default function StarfallPage() {
             </div>
 
             {/* Mobile hamburger */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="sf-mobile-controls">
               <Link 
                 href="/demo/grand-palace" 
                 className="sf-mobile-demo-btn"
