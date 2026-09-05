@@ -695,7 +695,7 @@ export default function LandingPageV2() {
 
           {/* Content */}
           <div className="sf-container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 900 }}>
-            <h1 className="sf-hero-h1 sf-fade-1" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 500, lineHeight: 1.0, color: '#FFFFFF' }}>
+            <h1 className="sf-hero-h1 sf-fade-1" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 500, lineHeight: 1.12, color: '#FFFFFF' }}>
               India's Most Premium<br />
               <span className="inline-block font-normal italic text-[#FFFFFF]">
                 Digital Wedding Card.
@@ -1034,8 +1034,8 @@ export default function LandingPageV2() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
             {/* Step 1 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: '56px 32px', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: '8rem', fontWeight: 900, color: 'rgba(255,255,255,0.08)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>01</div>
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>01</div>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
               </div>
@@ -1044,8 +1044,8 @@ export default function LandingPageV2() {
             </div>
             
             {/* Step 2 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: '56px 32px', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: '8rem', fontWeight: 900, color: 'rgba(255,255,255,0.08)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>02</div>
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>02</div>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               </div>
@@ -1054,8 +1054,8 @@ export default function LandingPageV2() {
             </div>
 
             {/* Step 3 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: '56px 32px', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: '8rem', fontWeight: 900, color: 'rgba(255,255,255,0.08)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>03</div>
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>03</div>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
               </div>
@@ -1125,12 +1125,12 @@ export default function LandingPageV2() {
         </div>
         
         {/* 3D Slideshow Component */}
-        <div style={{ height: windowWidth < 768 ? '360px' : '500px', width: '100%', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+        <div style={{ height: windowWidth < 768 ? '410px' : '500px', width: '100%', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
             <Smooth3DSlideshow 
               autoplay={true} 
               showTitle={false}
               cardWidth={windowWidth < 768 ? Math.min(windowWidth * 0.75, 340) : 557}
-              cardHeight={windowWidth < 768 ? Math.min(windowWidth * 0.88, 390) : 420}
+              cardHeight={windowWidth < 768 ? Math.min(windowWidth * 0.85, 370) : 420}
               gap={windowWidth < 768 ? 4 : 7}
               slides={gallerySlides}
             />

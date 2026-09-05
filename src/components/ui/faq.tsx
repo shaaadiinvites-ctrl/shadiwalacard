@@ -33,7 +33,7 @@ export function FaqSection({ faqs }: { faqs: { q: string, a: string }[] }) {
               background: isOpen ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
-              padding: '24px 32px',
+              padding: 'clamp(18px, 4vw, 24px) clamp(16px, 4.5vw, 32px)',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               outline: 'none'
