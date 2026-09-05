@@ -8,6 +8,7 @@ import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { FaqSection } from '@/components/ui/faq';
 import LightCurtain from '@/components/originkit/ui/light-curtain';
 import WaveArcs from '@/components/originkit/ui/wave-arcs';
+import VectorRoadGrid from '@/components/ui/vector-road-grid';
 import { usePostHog } from 'posthog-js/react';
 
 const faqs = [
@@ -314,12 +315,27 @@ export default function HomePage() {
         .sf-step-card   { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(225, 29, 72, 0.15) !important; }
 
-        /* iOS Safari fixed-background override & mobile performance */
-        @media (max-width: 767px) {
-          #sf-venue {
-            background-attachment: scroll !important;
-            background-position: center center !important;
-          }
+        /* Venue pin & radar animations */
+        @keyframes pinFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-7px); }
+        }
+        @keyframes radarPulseShadow {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(0.65); opacity: 0.2; }
+        }
+        @keyframes orbitRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .sf-pin-bounce {
+          animation: pinFloat 3.2s ease-in-out infinite;
+        }
+        .sf-radar {
+          animation: radarPulseShadow 3.2s ease-in-out infinite;
+        }
+        .sf-orbit {
+          animation: orbitRotate 16s linear infinite;
         }
 
         /* Floating Sticky Bar on Mobile */
@@ -1066,25 +1082,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─────────────────── VENUE SECTION (PARALLAX BACKGROUND) ─────────────────── */}
+      {/* ─────────────────── VENUE SECTION (VECTOR ROAD GRID WITH MOVING LIGHT PULSES) ─────────────────── */}
       <section id="sf-venue" className="sf-sec" style={{ 
-        position: 'relative', textAlign: 'center', overflow: 'hidden',
-        backgroundImage: 'url(/uploads/royal_venue_map.jpg)',
-        backgroundAttachment: 'fixed',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        position: 'relative', 
+        textAlign: 'center', 
+        overflow: 'hidden',
+        background: '#050505',
+        padding: '130px 0'
       }}>
-        {/* Luminous overlay for theme radiance and seamless edge blending */}
-        {/* Rich cinematic color grade letting gold roads shine while blending edges */}
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(30, 8, 12, 0.6) 0%, rgba(5, 5, 5, 0.85) 65%, #050505 100%)', zIndex: 1 }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #050505 0%, transparent 25%, transparent 75%, #050505 100%)', zIndex: 1 }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #050505 0%, transparent 20%, transparent 80%, #050505 100%)', zIndex: 1 }} />
+        {/* Dynamic Vector Road Grid with animated moving light pulses */}
+        <VectorRoadGrid />
 
         {/* Content */}
         <div className="sf-container" style={{ position: 'relative', zIndex: 2, maxWidth: 720 }}>
           {/* Bouncing pin icon */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 0 }}>
-            <div className="sf-pin-bounce" style={{ position: 'relative', width: 72, height: 72, borderRadius: '50%', background: '#0a0b10', border: '2px solid #e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(225, 29, 72, 0.55)', zIndex: 2 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 28 }}>
+            <div className="sf-pin-bounce" style={{ position: 'relative', width: 72, height: 72, borderRadius: '50%', background: '#0a0b10', border: '2px solid #e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 32px rgba(225, 29, 72, 0.65)', zIndex: 2 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e11d48' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
