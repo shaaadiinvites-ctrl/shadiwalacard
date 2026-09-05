@@ -772,13 +772,26 @@ export default function LandingPageV2() {
         </div>
       
         {/* ------------------- HANDWRITTEN NOTE (INSIDE SECTION) ------------------- */}
-        <div style={{ width: '100%', textAlign: 'center', paddingTop: '56px', paddingBottom: '0', position: 'relative', zIndex: 10 }}>
+        <div style={{ 
+          width: '100%', 
+          maxWidth: '800px',
+          margin: '0 auto',
+          textAlign: 'center', 
+          paddingTop: '56px', 
+          paddingBottom: '0', 
+          paddingLeft: 'clamp(20px, 6vw, 36px)',
+          paddingRight: 'clamp(20px, 6vw, 36px)',
+          boxSizing: 'border-box',
+          position: 'relative', 
+          zIndex: 10 
+        }}>
           <span style={{ 
             fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
-            fontSize: '1.5rem', 
+            fontSize: 'clamp(1.15rem, 4.2vw, 1.5rem)', 
             fontWeight: 600, 
             color: 'rgba(255,255,255,0.7)',
             letterSpacing: '0.5px',
+            lineHeight: 1.35,
             display: 'inline-block'
           }}>
             ...and more beautiful invites coming soon
@@ -1010,13 +1023,26 @@ export default function LandingPageV2() {
         </div>
       
         {/* ------------------- HANDWRITTEN NOTE 2 (INSIDE GALLERY) ------------------- */}
-        <div style={{ width: '100%', textAlign: 'center', paddingTop: '80px', paddingBottom: '120px', position: 'relative', zIndex: 10 }}>
+        <div style={{ 
+          width: '100%', 
+          maxWidth: '800px',
+          margin: '0 auto',
+          textAlign: 'center', 
+          paddingTop: '80px', 
+          paddingBottom: '120px', 
+          paddingLeft: 'clamp(20px, 6vw, 36px)',
+          paddingRight: 'clamp(20px, 6vw, 36px)',
+          boxSizing: 'border-box',
+          position: 'relative', 
+          zIndex: 10 
+        }}>
           <span style={{ 
             fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
-            fontSize: '1.5rem', 
+            fontSize: 'clamp(1.15rem, 4.2vw, 1.5rem)', 
             fontWeight: 600, 
             color: 'rgba(255,255,255,0.7)',
             letterSpacing: '0.5px',
+            lineHeight: 1.35,
             display: 'inline-block'
           }}>
             ...because your story deserves to be celebrated
