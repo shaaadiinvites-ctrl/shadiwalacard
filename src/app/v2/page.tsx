@@ -9,9 +9,6 @@ import LightCurtain from '@/components/originkit/ui/light-curtain';
 import WaveArcs from '@/components/originkit/ui/wave-arcs';
 import { usePostHog } from 'posthog-js/react';
 
-import { TEMPLATES as templates } from '@/lib/templates';
-
-
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
   { q: "How long does it take to get my invite?", a: "Instantly. Once you complete the checkout and upload your photos, your custom web invite is generated and ready to share in seconds." },
@@ -121,36 +118,10 @@ export default function StarfallPage() {
         .sf-tcard { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-tcard:active { transform: scale(0.98); }
 
-        /* ── Review card ── */
-        .sf-rcard { border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; background: rgba(255,255,255,0.03); }
-
         /* ── Venue pin ── */
         .sf-pin-bounce { animation: sfPinBounce 2s ease-in-out infinite; }
         .sf-radar { animation: sfRadar 2s ease-out infinite; }
         .sf-orbit { animation: sfOrbit 14s linear infinite; }
-
-        /* ── CTA buttons ── */
-        .sf-cta-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          background: #e11d48; color: #050505; font-weight: 600;
-          border-radius: 40px; border: none; cursor: pointer;
-          transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-          text-decoration: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .sf-cta-btn:active { transform: scale(0.96); }
-        .sf-cta-btn:hover { background: #ffbc4b; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4); }
-
-        .sf-ghost-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          border: 1px solid rgba(255,255,255,0.3); color: #ffffff;
-          border-radius: 40px; background: transparent;
-          transition: all 0.2s ease;
-          text-decoration: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .sf-ghost-btn:hover { background: rgba(255,255,255,0.1); }
-        .sf-ghost-btn:active { transform: scale(0.96); }
 
         /* ── Mobile nav menu toggle ── */
         @media (max-width: 767px) { .sf-mobile-demo-btn { display: inline-flex !important; } }
@@ -194,16 +165,12 @@ export default function StarfallPage() {
         .sf-hero-cta:active {
           transform: scale(0.97);
         }
-        .sf-section-pad { padding: 120px 0 !important; }
         .sf-sec         { padding: 120px 0 !important; }
-        .sf-sec-split-b { padding: 120px 0 !important; }
-        .sf-sec-split-t { padding: 120px 0 !important; }
         .sf-section-h2  { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.5px; line-height: 1.05; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s ease; }
         .sf-section-h2:hover { transform: translateY(-3px); text-shadow: 0 10px 30px rgba(225, 29, 72, 0.25); }
         .sf-nav-links   { display: none !important; }
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         .sf-venue-h2    { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
-        .sf-review-grid { grid-template-columns: 1fr; }
         .sf-cta-pair    { flex-direction: column; gap: 12px; align-items: center; justify-content: center; width: 100%; }
         .sf-cta-pair > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
         .sf-showcase-actions { flex-direction: column; gap: 12px; width: 100%; align-items: center; justify-content: center; }
@@ -258,16 +225,9 @@ export default function StarfallPage() {
         /* md: 768px+ tablet */
         @media (min-width: 768px) {
           .sf-hero-sub   { font-size: 1.125rem; }
-          .sf-cta-btn    { font-size: 1rem !important; padding: 16px 36px !important; }
           .sf-nav-links  { display: flex !important; }
           .sf-mobile-controls { display: none !important; }
           .sf-hamburger  { display: none !important; }
-          .sf-review-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* lg: 1024px+ desktop */
-        @media (min-width: 1024px) {
-          .sf-review-grid { grid-template-columns: repeat(3, 1fr); }
         }
       `}</style>
 
@@ -293,7 +253,7 @@ export default function StarfallPage() {
         </span>
         <span className="sf-top-banner-dot" style={{ opacity: 0.5 }}>•</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2, flexShrink: 0 }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" role="img" aria-label="Flag of India" style={{ display: 'inline-block', borderRadius: 2, flexShrink: 0 }}>
             <rect width="900" height="200" fill="#FF9933"/>
             <rect y="200" width="900" height="200" fill="#FFFFFF"/>
             <rect y="400" width="900" height="200" fill="#138808"/>
@@ -318,7 +278,7 @@ export default function StarfallPage() {
             background: 'transparent'
           }}>
             {/* Logo */}
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, userSelect: 'none', textDecoration: 'none' }}>
+            <Link href="/v2" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, userSelect: 'none', textDecoration: 'none' }}>
               <img 
                 src="/uploads/logo.png" 
                 alt="ShadiwalaCard Logo" 
@@ -658,9 +618,9 @@ export default function StarfallPage() {
               <div style={{ padding: '24px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                 <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.6rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px', letterSpacing: '-0.3px' }}>The Grand Palace</h3>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 0 }}>
-                  <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'line-through', fontWeight: 500 }}>₹1,299</span>
+                  <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'line-through', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
                   <span style={{ fontSize: '0.7rem', color: '#050505', background: '#ffbc4b', border: 'none', padding: '3px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '0.3px' }}>38% OFF</span>
-                  <span style={{ fontFamily: "var(--font-body), 'Inter', sans-serif", fontSize: '1.6rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1 }}>₹799</span>
+                  <span style={{ fontFamily: "var(--font-body), 'Inter', sans-serif", fontSize: '1.6rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>₹799</span>
                 </div>
               </div>
             </div>
@@ -1012,18 +972,16 @@ export default function StarfallPage() {
           {/* Ambient inner sheen */}
           <div aria-hidden style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.05) 0%, transparent 50%)', pointerEvents: 'none', zIndex: 1 }} />
 
-        <div className="sf-container" style={{ maxWidth: 1200, position: 'relative', zIndex: 2, textAlign: 'center', pointerEvents: 'none' }}>
-          <h2 style={{ position: 'relative', zIndex: 10, fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 600, color: '#FFFFFF', margin: '0 auto 40px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.5)', pointerEvents: 'none' }}>
-              <span style={{ pointerEvents: 'auto' }}>Ready to create your perfect Shadi invite?</span>
-            </h2>
+        <div className="sf-container" style={{ maxWidth: 1200, position: 'relative', zIndex: 2, textAlign: 'center' }}>
+          <h2 style={{ position: 'relative', zIndex: 10, fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', fontWeight: 600, color: '#FFFFFF', margin: '0 auto 40px', lineHeight: 1.15, maxWidth: 720, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+            Ready to create your perfect Shadi invite?
+          </h2>
 
-          
-
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', pointerEvents: 'none' }}>
-                <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'climax_cta' }); window.location.href = '/cart?template=grand-palace'; }}>
-                    Get Yours Now
-                  </LiquidButton>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            <LiquidButton size="xl" style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'climax_cta' }); window.location.href = '/cart?template=grand-palace'; }}>
+              Get Yours Now
+            </LiquidButton>
+          </div>
         </div>
       </section>
 
@@ -1074,7 +1032,7 @@ export default function StarfallPage() {
           </div>
           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             © 2026 shadiwalacard.com — Made in India 
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" role="img" aria-label="Flag of India" style={{ display: 'inline-block', borderRadius: 2 }}>
               <rect width="900" height="200" fill="#FF9933"/>
               <rect y="200" width="900" height="200" fill="#FFFFFF"/>
               <rect y="400" width="900" height="200" fill="#138808"/>
@@ -1099,8 +1057,8 @@ export default function StarfallPage() {
             The Grand Palace
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through' }}>₹1,299</span>
-            <span style={{ fontSize: '0.813rem', fontWeight: 800, color: '#ffbc4b' }}>₹799</span>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through', fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
+            <span style={{ fontSize: '0.813rem', fontWeight: 800, color: '#ffbc4b', fontVariantNumeric: 'tabular-nums' }}>₹799</span>
           </div>
         </div>
 
@@ -1139,64 +1097,3 @@ export default function StarfallPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
