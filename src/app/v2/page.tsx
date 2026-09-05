@@ -487,27 +487,39 @@ export default function LandingPageV2() {
                 href="#sf-collection" 
                 onClick={() => setIsMenuOpen(false)} 
                 style={{ 
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 18px', borderRadius: '14px',
+                  display: 'flex', alignItems: 'center',
+                  padding: '12px 18px', borderRadius: '14px',
                   color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.938rem', fontWeight: 500,
                   textDecoration: 'none'
                 }}
               >
-                <span>The Grand Palace & Inclusions</span>
-                <span style={{ color: '#ffbc4b', fontWeight: 700 }}>₹799</span>
+                What's Included
               </Link>
 
               <Link 
-                href="#sf-devices" 
+                href="#sf-how" 
                 onClick={() => setIsMenuOpen(false)} 
                 style={{ 
                   display: 'flex', alignItems: 'center',
-                  padding: '14px 18px', borderRadius: '14px',
-                  color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.938rem', fontWeight: 500,
+                  padding: '12px 18px', borderRadius: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.938rem', fontWeight: 500,
                   textDecoration: 'none'
                 }}
               >
-                Mobile Experience
+                How It Works
+              </Link>
+
+              <Link 
+                href="#sf-faq" 
+                onClick={() => setIsMenuOpen(false)} 
+                style={{ 
+                  display: 'flex', alignItems: 'center',
+                  padding: '12px 18px', borderRadius: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.938rem', fontWeight: 500,
+                  textDecoration: 'none'
+                }}
+              >
+                FAQs
               </Link>
 
               <Link 
@@ -515,7 +527,7 @@ export default function LandingPageV2() {
                 onClick={() => setIsMenuOpen(false)} 
                 style={{ 
                   display: 'flex', alignItems: 'center',
-                  padding: '14px 18px', borderRadius: '14px',
+                  padding: '12px 18px', borderRadius: '14px',
                   color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.938rem', fontWeight: 500,
                   textDecoration: 'none'
                 }}
@@ -902,7 +914,7 @@ export default function LandingPageV2() {
       </section>
 
       {/* ─────────────────── HOW IT WORKS ─────────────────── */}
-      <section style={{ 
+      <section id="sf-how" style={{ 
         position: 'relative',
         background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
         padding: '120px 20px', 
@@ -1094,7 +1106,7 @@ export default function LandingPageV2() {
 
       {/* ─────────────────── FOOTER ─────────────────── */}
       {/* ------------------- FAQ SECTION ------------------- */}
-      <section style={{ 
+      <section id="sf-faq" style={{ 
         position: 'relative',
         background: 'radial-gradient(circle at 50% 25%, rgba(240, 125, 20, 0.2) 0%, rgba(130, 45, 15, 0.28) 45%, rgba(35, 10, 10, 0.4) 65%, #050505 80%)', 
         padding: '120px 20px', 
