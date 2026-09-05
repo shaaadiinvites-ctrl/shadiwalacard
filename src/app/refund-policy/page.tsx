@@ -66,6 +66,7 @@ export default function RefundPolicyPage() {
             <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 600, marginBottom: '12px' }}>3. Eligible Refund Scenarios</h2>
             <p style={{ marginBottom: '8px' }}>You are eligible for a full 100% refund in the following cases:</p>
             <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <li><strong>100% Satisfaction Guarantee:</strong> If you are genuinely not satisfied with your digital invitation after purchase, reach out to our team within 7 days and we will issue a full 100% refund &mdash; no questions asked.</li>
               <li><strong>Duplicate Transaction:</strong> If you were charged twice for the same order due to a payment gateway timeout.</li>
               <li><strong>Technical Non-Delivery:</strong> If the platform fails to generate your live invite link within 24 hours of successful payment.</li>
               <li><strong>Cancellation Prior to Generation:</strong> If you request a cancellation before your invitation link is created.</li>

@@ -511,29 +511,58 @@ function CartPageContent() {
               </div>
             )}
           </div>
+
+          {/* Section 4: 100% Satisfaction & Money-Back Guarantee */}
+          <div className="rounded-xl p-5 bg-gradient-to-br from-amber-50 to-orange-50/40 border border-amber-200/80 shadow-sm flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700 mt-0.5">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-[14px] font-bold text-amber-950">100% Money-Back Guarantee</h3>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-200/70 text-amber-800">Risk Free</span>
+              </div>
+              <p className="text-[12.5px] text-amber-900/80 leading-relaxed mt-1">
+                Zero doubts, zero risk. If you are not completely satisfied with your digital wedding invitation, simply message us for a 100% full refund &mdash; zero questions asked.
+              </p>
+            </div>
+          </div>
           
         </div>
       </div>
 
       {/* Sticky Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-        <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex flex-col">
-            <span className="text-[12px] font-normal text-gray-500">Total to pay</span>
-            <span className="text-[24px] font-bold text-[#1A202C]">₹{total}</span>
+        <div className="max-w-xl mx-auto flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-[12px] font-normal text-gray-500">Total to pay</span>
+              <span className="text-[24px] font-bold text-[#1A202C]">₹{total}</span>
+            </div>
+            
+            <button
+              onClick={handleCheckout}
+              disabled={isButtonDisabled}
+              className="flex-1 md:flex-none md:w-64 h-[54px] rounded-xl flex items-center justify-center text-white font-bold text-[18px] transition-all"
+              style={{ 
+                background: isButtonDisabled ? '#9ca3af' : '#4a148c',
+                cursor: isButtonDisabled ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loadingRazorpay ? "Connecting..." : "Checkout & Pay"}
+            </button>
           </div>
-          
-          <button
-            onClick={handleCheckout}
-            disabled={isButtonDisabled}
-            className="flex-1 md:flex-none md:w-64 h-[54px] rounded-xl flex items-center justify-center text-white font-bold text-[18px] transition-all"
-            style={{ 
-              background: isButtonDisabled ? '#9ca3af' : '#4a148c',
-              cursor: isButtonDisabled ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loadingRazorpay ? "Connecting..." : "Checkout & Pay"}
-          </button>
+
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
+            <svg className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            <span>100% Money-Back Guarantee &bull; Instant link access after payment</span>
+          </div>
         </div>
       </div>
       

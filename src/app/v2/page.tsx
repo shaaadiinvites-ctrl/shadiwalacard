@@ -13,6 +13,7 @@ import { usePostHog } from 'posthog-js/react';
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
   { q: "Can I add separate events like Haldi, Mehndi, and Sangeet?", a: "Yes! You can configure every ceremony with its own date, timing, and dedicated 1-tap Google Maps pin." },
+  { q: "What if I'm not satisfied with my digital card?", a: "We offer a 100% money-back guarantee. If you're not completely happy with your invite, simply reach out to us and we'll issue a full refund — zero questions asked." },
   { q: "How long does it take to get my invite?", a: "Instantly. Once you complete the checkout and upload your photos, your custom web invite is generated and ready to share in seconds." },
   { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." },
   { q: "Is there a limit to how many guests or groups I can send it to?", a: "Zero limits. You can forward your link to 50 guests or 5,000 guests across WhatsApp, Instagram, or SMS with unlimited views." }
@@ -735,6 +736,51 @@ export default function LandingPageV2() {
               </Link>
             </div>
 
+            {/* 100% Money-Back Guarantee Badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 18px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, rgba(255, 188, 75, 0.08) 0%, rgba(20, 20, 20, 0.8) 100%)',
+              border: '1px solid rgba(255, 188, 75, 0.28)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 8px 24px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 188, 75, 0.15)',
+              marginBottom: '18px',
+              maxWidth: '480px'
+            }}>
+              <div style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, rgba(255, 188, 75, 0.2) 0%, rgba(225, 29, 72, 0.15) 100%)',
+                border: '1px solid rgba(255, 188, 75, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#ffbc4b', letterSpacing: '0.2px', lineHeight: 1.2 }}>
+                    100% Money-Back Guarantee
+                  </span>
+                  <span style={{ fontSize: '0.625rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255, 188, 75, 0.2)', color: '#ffbc4b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Zero Risk
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.75)', lineHeight: 1.35, display: 'block', marginTop: '2px' }}>
+                  If you&apos;re not completely delighted with your invite, get a 100% full refund &mdash; no questions asked.
+                </span>
+              </div>
+            </div>
+
             {/* Subtle Reassurance Trust Line */}
             <div className="sf-showcase-trust" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.813rem', flexWrap: 'wrap' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -749,7 +795,7 @@ export default function LandingPageV2() {
               <span style={{ opacity: 0.3 }}>•</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>
-                Zero Watermarks
+                100% Refund Guarantee
               </span>
             </div>
           </div>
@@ -1021,7 +1067,7 @@ export default function LandingPageV2() {
             Ready to create your perfect Shadi invite?
           </h2>
 
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
             <LiquidButton 
               size="xl" 
               style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
@@ -1032,6 +1078,29 @@ export default function LandingPageV2() {
             >
               Buy Now
             </LiquidButton>
+
+            {/* 100% Refund Reassurance Subtext */}
+            <div style={{ 
+              marginTop: '20px', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '8px', 
+              color: 'rgba(255, 255, 255, 0.8)', 
+              fontSize: '0.813rem',
+              textAlign: 'center',
+              padding: '8px 18px',
+              borderRadius: '999px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 188, 75, 0.25)',
+              backdropFilter: 'blur(12px)'
+            }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              <span>100% Risk-Free Guarantee &middot; Full refund if you&apos;re not completely satisfied</span>
+            </div>
           </div>
         </div>
       </section>
