@@ -199,6 +199,7 @@ export default function StarfallPage() {
         .sf-cta-pair > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
         .sf-showcase-actions { flex-direction: column; gap: 12px; width: 100%; align-items: center; justify-content: center; }
         .sf-showcase-actions > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
+        .sf-showcase-trust { justify-content: center; text-align: center; }
         
         .sf-step-card   { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(225, 29, 72, 0.15) !important; }
@@ -242,6 +243,7 @@ export default function StarfallPage() {
           .sf-cta-pair > * { width: auto !important; max-width: none !important; }
           .sf-showcase-actions { flex-direction: row; align-items: center; justify-content: flex-start; width: auto; gap: 20px; }
           .sf-showcase-actions > * { width: auto !important; max-width: none !important; }
+          .sf-showcase-trust { justify-content: flex-start; text-align: left; }
         }
 
         /* md: 768px+ tablet */
@@ -659,7 +661,7 @@ export default function StarfallPage() {
           <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h2 className="sf-section-h2" style={{ 
               fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
-              fontWeight: 700, color: '#FFFFFF', margin: '0 0 24px', 
+              fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', 
               letterSpacing: '-0.5px', lineHeight: 1.15
             }}>
               Your dream Shadi deserves a <br/>
@@ -673,84 +675,65 @@ export default function StarfallPage() {
                 animation: 'sfShimmer 4s linear infinite'
               }}>stunning</em> invite.
             </h2>
-            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 28, maxWidth: 480 }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 30, maxWidth: 460 }}>
               The Grand Palace is our ultra-premium digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
 
-            {/* What's Included Glass Checklist */}
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '20px',
-              padding: '22px 24px',
-              marginBottom: '36px',
-              maxWidth: 480,
-              backdropFilter: 'blur(16px)',
-              boxShadow: '0 12px 32px -8px rgba(0, 0, 0, 0.5)'
-            }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#ffbc4b', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#ffbc4b', flexShrink: 0 }}><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" /></svg>
-                <span>EVERYTHING INCLUDED</span>
-                <svg width="4" height="4" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: 0.4, margin: "0 6px", flexShrink: 0 }}><circle cx="5" cy="5" r="5" /></svg>
-                <span>ZERO SUBSCRIPTIONS</span>
+            {/* Sleek, Unboxed Feature Highlights */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '36px', maxWidth: 460 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>1-Tap Google Maps:</strong> Direct venue navigation for guests</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span><strong>1-Tap Google Maps:</strong> No more 'location bhejna' calls</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span><strong>Live Countdown & Timeline:</strong> Haldi, Sangeet & Shadi</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span><strong>HD Couple Gallery:</strong> Flaunt your pre-wedding portraits</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span><strong>Unlimited Shares:</strong> WhatsApp, Instagram, or direct web link</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span><strong>6 Months Cloud Hosting:</strong> Ad-free & guaranteed fast loading</span>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>Live Countdown &amp; Timeline:</strong> Haldi, Sangeet &amp; Shadi</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>HD Couple Gallery:</strong> Flaunt your pre-wedding portraits</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>6 Months Cloud Hosting:</strong> Ad-free &amp; guaranteed fast loading</span>
               </div>
             </div>
 
-            {/* 3-Badge Guarantee Reassurance Bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                Instant Link Delivery
-              </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                Free Unlimited Edits
-              </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>
-                Zero Watermarks
-              </div>
-            </div>
-
-            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', marginBottom: '22px' }}>
               <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace' }); window.location.href = '/cart?template=grand-palace'; }}>
-                    Get Yours Now
-                  </LiquidButton>
+                Get Yours Now
+              </LiquidButton>
               
               <Link href="/demo/grand-palace" onClick={() => posthog?.capture('demo_clicked', { template_id: 'grand-palace' })} style={{ 
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 background: 'transparent', color: '#FFFFFF', 
                 borderRadius: '999px', padding: '12px 32px', fontSize: '1rem', fontWeight: 500,
                 border: '1px solid rgba(255,255,255,0.3)',
-                transition: 'background 0.2s', textDecoration: 'none'
-              }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                transition: 'all 0.2s ease', textDecoration: 'none'
+              }} onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
                 </svg>
                 View Demo
               </Link>
+            </div>
+
+            {/* Subtle Reassurance Trust Line */}
+            <div className="sf-showcase-trust" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.813rem', flexWrap: 'wrap' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                Instant Link Delivery
+              </span>
+              <span style={{ opacity: 0.3 }}>•</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                Free Unlimited Edits
+              </span>
+              <span style={{ opacity: 0.3 }}>•</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>
+                Zero Watermarks
+              </span>
             </div>
           </div>
           
