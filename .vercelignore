@@ -2,3 +2,7 @@
 # Having a second package.json in here confuses Vercel's framework
 # auto-detection, so keep it out of what gets uploaded entirely.
 Indian Wedding Invitation Landing Page/
+
+# Local backups
+backups/
+*.zip
