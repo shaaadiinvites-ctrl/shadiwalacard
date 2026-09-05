@@ -12,8 +12,7 @@ import { usePostHog } from 'posthog-js/react';
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
   { q: "How long does it take to get my invite?", a: "Instantly. Once you complete the checkout and upload your photos, your custom web invite is generated and ready to share in seconds." },
-  { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." },
-  { q: "Are there any hidden hosting fees?", a: "No hidden fees. You pay a one-time flat price, and we host your digital invite securely for 6 months after your wedding date." }
+  { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." }
 ];
 
 const gallerySlides = [
@@ -666,10 +665,6 @@ export default function LandingPageV2() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
                 <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>HD Couple Gallery:</strong> Flaunt your pre-wedding portraits</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
-                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>6 Months Cloud Hosting:</strong> Ad-free &amp; guaranteed fast loading</span>
               </div>
             </div>
 
