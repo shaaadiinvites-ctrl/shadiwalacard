@@ -600,8 +600,8 @@ export default function LandingPageV2() {
       <section id="sf-collection" style={{ 
         position: 'relative',
         background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
-        paddingTop: '120px', 
-        paddingBottom: '80px', 
+        paddingTop: 'clamp(80px, 8vw, 120px)', 
+        paddingBottom: 'clamp(60px, 7vw, 100px)', 
         paddingLeft: '20px',
         paddingRight: '20px',
         display: 'flex', 
@@ -610,7 +610,7 @@ export default function LandingPageV2() {
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(40px, 6vw, 80px)' }}>
+        <div className="sf-container" style={{ maxWidth: 1120, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(36px, 5vw, 64px)' }}>
           
           {/* Left: The Card */}
           <div style={{ flex: '1 1 350px', display: 'flex', justifyContent: 'center', maxWidth: 420 }}>
@@ -657,17 +657,17 @@ export default function LandingPageV2() {
               gap: '6px', 
               fontSize: '0.75rem', 
               fontWeight: 700, 
-              letterSpacing: '1.2px', 
+              letterSpacing: '1.4px', 
               textTransform: 'uppercase', 
               color: '#ffbc4b', 
-              marginBottom: '10px' 
+              margin: '0 0 14px' 
             }}>
               ✦ SIGNATURE DIGITAL INVITATION
             </span>
 
             <h2 className="sf-section-h2" style={{ 
               fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
-              fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', 
+              fontWeight: 700, color: '#FFFFFF', margin: '0 0 14px', 
               letterSpacing: '-0.5px', lineHeight: 1.15
             }}>
               Your dream Shadi deserves a <br/>
@@ -683,7 +683,7 @@ export default function LandingPageV2() {
             </h2>
 
             {/* Price & Offer Lockup */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px', marginBottom: '18px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 20px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'line-through', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
                 <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#FFFFFF', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>₹799</span>
@@ -696,11 +696,11 @@ export default function LandingPageV2() {
               </span>
             </div>
 
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: '32px', maxWidth: 480 }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: '0 0 32px', maxWidth: 480 }}>
               The Grand Palace is our flagship digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
 
-            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '18px' }}>
+            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', margin: '0 0 24px' }}>
               <LiquidButton 
                 size="xl" 
                 style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
@@ -727,7 +727,7 @@ export default function LandingPageV2() {
             </div>
 
             {/* Unboxed, Clean Trust & Guarantee Strip */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 480 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -757,7 +757,7 @@ export default function LandingPageV2() {
         </div>
       
         {/* ------------------- HANDWRITTEN NOTE (INSIDE SECTION) ------------------- */}
-        <div style={{ width: '100%', textAlign: 'center', paddingTop: '40px', paddingBottom: '20px', position: 'relative', zIndex: 10 }}>
+        <div style={{ width: '100%', textAlign: 'center', paddingTop: '56px', paddingBottom: '0', position: 'relative', zIndex: 10 }}>
           <span style={{ 
             fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
             fontSize: '1.5rem', 
