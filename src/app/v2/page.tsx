@@ -636,29 +636,6 @@ export default function LandingPageV2() {
                 boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)'
               }}>
                 <Image src="/project3-assets/cover.jpg" alt="The Grand Palace" fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
-                <div style={{ 
-                  position: 'absolute', top: 16, left: 16, 
-                  background: 'rgba(10, 5, 8, 0.8)', 
-                  backdropFilter: 'blur(16px)', 
-                  border: '1px solid rgba(255, 188, 75, 0.4)', 
-                  color: '#FFFFFF', 
-                  fontSize: '0.688rem', 
-                  fontWeight: 700, 
-                  letterSpacing: '1px', 
-                  textTransform: 'uppercase', 
-                  padding: '6px 14px', 
-                  borderRadius: 20, 
-                  zIndex: 3,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffbc4b">
-                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
-                  </svg>
-                  SIGNATURE EDITION · THE GRAND PALACE
-                </div>
-                <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 2 }} />
               </div>
               
               <div style={{ padding: '20px 20px 22px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
