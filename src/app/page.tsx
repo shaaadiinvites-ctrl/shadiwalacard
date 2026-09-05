@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MobileMenu } from '@/components/ui/mobile-menu';
+
 import Smooth3DSlideshow from '@/components/originkit/coverflowgallery';
 import RadialCardCarousel from '@/components/originkit/ui/spin-carousel';
 import KlarnaCarousel from '@/components/originkit/button-carousel';
@@ -908,6 +908,9 @@ export default function StarfallPage() {
             <Link href="#sf-collection" style={{ color: 'rgba(26,32,44,0.75)' }}>Our web invites</Link>
             <Link href="#sf-reviews"    style={{ color: 'rgba(26,32,44,0.75)' }}>Reviews</Link>
             <Link href="/contact-us"    style={{ color: 'rgba(26,32,44,0.75)' }}>Contact Us</Link>
+            <Link href="/privacy-policy" style={{ color: 'rgba(26,32,44,0.75)' }}>Privacy Policy</Link>
+            <Link href="/terms"         style={{ color: 'rgba(26,32,44,0.75)' }}>Terms of Service</Link>
+            <Link href="/refund-policy" style={{ color: 'rgba(26,32,44,0.75)' }}>Refund Policy</Link>
           </div>
           <span style={{ fontSize: '0.688rem', color: 'rgba(26,32,44,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
             © 2026 shadiwalacard.com — Made in India 

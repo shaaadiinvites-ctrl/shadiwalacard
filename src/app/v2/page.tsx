@@ -2,13 +2,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MobileMenu } from '@/components/ui/mobile-menu';
 import Smooth3DSlideshow from '@/components/originkit/coverflowgallery';
-import RadialCardCarousel from '@/components/originkit/ui/spin-carousel';
-import KlarnaCarousel from '@/components/originkit/button-carousel';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { FaqSection } from '@/components/ui/faq';
 import LightCurtain from '@/components/originkit/ui/light-curtain';
+import WaveArcs from '@/components/originkit/ui/wave-arcs';
 import { usePostHog } from 'posthog-js/react';
 
 import { TEMPLATES as templates } from '@/lib/templates';
@@ -145,7 +143,8 @@ export default function StarfallPage() {
         .sf-ghost-btn:active { transform: scale(0.96); }
 
         /* ── Mobile nav menu toggle ── */
-        .sf-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
+        @media (max-width: 767px) { .sf-mobile-demo-btn { display: inline-flex !important; } }
+        .sf-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         .sf-hamburger span { width: 22px; height: 1.5px; background: #1A202C; display: block; transition: all 0.3s; pointer-events: none; }
         .sf-nav-links { display: flex; }
 
@@ -159,10 +158,11 @@ export default function StarfallPage() {
         .sf-sec         { padding: 120px 0 !important; }
         .sf-sec-split-b { padding: 120px 0 !important; }
         .sf-sec-split-t { padding: 120px 0 !important; }
-        .sf-section-h2  { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.5px; line-height: 1.05; }
+        .sf-section-h2  { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.5px; line-height: 1.05; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s ease; }
+        .sf-section-h2:hover { transform: translateY(-3px); text-shadow: 0 10px 30px rgba(225, 29, 72, 0.25); }
         .sf-nav-links   { display: none !important; }
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
-        .sf-venue-h2    { font-size: 2rem; line-height: 1.05; }
+        .sf-venue-h2    { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
         .sf-review-grid { grid-template-columns: 1fr; }
         .sf-cta-pair    { flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
         .sf-cta-pair a  { text-align: center; }
@@ -181,7 +181,6 @@ export default function StarfallPage() {
           .sf-cta-btn    { font-size: 1rem !important; padding: 16px 36px !important; }
           .sf-nav-links  { display: flex !important; }
           .sf-hamburger  { display: none !important; }
-          .sf-venue-h2   { font-size: 3.5rem; }
           .sf-review-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
@@ -223,7 +222,7 @@ export default function StarfallPage() {
       </div>
 
       {/* ─────────────────── HERO (Exactly like getdesign.ai) ─────────────────── */}
-      <section style={{ position: 'relative', height: '100vh', padding: '12px', display: 'flex', background: '#050505' }}>
+      <section style={{ position: 'relative', height: '100dvh', minHeight: '620px', padding: '12px', display: 'flex', background: '#050505' }}>
         
         {/* Floating rounded hero card */}
         <div style={{ position: 'relative', flex: 1, borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -296,11 +295,39 @@ export default function StarfallPage() {
             </div>
 
             {/* Mobile hamburger */}
-            <div className="sf-hamburger" aria-label="Menu" onClick={() => setIsMenuOpen(!isMenuOpen)} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Link 
+                href="/demo/grand-palace" 
+                className="sf-mobile-demo-btn"
+                onClick={() => posthog?.capture('demo_clicked', { template_id: 'grand-palace', source: 'mobile_header' })} 
+                style={{ 
+                  display: 'none',
+                  alignItems: 'center', gap: '5px',
+                  background: '#FFFFFF', color: '#050505', 
+                  borderRadius: '999px', padding: '6px 14px', fontSize: '0.75rem', fontWeight: 600,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)', textDecoration: 'none'
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                </svg>
+                Demo
+              </Link>
+              <div 
+                className="sf-hamburger" 
+                role="button"
+                tabIndex={0}
+                aria-label="Toggle navigation menu" 
+                aria-expanded={isMenuOpen}
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsMenuOpen(!isMenuOpen); } }}
+                style={{ cursor: 'pointer' }}
+              >
               <span style={{ transform: isMenuOpen ? 'rotate(45deg) translate(4px, 5px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
               <span style={{ opacity: isMenuOpen ? 0 : 1, width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', margin: '5px 0', transition: 'all 0.3s', pointerEvents: 'none' }} />
               <span style={{ transform: isMenuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none', width: '22px', height: '1.5px', background: '#FFFFFF', display: 'block', transition: 'all 0.3s', pointerEvents: 'none' }} />
             </div>
+          </div>
           </header>
 
           {/* Mobile Dropdown Menu */}
@@ -333,15 +360,35 @@ export default function StarfallPage() {
               }}
             />
             {/* Very subtle overlay just in case the video is too bright */}
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 45%, rgba(255, 188, 75, 0.12) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55) 100%)' }} />
           </div>
 
           {/* Content */}
+          {/* Ambient warm gold/amber halo */}
+          <div aria-hidden style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '850px', height: '400px', background: 'radial-gradient(circle at center, rgba(255, 188, 75, 0.18) 0%, rgba(225, 140, 20, 0.08) 45%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none', zIndex: 5 }} />
+
           <div className="sf-container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 900 }}>
             <h1 className="sf-hero-h1 sf-fade-1" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 500, lineHeight: 1.0, color: '#FFFFFF' }}>
               India's Most Premium<br />
-              <span style={{ fontStyle: 'italic', color: '#FFFFFF' }}>
+              <span className="relative inline-block font-normal italic text-[#FFFFFF]" style={{ paddingBottom: '4px' }}>
                 Digital Wedding Card.
+                <svg 
+                  style={{ 
+                    position: 'absolute', 
+                    bottom: '-0.32em', 
+                    left: 0, 
+                    width: '100%', 
+                    height: '14px', 
+                    overflow: 'visible',
+                    pointerEvents: 'none'
+                  }} 
+                  viewBox="0 0 320 14" 
+                  fill="none" 
+                  preserveAspectRatio="none" 
+                  aria-hidden="true"
+                >
+                  <path d="M4 11 C 70 4 240 4 316 10" stroke="#ffbc4b" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+                </svg>
               </span>
             </h1>
 
@@ -349,17 +396,42 @@ export default function StarfallPage() {
               Wow your guests with stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
             </p>
 
-            <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <LiquidButton 
                 size="xl" 
-                style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }}
+                style={{ padding: '0 32px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }}
+                onClick={() => {
+                  posthog?.capture('demo_clicked', { template_id: 'grand-palace', source: 'hero_primary' });
+                  window.location.href = '/demo/grand-palace';
+                }}
+              >
+                Explore Live Demo
+              </LiquidButton>
+              <button
+                style={{
+                  padding: '16px 28px',
+                  borderRadius: '999px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  fontSize: '0.938rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.35)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'; }}
                 onClick={() => {
                   const el = document.getElementById('sf-collection');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Get Yours Now
-              </LiquidButton>
+                View Pricing & Inclusions · ₹799
+              </button>
             </div>
           </div>
         </div>
@@ -367,7 +439,19 @@ export default function StarfallPage() {
 
 
       {/* ─────────────────── TEMPLATE SHOWCASE (SINGLE TEMPLATE) ─────────────────── */}
-      <section id="sf-collection" style={{ background: '#050505', padding: '120px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section id="sf-collection" style={{ 
+        position: 'relative',
+        background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
+        paddingTop: '120px', 
+        paddingBottom: '80px', 
+        paddingLeft: '20px',
+        paddingRight: '20px',
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
         <div className="sf-container" style={{ maxWidth: 1100, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '80px' }}>
           
           {/* Left: The Card */}
@@ -416,9 +500,8 @@ export default function StarfallPage() {
             <h2 className="sf-section-h2" style={{ 
               fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
               fontWeight: 700, color: '#FFFFFF', margin: '0 0 24px', 
-              letterSpacing: '-0.5px', lineHeight: 1.15,
-              transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s ease'
-            }} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.textShadow = '0 10px 30px rgba(225, 29, 72, 0.3)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.textShadow = 'none'; }}>
+              letterSpacing: '-0.5px', lineHeight: 1.15
+            }}>
               Your dream Shadi deserves a <br/>
               <em style={{ 
                 fontStyle: 'normal',
@@ -430,9 +513,66 @@ export default function StarfallPage() {
                 animation: 'sfShimmer 4s linear infinite'
               }}>stunning</em> invite.
             </h2>
-            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 40, maxWidth: 480 }}>
+            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 28, maxWidth: 480 }}>
               The Grand Palace is our ultra-premium digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
+
+            {/* What's Included Glass Checklist */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '20px',
+              padding: '22px 24px',
+              marginBottom: '36px',
+              maxWidth: 480,
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 12px 32px -8px rgba(0, 0, 0, 0.5)'
+            }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#ffbc4b', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#ffbc4b', flexShrink: 0 }}><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" /></svg>
+                <span>EVERYTHING INCLUDED</span>
+                <svg width="4" height="4" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: 0.4, margin: "0 6px", flexShrink: 0 }}><circle cx="5" cy="5" r="5" /></svg>
+                <span>ZERO SUBSCRIPTIONS</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span><strong>1-Tap Google Maps:</strong> No more 'location bhejna' calls</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span><strong>Live Countdown & Timeline:</strong> Haldi, Sangeet & Shadi</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span><strong>HD Couple Gallery:</strong> Flaunt your pre-wedding portraits</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span><strong>Unlimited Shares:</strong> WhatsApp, Instagram, or direct web link</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.4 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span><strong>6 Months Cloud Hosting:</strong> Ad-free & guaranteed fast loading</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3-Badge Guarantee Reassurance Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                Instant Link Delivery
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                Free Unlimited Edits
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>
+                Zero Watermarks
+              </div>
+            </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace' }); window.location.href = '/cart?template=grand-palace'; }}>
@@ -455,22 +595,21 @@ export default function StarfallPage() {
           </div>
           
         </div>
+      
+        {/* ------------------- HANDWRITTEN NOTE (INSIDE SECTION) ------------------- */}
+        <div style={{ width: '100%', textAlign: 'center', paddingTop: '40px', paddingBottom: '20px', position: 'relative', zIndex: 10 }}>
+          <span style={{ 
+            fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
+            fontSize: '1.5rem', 
+            fontWeight: 600, 
+            color: 'rgba(255,255,255,0.7)',
+            letterSpacing: '0.5px',
+            display: 'inline-block'
+          }}>
+            ..and more beautiful cards coming soon
+          </span>
+        </div>
       </section>
-
-      {/* ─────────────────── HANDWRITTEN NOTE ─────────────────── */}
-      <div style={{ width: '100%', textAlign: 'center', background: '#050505', paddingBottom: '120px', paddingTop: '0px', position: 'relative', zIndex: 10 }}>
-        <span style={{ 
-          fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
-          fontSize: '1.5rem', 
-          fontWeight: 600, 
-          color: 'rgba(255,255,255,0.7)',
-          letterSpacing: '0.5px',
-          
-          display: 'inline-block'
-        }}>
-          ..and more beautiful cards coming soon
-        </span>
-      </div>
 
       {/* ─────────────────── MOVING MARQUEE BANNER ─────────────────── */}
       <div style={{ background: 'linear-gradient(90deg, #050505, #17070a, #4a0e1b, #050505)', overflow: 'hidden', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex' }}>
@@ -494,8 +633,82 @@ export default function StarfallPage() {
         </div>
       </div>
 
+      {/* ------------------- MULTI-DEVICE RESPONSIVE SHOWCASE ------------------- */}
+      <section id="sf-devices" style={{ 
+        position: 'relative', 
+        background: '#050505',
+        padding: '120px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        {/* Dynamic Wave Arcs background canvas representing mobile connectivity & guest sharing */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.65 }}>
+          <WaveArcs 
+            backgroundColor="#050505"
+            lineColor="#ffbc4b"
+            lineWidth={1.2}
+            lineCount={56}
+            speed={3.5}
+            glow={14}
+            interactive={true}
+          />
+        </div>
+
+        {/* Feathered edge masks for seamless transition */}
+        <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to bottom, #050505 0%, transparent 100%)', zIndex: 1, pointerEvents: 'none' }} />
+        <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to top, #050505 0%, transparent 100%)', zIndex: 1, pointerEvents: 'none' }} />
+
+        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', textAlign: 'center' }}>
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: '8px', 
+              background: 'rgba(255, 188, 75, 0.08)', border: '1px solid rgba(255, 188, 75, 0.22)', 
+              color: '#ffbc4b', padding: '6px 16px', borderRadius: '999px', 
+              fontSize: '0.813rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 16 
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+              </svg>
+              UNIVERSAL COMPATIBILITY
+            </div>
+            <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 auto 16px', letterSpacing: '-0.5px', maxWidth: 720, lineHeight: 1.15 }}>
+              Flawless on every screen your <em style={{ color: '#e11d48', fontStyle: 'italic' }}>guests hold.</em>
+            </h2>
+            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 640, margin: '0 auto' }}>
+              From your chacha's iPad to your college friends' iPhones — crystal clear typography, zero awkward pinching, and instant 1-tap navigation across every device.
+            </p>
+          </div>
+
+          <div style={{ 
+            position: 'relative', 
+            width: '100%', 
+            maxWidth: 960, 
+            margin: '0 auto' 
+          }}>
+            <Image 
+              src="/uploads/multidevice.png" 
+              alt="ShadiwalaCard responsive multi-device preview on iPhone, Tablet and Laptop" 
+              width={1200} 
+              height={675} 
+              style={{ width: '100%', height: 'auto', display: 'block' }} 
+              sizes="(max-width: 1024px) 100vw, 960px"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ─────────────────── HOW IT WORKS ─────────────────── */}
-      <section style={{ background: 'transparent', padding: '120px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section style={{ 
+        position: 'relative',
+        background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
+        padding: '120px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
         <div className="sf-container" style={{ maxWidth: 1000, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: 0, letterSpacing: '-0.5px' }}>
@@ -540,15 +753,16 @@ export default function StarfallPage() {
       {/* ─────────────────── VENUE SECTION (PARALLAX BACKGROUND) ─────────────────── */}
       <section id="sf-venue" className="sf-sec" style={{ 
         position: 'relative', textAlign: 'center', overflow: 'hidden',
-        backgroundImage: 'url(/uploads/bold_white_theme_map.jpg)',
+        backgroundImage: 'url(/uploads/royal_venue_map.jpg)',
         backgroundAttachment: 'fixed',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}>
         {/* Luminous overlay for theme radiance and seamless edge blending */}
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(5,5,5,0.85)', zIndex: 1 }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgb(5, 5, 5) 0%, transparent 15%, transparent 85%, rgb(5, 5, 5) 100%)', zIndex: 1 }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgb(5, 5, 5) 0%, transparent 15%, transparent 1, rgb(5, 5, 5) 100%)', zIndex: 1 }} />
+        {/* Rich cinematic color grade letting gold roads shine while blending edges */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(30, 8, 12, 0.6) 0%, rgba(5, 5, 5, 0.85) 65%, #050505 100%)', zIndex: 1 }} />
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #050505 0%, transparent 25%, transparent 75%, #050505 100%)', zIndex: 1 }} />
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #050505 0%, transparent 20%, transparent 80%, #050505 100%)', zIndex: 1 }} />
 
         {/* Content */}
         <div className="sf-container" style={{ position: 'relative', zIndex: 2, maxWidth: 720 }}>
@@ -581,7 +795,13 @@ export default function StarfallPage() {
       </section>
 
       {/* ─────────────────── PRE-WEDDING GALLERY (ORIGINKIT 3D SLIDESHOW) ─────────────────── */}
-      <section id="sf-gallery" style={{ background: '#050505', overflow: 'hidden', paddingTop: '120px', paddingBottom: '0px' }}>
+      <section id="sf-gallery" style={{ 
+        position: 'relative',
+        background: 'radial-gradient(circle at 50% 40%, rgba(225, 29, 72, 0.14) 0%, rgba(30, 5, 10, 0.4) 50%, #050505 80%)', 
+        overflow: 'hidden', 
+        paddingTop: '120px', 
+        paddingBottom: '0px' 
+      }}>
         <div className="sf-container" style={{ marginBottom: '40px' }}>
           <h2 className="sf-section-h2" style={{ textAlign: 'center', fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 auto', letterSpacing: '-0.5px', maxWidth: 720, lineHeight: 1.15 }}>
               Flaunt those gorgeous <em style={{ color: '#e11d48', fontStyle: 'italic' }}>couple shots</em> in style.
@@ -603,29 +823,27 @@ export default function StarfallPage() {
               ]}
            />
         </div>
+      
+        {/* ------------------- HANDWRITTEN NOTE 2 (INSIDE GALLERY) ------------------- */}
+        <div style={{ width: '100%', textAlign: 'center', paddingTop: '80px', paddingBottom: '120px', position: 'relative', zIndex: 10 }}>
+          <span style={{ 
+            fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
+            fontSize: '1.5rem', 
+            fontWeight: 600, 
+            color: 'rgba(255,255,255,0.7)',
+            letterSpacing: '0.5px',
+            display: 'inline-block'
+          }}>
+            ..because your story deserves to be celebrated
+          </span>
+        </div>
       </section>
-
-      {/* ─────────────────── REVIEWS ─────────────────── */}
-      {/* ------------------- HANDWRITTEN NOTE 2 ------------------- */}
-      <div style={{ width: '100%', textAlign: 'center', background: '#050505', paddingTop: '80px', paddingBottom: '0px', position: 'relative', zIndex: 10 }}>
-        <span style={{ 
-          fontFamily: "var(--font-handwriting), 'Caveat', cursive", 
-          fontSize: '1.5rem', 
-          fontWeight: 600, 
-          color: 'rgba(255,255,255,0.7)',
-          letterSpacing: '0.5px',
-          display: 'inline-block'
-        }}>
-          ..because your story deserves to be celebrated
-        </span>
-      </div>
 
             {/* ------------------- FINAL CONVERSION (CLIMAX CTA) SECTION ------------------- */}
       <section style={{ 
-          position: 'relative',
-          marginTop: '120px',
-          background: '#050505',
-          padding: '240px 20px', 
+            position: 'relative',
+            background: '#050505',
+          padding: 'clamp(100px, 14vw, 200px) 20px', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
@@ -650,7 +868,7 @@ export default function StarfallPage() {
           
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', pointerEvents: 'none' }}>
-                <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { const el = document.getElementById('sf-collection'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}>
+                <LiquidButton size="xl" style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} onClick={() => { posthog?.capture('customize_clicked', { template_id: 'grand-palace', source: 'climax_cta' }); window.location.href = '/cart?template=grand-palace'; }}>
                     Get Yours Now
                   </LiquidButton>
             </div>
@@ -660,7 +878,17 @@ export default function StarfallPage() {
 
       {/* ─────────────────── FOOTER ─────────────────── */}
       {/* ------------------- FAQ SECTION ------------------- */}
-      <section style={{ background: '#050505', padding: '120px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section style={{ 
+        position: 'relative',
+        background: 'radial-gradient(circle at 50% 25%, rgba(240, 125, 20, 0.2) 0%, rgba(130, 45, 15, 0.28) 45%, rgba(35, 10, 10, 0.4) 65%, #050505 80%)', 
+        padding: '120px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        {/* Ambient warm amber crown halo */}
+        <div aria-hidden style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '800px', height: '350px', background: 'radial-gradient(ellipse at top center, rgba(240, 125, 20, 0.2) 0%, rgba(140, 45, 15, 0.08) 45%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }} />
         <div className="sf-container" style={{ maxWidth: 800, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 0 16px', letterSpacing: '-0.5px' }}>
@@ -687,7 +915,10 @@ export default function StarfallPage() {
             </span>
           </div>
           <div style={{ display: 'flex', gap: 24, fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link href="/contact-us"    style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px' }}>Contact Us</Link>
+            <Link href="/contact-us" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Contact Us</Link>
+            <Link href="/privacy-policy" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Privacy Policy</Link>
+            <Link href="/terms" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Terms of Service</Link>
+            <Link href="/refund-policy" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Refund Policy</Link>
           </div>
           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             © 2026 shadiwalacard.com — Made in India 
