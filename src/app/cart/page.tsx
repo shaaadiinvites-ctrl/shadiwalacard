@@ -329,12 +329,12 @@ function CartPageContent() {
       <header className="sticky top-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="w-full max-w-[1220px] mx-auto px-5 h-[60px] flex items-center justify-center relative">
           {/* Back Button */}
-          <Link href="/v2" className="absolute left-5 flex items-center text-[#2e1065] p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <Link href="/" className="absolute left-5 flex items-center text-[#2e1065] p-2 hover:bg-gray-50 rounded-xl transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
           </Link>
 
           {/* Logo */}
-          <Link href="/v2" className="flex items-center gap-2 flex-shrink-0 select-none">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 select-none">
             <img 
               src="/uploads/envelope_icon_transparent.png" 
               alt="shadiwalacard.com Icon" 
@@ -569,7 +569,7 @@ function CartPageContent() {
       {/* FOOTER */}
       <footer className="border-t border-gray-200 pt-8 pb-24 w-full">
         <div className="flex flex-col items-center justify-center gap-4 w-full mx-auto max-w-4xl text-center">
-          <Link href="/v2" className="flex items-center justify-center gap-2 flex-shrink-0 select-none">
+          <Link href="/" className="flex items-center justify-center gap-2 flex-shrink-0 select-none">
             <img 
               src="/uploads/logo.png" 
               alt="ShadiwalaCard Logo" 

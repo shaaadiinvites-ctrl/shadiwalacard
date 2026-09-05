@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     "Indian Wedding Invitation Landing Page",
-    "indian-wedding-invitation-design"
+    "indian-wedding-invitation-design",
+    "backups"
   ]
 }

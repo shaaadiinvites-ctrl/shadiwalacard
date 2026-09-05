@@ -12,13 +12,13 @@ export default function RefundPolicyPage() {
         padding: '16px 24px'
       }}>
         <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/v2" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
             <img src="/uploads/logo.png" alt="ShadiwalaCard Logo" style={{ height: '28px', width: 'auto' }} />
             <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.2rem', color: '#FFFFFF', fontWeight: 600 }}>
               ShadiwalaCard
             </span>
           </Link>
-          <Link href="/v2" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '999px', transition: 'all 0.2s' }}>
+          <Link href="/" style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '999px', transition: 'all 0.2s' }}>
             ← Back to Home
           </Link>
         </div>

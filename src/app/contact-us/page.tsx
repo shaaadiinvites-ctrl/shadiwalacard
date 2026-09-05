@@ -44,7 +44,7 @@ export default function ContactUsPage() {
         padding: '16px 24px'
       }}>
         <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/v2" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
             <img 
               src="/uploads/logo.png" 
               alt="ShadiwalaCard Logo" 
@@ -55,7 +55,7 @@ export default function ContactUsPage() {
             </span>
           </Link>
           <Link 
-            href="/v2" 
+            href="/" 
             style={{ 
               fontSize: '0.875rem', 
               color: 'rgba(255,255,255,0.75)', 

@@ -20,7 +20,7 @@ export default function GrandPalaceDemo() {
       {/* Floating Back Navigation for seamless return from mobile WebViews & desktop */}
       <div className="fixed top-4 left-4 z-[9000]">
         <Link
-          href="/v2"
+          href="/"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
           style={{
             background: 'rgba(10, 5, 8, 0.85)',

@@ -190,7 +190,7 @@ function CheckoutInner() {
         >
           {loading ? "Processing…" : `Pay ₹${total.toLocaleString("en-IN")} with Razorpay`}
         </button>
-        <Link href="/v2" className="block mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors">← Back to website</Link>
+        <Link href="/" className="block mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors">← Back to website</Link>
       </div>
     </div>
   );
