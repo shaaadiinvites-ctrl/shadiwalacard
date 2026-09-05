@@ -246,11 +246,71 @@ export default function LandingPageV2() {
         .sf-section-h2:hover { transform: translateY(-3px); text-shadow: 0 10px 30px rgba(225, 29, 72, 0.25); }
         .sf-nav-links   { display: none !important; }
         .sf-hamburger   { display: flex !important; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
-        .sf-venue-h2    { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
-        .sf-showcase-actions { flex-direction: column; gap: 12px; width: 100%; align-items: center; justify-content: center; }
-        .sf-showcase-actions > * { width: 100% !important; max-width: 320px !important; justify-content: center !important; text-align: center !important; }
-        .sf-showcase-trust { justify-content: center; text-align: center; }
-        
+        /* Template Showcase Content: Mobile Center-Aligned & Equal Margins */
+        .sf-showcase-content {
+          align-items: center !important;
+          text-align: center !important;
+          width: 100%;
+          max-width: 440px;
+          margin: 0 auto;
+        }
+        .sf-showcase-content .sf-eyebrow {
+          justify-content: center !important;
+          margin-bottom: 14px;
+        }
+        .sf-showcase-content .sf-section-h2 {
+          text-align: center !important;
+          margin: 0 auto 14px auto !important;
+        }
+        .sf-showcase-content .sf-price-lockup {
+          justify-content: center !important;
+          margin: 0 auto 20px auto !important;
+        }
+        .sf-showcase-content .sf-showcase-p {
+          text-align: center !important;
+          margin: 0 auto 32px auto !important;
+        }
+        .sf-showcase-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
+          max-width: 360px;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px auto !important;
+        }
+        .sf-showcase-actions > * {
+          width: 100% !important;
+          max-width: 360px !important;
+          justify-content: center !important;
+          text-align: center !important;
+        }
+        .sf-guarantee-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
+          max-width: 440px;
+          align-items: center;
+          text-align: center;
+          margin: 0 auto;
+        }
+        .sf-guarantee-lockup {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center !important;
+          text-align: center !important;
+          gap: 8px;
+        }
+        .sf-showcase-trust {
+          display: flex;
+          align-items: center;
+          justify-content: center !important;
+          text-align: center !important;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
         .sf-step-card   { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .sf-step-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(225, 29, 72, 0.15) !important; }
 
@@ -301,11 +361,55 @@ export default function LandingPageV2() {
           }
         }
 
-        /* sm: 540px+ */
-        @media (min-width: 540px) {
-          .sf-showcase-actions { flex-direction: row; align-items: center; justify-content: flex-start; width: auto; gap: 20px; }
-          .sf-showcase-actions > * { width: auto !important; max-width: none !important; }
-          .sf-showcase-trust { justify-content: flex-start; text-align: left; }
+        /* Desktop: 992px+ side-by-side showcase layout */
+        @media (min-width: 992px) {
+          .sf-showcase-content {
+            align-items: flex-start !important;
+            text-align: left !important;
+            max-width: 520px;
+            margin: 0;
+          }
+          .sf-showcase-content .sf-eyebrow {
+            justify-content: flex-start !important;
+          }
+          .sf-showcase-content .sf-section-h2 {
+            text-align: left !important;
+            margin: 0 0 14px 0 !important;
+          }
+          .sf-showcase-content .sf-price-lockup {
+            justify-content: flex-start !important;
+            margin: 0 0 20px 0 !important;
+          }
+          .sf-showcase-content .sf-showcase-p {
+            text-align: left !important;
+            margin: 0 0 32px 0 !important;
+          }
+          .sf-showcase-actions {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            width: auto;
+            max-width: none;
+            gap: 16px;
+            margin: 0 0 24px 0 !important;
+          }
+          .sf-showcase-actions > * {
+            width: auto !important;
+            max-width: none !important;
+          }
+          .sf-guarantee-wrap {
+            align-items: flex-start;
+            text-align: left;
+            margin: 0;
+          }
+          .sf-guarantee-lockup {
+            justify-content: flex-start !important;
+            text-align: left !important;
+          }
+          .sf-showcase-trust {
+            justify-content: flex-start !important;
+            text-align: left !important;
+          }
         }
 
         /* md: 768px+ tablet */
@@ -676,8 +780,8 @@ export default function LandingPageV2() {
           </div>
 
           {/* Right: The Text & Actions */}
-          <div style={{ flex: '1 1 420px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <span style={{ 
+          <div className="sf-showcase-content" style={{ flex: '1 1 420px', justifyContent: 'center' }}>
+            <span className="sf-eyebrow" style={{ 
               display: 'inline-flex', 
               alignItems: 'center', 
               gap: '6px', 
@@ -685,15 +789,14 @@ export default function LandingPageV2() {
               fontWeight: 700, 
               letterSpacing: '1.4px', 
               textTransform: 'uppercase', 
-              color: '#ffbc4b', 
-              margin: '0 0 14px' 
+              color: '#ffbc4b'
             }}>
               ✦ SIGNATURE DIGITAL INVITATION
             </span>
 
             <h2 className="sf-section-h2" style={{ 
               fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
-              fontWeight: 700, color: '#FFFFFF', margin: '0 0 14px', 
+              fontWeight: 700, color: '#FFFFFF', 
               letterSpacing: '-0.5px', lineHeight: 1.15
             }}>
               Your dream Shadi deserves a <br/>
@@ -709,7 +812,7 @@ export default function LandingPageV2() {
             </h2>
 
             {/* Price & Offer Lockup */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 20px', flexWrap: 'wrap' }}>
+            <div className="sf-price-lockup" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'line-through', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
                 <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#FFFFFF', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>₹799</span>
@@ -722,11 +825,11 @@ export default function LandingPageV2() {
               </span>
             </div>
 
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: '0 0 32px', maxWidth: 480 }}>
+            <p className="sf-showcase-p" style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 480 }}>
               The Grand Palace is our flagship digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
 
-            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', margin: '0 0 24px' }}>
+            <div className="sf-showcase-actions" style={{ flexWrap: 'wrap' }}>
               <LiquidButton 
                 size="xl" 
                 style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
@@ -753,15 +856,15 @@ export default function LandingPageV2() {
             </div>
 
             {/* Unboxed, Clean Trust & Guarantee Strip */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 480 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600 }}>
+            <div className="sf-guarantee-wrap">
+              <div className="sf-guarantee-lockup" style={{ color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
                 <span>100% Money-Back Guarantee &mdash; Full refund if not delighted</span>
               </div>
-              <div className="sf-showcase-trust" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', flexWrap: 'wrap' }}>
+              <div className="sf-showcase-trust" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
                   Instant Link Delivery
