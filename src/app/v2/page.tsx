@@ -523,14 +523,11 @@ export default function StarfallPage() {
                 objectFit: 'cover'
               }}
             />
-            {/* Very subtle overlay just in case the video is too bright */}
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 45%, rgba(255, 188, 75, 0.12) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55) 100%)' }} />
+            {/* Subtle dark vignette overlay for high contrast text readability */}
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%)' }} />
           </div>
 
           {/* Content */}
-          {/* Ambient warm gold/amber halo */}
-          <div aria-hidden style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '850px', height: '400px', background: 'radial-gradient(circle at center, rgba(255, 188, 75, 0.18) 0%, rgba(225, 140, 20, 0.08) 45%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none', zIndex: 5 }} />
-
           <div className="sf-container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 900 }}>
             <h1 className="sf-hero-h1 sf-fade-1" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 500, lineHeight: 1.0, color: '#FFFFFF' }}>
               India's Most Premium<br />
