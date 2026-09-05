@@ -167,6 +167,21 @@ export default function LandingPageV2() {
           .sf-tcard { transform: none !important; }
         }
 
+        /* ── Wave arcs background (hidden on mobile to prevent distortion & text slicing) ── */
+        .sf-wave-arcs-wrapper {
+          display: block;
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          opacity: 0.55;
+          mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, black 60%, black 85%, transparent 100%);
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, black 60%, black 85%, transparent 100%);
+        }
+        @media (max-width: 767px) {
+          .sf-wave-arcs-wrapper { display: none !important; }
+        }
+
         /* ── Venue pin ── */
         .sf-pin-bounce { animation: sfPinBounce 2s ease-in-out infinite; }
         .sf-radar { animation: sfRadar 2s ease-out infinite; }
@@ -803,13 +818,27 @@ export default function LandingPageV2() {
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-        {/* Dynamic Wave Arcs background canvas representing mobile connectivity & guest sharing */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.65 }}>
+        {/* Ambient warm golden-ruby aura behind devices (Flawless on Mobile & Desktop) */}
+        <div aria-hidden style={{ 
+          position: 'absolute', 
+          top: '55%', 
+          left: '50%', 
+          transform: 'translate(-50%, -20%)', 
+          width: 'clamp(320px, 90vw, 900px)', 
+          height: 'clamp(240px, 45vw, 440px)', 
+          background: 'radial-gradient(ellipse at center, rgba(255, 188, 75, 0.18) 0%, rgba(225, 29, 72, 0.1) 42%, transparent 72%)', 
+          filter: 'blur(55px)', 
+          pointerEvents: 'none', 
+          zIndex: 1 
+        }} />
+
+        {/* Dynamic Wave Arcs background canvas (Desktop only, gracefully masked behind devices) */}
+        <div className="sf-wave-arcs-wrapper">
           <WaveArcs 
             backgroundColor="#050505"
             lineColor="#ffbc4b"
             lineWidth={1.2}
-            lineCount={windowWidth < 768 ? 26 : 56}
+            lineCount={56}
             speed={3.5}
             glow={14}
             interactive={true}
