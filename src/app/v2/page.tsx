@@ -766,7 +766,7 @@ export default function LandingPageV2() {
             letterSpacing: '0.5px',
             display: 'inline-block'
           }}>
-            ...and more beautiful cards coming soon
+            ...and more beautiful invites coming soon
           </span>
         </div>
       </section>
@@ -1021,7 +1021,7 @@ export default function LandingPageV2() {
             Ready to create your perfect Shadi invite?
           </h2>
 
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
             <LiquidButton 
               size="xl" 
               style={{ padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
@@ -1032,29 +1032,6 @@ export default function LandingPageV2() {
             >
               Buy Now
             </LiquidButton>
-
-            {/* 100% Refund Reassurance Subtext */}
-            <div style={{ 
-              marginTop: '20px', 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              color: 'rgba(255, 255, 255, 0.8)', 
-              fontSize: '0.813rem',
-              textAlign: 'center',
-              padding: '8px 18px',
-              borderRadius: '999px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 188, 75, 0.25)',
-              backdropFilter: 'blur(12px)'
-            }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-              <span>100% Risk-Free Guarantee &middot; Full refund if you&apos;re not completely satisfied</span>
-            </div>
           </div>
         </div>
       </section>
