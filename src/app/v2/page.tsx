@@ -661,22 +661,36 @@ export default function LandingPageV2() {
                 <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 2 }} />
               </div>
               
-              <div style={{ padding: '24px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.6rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px', letterSpacing: '-0.3px' }}>The Grand Palace</h3>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 0 }}>
-                  <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'line-through', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
-                  <span style={{ fontSize: '0.7rem', color: '#050505', background: '#ffbc4b', border: 'none', padding: '3px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '0.3px' }}>38% OFF</span>
-                  <span style={{ fontFamily: "var(--font-body), 'Inter', sans-serif", fontSize: '1.6rem', color: '#FFFFFF', fontWeight: 800, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>₹799</span>
-                </div>
+              <div style={{ padding: '20px 20px 22px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                  The Grand Palace
+                </h3>
+                <span style={{ fontSize: '0.813rem', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.3px', fontWeight: 500 }}>
+                  Royal Heritage Edition &middot; Interactive Web Invite
+                </span>
               </div>
             </div>
           </div>
 
           {/* Right: The Text & Actions */}
-          <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ flex: '1 1 420px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              fontSize: '0.75rem', 
+              fontWeight: 700, 
+              letterSpacing: '1.2px', 
+              textTransform: 'uppercase', 
+              color: '#ffbc4b', 
+              marginBottom: '10px' 
+            }}>
+              ✦ SIGNATURE DIGITAL INVITATION
+            </span>
+
             <h2 className="sf-section-h2" style={{ 
               fontFamily: "var(--font-display), 'Montserrat', sans-serif", 
-              fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', 
+              fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', 
               letterSpacing: '-0.5px', lineHeight: 1.15
             }}>
               Your dream Shadi deserves a <br/>
@@ -690,27 +704,63 @@ export default function LandingPageV2() {
                 animation: 'sfShimmer 4s linear infinite'
               }}>stunning</em> invite.
             </h2>
-            <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 30, maxWidth: 460 }}>
-              The Grand Palace is our ultra-premium digital invitation. Add your photos, venue map, and live countdown in just a few taps.
+
+            {/* Price & Offer Lockup */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px', marginBottom: '18px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'line-through', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>₹1,299</span>
+                <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#FFFFFF', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>₹799</span>
+              </div>
+              <span style={{ fontSize: '0.72rem', color: '#050505', background: '#ffbc4b', padding: '3px 8px', borderRadius: '6px', fontWeight: 800, letterSpacing: '0.4px', textTransform: 'uppercase' }}>
+                38% OFF
+              </span>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+                · Limited time launch price
+              </span>
+            </div>
+
+            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.55, marginBottom: '22px', maxWidth: 480 }}>
+              The Grand Palace is our flagship digital invitation. Add your photos, venue map, and live countdown in just a few taps.
             </p>
 
-            {/* Sleek, Unboxed Feature Highlights */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '36px', maxWidth: 460 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
-                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>1-Tap Google Maps:</strong> Direct venue navigation for guests</span>
+            {/* Sleek, Modern Feature Chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '26px', maxWidth: 500 }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '8px 14px', borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>1-Tap Google Maps</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
-                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>Live Countdown &amp; Timeline:</strong> Haldi, Sangeet &amp; Shadi</span>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '8px 14px', borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Live Countdown &amp; Events</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
-                <span><strong style={{ color: '#FFFFFF', fontWeight: 600 }}>HD Couple Gallery:</strong> Flaunt your pre-wedding portraits</span>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '8px 14px', borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '0.82rem', color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>HD Couple Gallery</span>
               </div>
             </div>
 
-            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', marginBottom: '22px' }}>
+            <div className="sf-showcase-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '18px' }}>
               <LiquidButton 
                 size="xl" 
                 style={{ pointerEvents: 'auto', padding: '0 36px', color: '#1A202C', fontWeight: 600, background: '#FFFFFF', border: 'none', boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)' }} 
@@ -724,79 +774,43 @@ export default function LandingPageV2() {
               
               <Link href="/demo/grand-palace" onClick={() => posthog?.capture('demo_clicked', { template_id: 'grand-palace' })} style={{ 
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: 'transparent', color: '#FFFFFF', 
-                borderRadius: '999px', padding: '12px 32px', fontSize: '1rem', fontWeight: 500,
-                border: '1px solid rgba(255,255,255,0.3)',
+                background: 'rgba(255,255,255,0.06)', color: '#FFFFFF', 
+                borderRadius: '999px', padding: '12px 28px', fontSize: '0.95rem', fontWeight: 500,
+                border: '1px solid rgba(255,255,255,0.2)',
                 transition: 'all 0.2s ease', textDecoration: 'none'
-              }} onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              }} onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
                 </svg>
                 View Demo
               </Link>
             </div>
 
-            {/* 100% Money-Back Guarantee Badge */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 18px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, rgba(255, 188, 75, 0.08) 0%, rgba(20, 20, 20, 0.8) 100%)',
-              border: '1px solid rgba(255, 188, 75, 0.28)',
-              backdropFilter: 'blur(16px)',
-              boxShadow: '0 8px 24px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 188, 75, 0.15)',
-              marginBottom: '18px',
-              maxWidth: '480px'
-            }}>
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(255, 188, 75, 0.2) 0%, rgba(225, 29, 72, 0.15) 100%)',
-                border: '1px solid rgba(255, 188, 75, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Unboxed, Clean Trust & Guarantee Strip */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 480 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
+                <span>100% Money-Back Guarantee &mdash; Full refund if not delighted</span>
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#ffbc4b', letterSpacing: '0.2px', lineHeight: 1.2 }}>
-                    100% Money-Back Guarantee
-                  </span>
-                  <span style={{ fontSize: '0.625rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255, 188, 75, 0.2)', color: '#ffbc4b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Zero Risk
-                  </span>
-                </div>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.75)', lineHeight: 1.35, display: 'block', marginTop: '2px' }}>
-                  If you&apos;re not completely delighted with your invite, get a 100% full refund &mdash; no questions asked.
+              <div className="sf-showcase-trust" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                  Instant Link Delivery
+                </span>
+                <span style={{ opacity: 0.3 }}>•</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  Free Unlimited Edits
+                </span>
+                <span style={{ opacity: 0.3 }}>•</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                  Zero Watermarks
                 </span>
               </div>
-            </div>
-
-            {/* Subtle Reassurance Trust Line */}
-            <div className="sf-showcase-trust" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.813rem', flexWrap: 'wrap' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                Instant Link Delivery
-              </span>
-              <span style={{ opacity: 0.3 }}>•</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                Free Unlimited Edits
-              </span>
-              <span style={{ opacity: 0.3 }}>•</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffbc4b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>
-                100% Refund Guarantee
-              </span>
             </div>
           </div>
           
