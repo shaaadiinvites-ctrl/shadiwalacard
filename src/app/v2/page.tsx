@@ -777,11 +777,11 @@ export default function LandingPageV2() {
         <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to bottom, #050505 0%, transparent 100%)', zIndex: 1, pointerEvents: 'none' }} />
         <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to top, #050505 0%, transparent 100%)', zIndex: 1, pointerEvents: 'none' }} />
 
-        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', textAlign: 'center' }}>
+        <div className="sf-container" style={{ maxWidth: 1100, width: '100%', textAlign: 'center', position: 'relative', zIndex: 2 }}>
           <div style={{ marginBottom: 48 }}>
             <div style={{ 
               display: 'inline-flex', alignItems: 'center', gap: '8px', 
-              background: 'rgba(255, 188, 75, 0.08)', border: '1px solid rgba(255, 188, 75, 0.22)', 
+              background: 'rgba(255, 188, 75, 0.12)', border: '1px solid rgba(255, 188, 75, 0.35)', 
               color: '#ffbc4b', padding: '6px 16px', borderRadius: '999px', 
               fontSize: '0.813rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 16 
             }}>
@@ -790,10 +790,10 @@ export default function LandingPageV2() {
               </svg>
               UNIVERSAL COMPATIBILITY
             </div>
-            <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 auto 16px', letterSpacing: '-0.5px', maxWidth: 720, lineHeight: 1.15 }}>
+            <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 auto 16px', letterSpacing: '-0.5px', maxWidth: 720, lineHeight: 1.15, textShadow: '0 2px 20px rgba(0,0,0,0.9)' }}>
               Flawless on every screen your <em style={{ color: '#e11d48', fontStyle: 'italic' }}>guests hold.</em>
             </h2>
-            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 640, margin: '0 auto' }}>
+            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, maxWidth: 640, margin: '0 auto' }}>
               From your chacha's iPad to your college friends' iPhones — crystal clear typography, zero awkward pinching, and instant 1-tap navigation across every device.
             </p>
           </div>
@@ -1000,7 +1000,7 @@ export default function LandingPageV2() {
       }}>
         {/* Ambient warm amber crown halo */}
         <div aria-hidden style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '800px', height: '350px', background: 'radial-gradient(ellipse at top center, rgba(240, 125, 20, 0.2) 0%, rgba(140, 45, 15, 0.08) 45%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }} />
-        <div className="sf-container" style={{ maxWidth: 800, width: '100%' }}>
+        <div className="sf-container" style={{ maxWidth: 800, width: '100%', position: 'relative', zIndex: 2 }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: '0 0 16px', letterSpacing: '-0.5px' }}>
               Common Questions
