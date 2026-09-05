@@ -155,8 +155,36 @@ export default function StarfallPage() {
 
         /* Base: 412px (Pixel 7) */
         h2              { font-size: 2rem; }
-        .sf-hero-h1     { font-size: clamp(2.3rem, 7.5vw, 4rem); letter-spacing: -0.5px; line-height: 1.05; margin-bottom: 24px !important; }
+        .sf-hero-h1     { font-size: clamp(2.3rem, 7.5vw, 4rem); letter-spacing: -0.5px; line-height: 1.05; margin-bottom: clamp(38px, 5.5vw, 54px) !important; }
         .sf-hero-sub    { font-size: 0.875rem; }
+        .sf-hero-cta    {
+          height: 54px;
+          padding: 0 36px;
+          border-radius: 999px;
+          background: #FFFFFF;
+          color: #050505;
+          font-size: 1.063rem;
+          font-weight: 600;
+          letter-spacing: -0.2px;
+          border: none;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          white-space: nowrap;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 32px rgba(255, 188, 75, 0.28);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .sf-hero-cta:hover {
+          transform: scale(1.03);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 44px rgba(255, 188, 75, 0.45);
+        }
+        .sf-hero-cta:active {
+          transform: scale(0.97);
+        }
         .sf-section-pad { padding: 120px 0 !important; }
         .sf-sec         { padding: 120px 0 !important; }
         .sf-sec-split-b { padding: 120px 0 !important; }
@@ -528,35 +556,24 @@ export default function StarfallPage() {
               </span>
             </h1>
 
-            <p className="sf-hero-sub sf-fade-2" style={{ lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.85)', margin: '0 auto 36px' }}>
+            <p className="sf-hero-sub sf-fade-2" style={{ lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.85)', margin: '0 auto clamp(32px, 5vw, 44px)', maxWidth: 680 }}>
               Wow your guests with a stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
             </p>
 
-            <div className="sf-cta-pair sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LiquidButton 
-                size="xl" 
-                style={{ 
-                  padding: '0 36px', 
-                  color: '#050505', 
-                  fontWeight: 600, 
-                  background: '#FFFFFF', 
-                  border: 'none', 
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.2)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+            <div className="sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button
                 onClick={() => {
                   posthog?.capture('scroll_to_collection_clicked', { source: 'hero_single_cta' });
                   const el = document.getElementById('sf-collection');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
+                className="sf-hero-cta"
               >
                 <span>See What's Included</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 13l5 5 5-5M12 4v14"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
                 </svg>
-              </LiquidButton>
+              </button>
             </div>
           </div>
         </div>
