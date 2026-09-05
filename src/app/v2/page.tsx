@@ -11,8 +11,10 @@ import { usePostHog } from 'posthog-js/react';
 
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
+  { q: "Can I add separate events like Haldi, Mehndi, and Sangeet?", a: "Yes! You can configure every ceremony with its own date, timing, dress code, and dedicated 1-tap Google Maps pin." },
   { q: "How long does it take to get my invite?", a: "Instantly. Once you complete the checkout and upload your photos, your custom web invite is generated and ready to share in seconds." },
-  { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." }
+  { q: "Can I send this on WhatsApp?", a: "Absolutely. You can share your unique invite link on WhatsApp, Instagram, SMS, or anywhere else. It opens perfectly on any smartphone." },
+  { q: "Is there a limit to how many guests or groups I can send it to?", a: "Zero limits. You can forward your link to 50 guests or 5,000 guests across WhatsApp, Instagram, or SMS with unlimited views." }
 ];
 
 const gallerySlides = [
