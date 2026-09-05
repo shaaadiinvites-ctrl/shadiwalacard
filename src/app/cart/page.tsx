@@ -540,24 +540,31 @@ function CartPageContent() {
       {/* FOOTER */}
       <footer className="border-t border-gray-200 pt-8 pb-24 w-full">
         <div className="flex flex-col items-center justify-center gap-4 w-full mx-auto max-w-4xl text-center">
-          <Link href="/" className="flex items-center justify-center gap-2 flex-shrink-0 select-none">
+          <Link href="/v2" className="flex items-center justify-center gap-2 flex-shrink-0 select-none">
             <img 
-              src="/uploads/envelope_icon_transparent.png" 
-              alt="shadiwalacard.com Icon" 
-              className="h-8 w-8 object-contain rounded"
+              src="/uploads/logo.png" 
+              alt="ShadiwalaCard Logo" 
+              className="h-8 w-auto object-contain rounded"
             />
             <span className="text-[18px] font-bold text-[#2e1065] tracking-wide">
               Shadiwala<span className="text-[#9d174d]">Card</span>
             </span>
           </Link>
-          <div className="flex items-center justify-center gap-6 text-[14px] font-medium text-gray-500">
-            <span className="opacity-50 cursor-not-allowed">Terms of Service</span>
-            <span className="opacity-50 cursor-not-allowed">Privacy Policy</span>
+          <div className="flex items-center justify-center gap-6 text-[14px] font-medium text-gray-500 flex-wrap">
+            <Link href="/terms" className="hover:text-[#4a148c] transition-colors">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-[#4a148c] transition-colors">Privacy Policy</Link>
+            <Link href="/refund-policy" className="hover:text-[#4a148c] transition-colors">Refund Policy</Link>
             <Link href="/contact-us" className="hover:text-[#4a148c] transition-colors">Support</Link>
           </div>
           <span className="text-[12px] font-normal text-gray-400 flex items-center justify-center gap-1.5 mt-2">
             © 2026 shadiwalacard.com — Made in India 
-            <img src="https://flagcdn.com/w20/in.png" alt="India" className="w-[14px] h-[10px]" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2 }}>
+              <rect width="900" height="200" fill="#FF9933"/>
+              <rect y="200" width="900" height="200" fill="#FFFFFF"/>
+              <rect y="400" width="900" height="200" fill="#138808"/>
+              <circle cx="450" cy="300" r="80" stroke="#000080" strokeWidth="15" fill="none"/>
+              <circle cx="450" cy="300" r="20" fill="#000080"/>
+            </svg>
           </span>
         </div>
       </footer>

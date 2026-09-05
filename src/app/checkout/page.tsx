@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { getTemplate } from "@/lib/templates";
 
 declare global {
@@ -46,7 +47,7 @@ function loadTurnstileScript(): Promise<boolean> {
 function CheckoutInner() {
   const params = useSearchParams();
   const router = useRouter();
-  const templateId = params.get("template") || "royal-heritage";
+  const templateId = params.get("template") || "grand-palace";
   const template = getTemplate(templateId);
 
   const [loading, setLoading] = useState(false);
@@ -189,7 +190,7 @@ function CheckoutInner() {
         >
           {loading ? "Processing…" : `Pay ₹${total.toLocaleString("en-IN")} with Razorpay`}
         </button>
-        <a href="/" className="block mt-4 text-sm text-gray-400 hover:text-gray-600">← Choose a different template</a>
+        <Link href="/v2" className="block mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors">← Back to website</Link>
       </div>
     </div>
   );
