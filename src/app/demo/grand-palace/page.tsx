@@ -17,6 +17,27 @@ export const metadata = {
 export default function GrandPalaceDemo() {
   return (
     <main className="relative flex min-h-screen flex-col w-full">
+      {/* Floating Back Navigation for seamless return from mobile WebViews & desktop */}
+      <div className="fixed top-4 left-4 z-[9000]">
+        <Link
+          href="/v2"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
+          style={{
+            background: 'rgba(10, 5, 8, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            textDecoration: 'none',
+          }}
+          aria-label="Back to ShadiwalaCard website"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
+        </Link>
+      </div>
+
       <Watermark />
       {/* Background container */}
       <div className="fixed inset-0 z-[-3] bg-gradient-to-b from-[#030c22] via-[#081e28] to-[#0d2a33]" />

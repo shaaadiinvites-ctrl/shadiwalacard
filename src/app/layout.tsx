@@ -1,23 +1,67 @@
-import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Montserrat, Inter, Caveat } from "next/font/google";
 import { PostHogProvider } from "@/providers/PostHogProvider";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+const montserrat = Montserrat({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  style: ['normal', 'italic'],
 });
 
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
+const caveat = Caveat({
+  variable: "--font-handwriting",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+export const viewport: Viewport = {
+  themeColor: "#050505",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "ShadiwalaCard — Bespoke Digital Wedding Invitations",
-  description: "Hand-painted digital shadi invitations with live RSVP, venue map & countdown. Trusted by couples across India.",
+  metadataBase: new URL("https://shadiwalacard.com"),
+  title: {
+    default: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
+    template: "%s | ShadiwalaCard",
+  },
+  description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, event timelines, and HD couple galleries.",
+  keywords: ["digital wedding card", "indian wedding invite", "shadi card online", "web wedding invitation", "the grand palace wedding card"],
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://shadiwalacard.com",
+    siteName: "ShadiwalaCard",
+    title: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
+    description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, and HD couple galleries.",
+    images: [
+      {
+        url: "/project3-assets/cover.jpg",
+        width: 1200,
+        height: 630,
+        alt: "The Grand Palace Digital Wedding Invitation Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
+    description: "Ultra-premium digital wedding invitations with 1-tap Google Maps venue navigation & live countdowns.",
+    images: ["/project3-assets/cover.jpg"],
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -26,8 +70,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="min-h-full flex flex-col" style={{ background: '#F2F4F8', color: '#1A202C', fontFamily: "var(--font-body), 'Inter', sans-serif" }} suppressHydrationWarning>
+    <html lang="en" className={`${montserrat.variable} ${inter.variable} ${caveat.variable} h-full antialiased`} suppressHydrationWarning data-scroll-behavior="smooth">
+      <body className="min-h-full flex flex-col" style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif" }} suppressHydrationWarning>
         <PostHogProvider>
           {children}
         </PostHogProvider>
@@ -35,3 +79,4 @@ export default function RootLayout({
     </html>
   );
 }
+

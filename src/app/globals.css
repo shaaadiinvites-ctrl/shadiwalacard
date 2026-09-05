@@ -1,10 +1,10 @@
 @import "tailwindcss";
 @source "../components/originkit";
 :root {
-  --background: #F2F4F8;
-  --foreground: #1A202C;
-  --primary: #1A202C;
-  --primary-foreground: #FFFFFF;
+  --background: #050505;
+  --foreground: #FFFFFF;
+  --primary: #FFFFFF;
+  --primary-foreground: #050505;
   --font-size: 16px;
 }
 

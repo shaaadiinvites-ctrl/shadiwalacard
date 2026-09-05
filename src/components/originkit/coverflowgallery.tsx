@@ -173,39 +173,95 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
         [n, lock]
     )
 
-    const handleCardClick = useCallback(
-        (i: number) => {
-            if (isStatic || autoplay || lockRef.current) return
-            lock()
-            setActive((a) => (i === a ? (a + 1) % n : i))
-        },
-        [isStatic, autoplay, n, lock]
-    )
-
     // Autoplay — the transition's Delay drives the time each card holds.
     const delay =
         transition && typeof transition.delay === "number"
             ? transition.delay
             : 2.5
+
+    // Autoplay timer ref so user clicks and swipes can pause/reset it
+    const autoplayTimerRef = useRef<number | null>(null)
+
+    const resetAutoplayTimer = useCallback(() => {
+        if (autoplayTimerRef.current) {
+            window.clearInterval(autoplayTimerRef.current)
+            autoplayTimerRef.current = null
+        }
+        if (!isStatic && autoplay && n >= 2) {
+            const ms = Math.max(0.3, delay) * 1000
+            const dir = autoplayDirection === "leftToRight" ? -1 : 1
+            autoplayTimerRef.current = window.setInterval(() => step(dir), ms)
+        }
+    }, [isStatic, autoplay, n, delay, autoplayDirection, step])
+
+    const handleCardClick = useCallback(
+        (i: number) => {
+            if (isStatic || lockRef.current) return
+            lock()
+            resetAutoplayTimer()
+            setActive((a) => (i === a ? (a + 1) % n : i))
+        },
+        [isStatic, n, lock, resetAutoplayTimer]
+    )
+
     useEffect(() => {
         if (isStatic || !autoplay || n < 2) return
         const ms = Math.max(0.3, delay) * 1000
         const dir = autoplayDirection === "leftToRight" ? -1 : 1
-        const id = window.setInterval(() => step(dir), ms)
-        return () => window.clearInterval(id)
+        autoplayTimerRef.current = window.setInterval(() => step(dir), ms)
+        return () => {
+            if (autoplayTimerRef.current) {
+                window.clearInterval(autoplayTimerRef.current)
+            }
+        }
     }, [isStatic, autoplay, autoplayDirection, delay, n, step])
 
     const onKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
             if (e.key === "ArrowRight") {
                 e.preventDefault()
+                resetAutoplayTimer()
                 step(1)
             } else if (e.key === "ArrowLeft") {
                 e.preventDefault()
+                resetAutoplayTimer()
                 step(-1)
             }
         },
-        [step]
+        [step, resetAutoplayTimer]
+    )
+
+    // Touch swipe gesture handlers for mobile
+    const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length === 1) {
+            touchStartRef.current = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+            }
+        }
+    }, [])
+
+    const handleTouchEnd = useCallback(
+        (e: React.TouchEvent) => {
+            if (!touchStartRef.current || e.changedTouches.length === 0) return
+            const touchEnd = e.changedTouches[0]
+            const deltaX = touchEnd.clientX - touchStartRef.current.x
+            const deltaY = touchEnd.clientY - touchStartRef.current.y
+            touchStartRef.current = null
+
+            // Only trigger if horizontal swipe is dominant and exceeds 35px threshold
+            if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+                resetAutoplayTimer()
+                if (deltaX < 0) {
+                    step(1) // swipe left -> next slide
+                } else {
+                    step(-1) // swipe right -> previous slide
+                }
+            }
+        },
+        [step, resetAutoplayTimer]
     )
 
     const { dur, ease } = cssTransition(transition)
@@ -231,6 +287,7 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
         perspective: `${PERSPECTIVE}px`,
         overflow: "hidden",
         outline: "none",
+        touchAction: "pan-y",
     }
 
     return (
@@ -240,6 +297,8 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
             role="group"
             aria-roledescription="carousel"
             onKeyDown={isStatic ? undefined : onKeyDown}
+            onTouchStart={isStatic ? undefined : handleTouchStart}
+            onTouchEnd={isStatic ? undefined : handleTouchEnd}
         >
             <div
                 style={{
@@ -252,18 +311,20 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
                 {list.map((slide, i) => {
                     let rel = i - active
                     if (loop) {
-                        if (rel > n / 2) rel -= n
-                        if (rel < -n / 2) rel += n
+                        rel = (rel % n) + (rel < -n / 2 ? n : rel > n / 2 ? -n : 0)
                     }
-                    const ax = Math.abs(rel)
-                    const visible = ax <= MAX_VISIBLE
+
+                    // Strict cutoff: any card outside the visible window is hidden
+                    // and receives no paint cost.
+                    const visible = Math.abs(rel) <= MAX_VISIBLE
                     const isActive = rel === 0
-                    const sc = Math.max(0.4, 1 - ax * SCALE_STEP)
-                    // Gap 0–20 → spacing 0 (stacked) to ~600px (far apart).
-                    const tx = rel * (gap * 30)
-                    const tz = -ax * DEPTH
-                    const ry = -rel * tilt
-                    const rz = rel * sideTilt
+
+                    // Placement along the arc.
+                    const sc = 1 - Math.abs(rel) * SCALE_STEP
+                    const ry = -rel * sideTilt
+                    const rz = -rel * tilt
+                    const tx = rel * (cardWidth * 0.55 + gap * 12)
+                    const tz = -Math.abs(rel) * DEPTH
                     const src = slide.image?.src || ""
 
                     const cardStyle: CSSProperties = {
@@ -279,9 +340,9 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
                         transform: `translate(-50%, -50%) translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${sc})`,
                         transition: transitionCss,
                         opacity: visible ? 1 : 0,
-                        cursor: autoplay || isActive ? "default" : "pointer",
+                        cursor: isStatic ? "default" : "pointer",
                         pointerEvents:
-                            visible && !isStatic && !autoplay ? "auto" : "none",
+                            visible && !isStatic ? "auto" : "none",
                         backgroundColor: "#1a1a1a",
                     }
 

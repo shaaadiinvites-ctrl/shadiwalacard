@@ -338,8 +338,28 @@ export default function LightCurtain(props: LightCurtainProps) {
         let raf = 0
         let last = performance.now()
         let clock = 0
+        let isVisible = false
+        let isPageVisible = typeof document !== "undefined" ? document.visibilityState === "visible" : true
+
+        const startLoop = () => {
+            if (!raf && isVisible && isPageVisible) {
+                last = performance.now()
+                raf = requestAnimationFrame(render)
+            }
+        }
+
+        const stopLoop = () => {
+            if (raf) {
+                cancelAnimationFrame(raf)
+                raf = 0
+            }
+        }
 
         const render = (now: number) => {
+            if (!isVisible || !isPageVisible) {
+                raf = 0
+                return
+            }
             const dt = Math.min(0.05, (now - last) / 1000)
             last = now
             const v = vRef.current
@@ -405,8 +425,8 @@ export default function LightCurtain(props: LightCurtainProps) {
             }
 
             const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
-            const cw = sizeRef.current.w || canvas.clientWidth || 1200
-            const ch = sizeRef.current.h || canvas.clientHeight || 800
+            const cw = sizeRef.current.w || canvas.clientWidth || 360
+            const ch = sizeRef.current.h || canvas.clientHeight || 400
             const bw = Math.max(1, Math.round(cw * dpr))
             const bh = Math.max(1, Math.round(ch * dpr))
             if (canvas.width !== bw || canvas.height !== bh) {
@@ -481,10 +501,34 @@ export default function LightCurtain(props: LightCurtainProps) {
         canvas.addEventListener("pointerenter", track)
         canvas.addEventListener("pointerdown", onDown)
         canvas.addEventListener("pointerleave", onLeave)
-        raf = requestAnimationFrame(render)
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                isVisible = entries[0]?.isIntersecting ?? false
+                if (isVisible && isPageVisible) {
+                    startLoop()
+                } else {
+                    stopLoop()
+                }
+            },
+            { threshold: 0 }
+        )
+        observer.observe(canvas)
+
+        const handleVisibilityChange = () => {
+            isPageVisible = document.visibilityState === "visible"
+            if (isVisible && isPageVisible) {
+                startLoop()
+            } else {
+                stopLoop()
+            }
+        }
+        document.addEventListener("visibilitychange", handleVisibilityChange)
 
         return () => {
-            cancelAnimationFrame(raf)
+            stopLoop()
+            observer.disconnect()
+            document.removeEventListener("visibilitychange", handleVisibilityChange)
             canvas.removeEventListener("pointermove", track)
             canvas.removeEventListener("pointerenter", track)
             canvas.removeEventListener("pointerdown", onDown)
@@ -498,8 +542,6 @@ export default function LightCurtain(props: LightCurtainProps) {
                 position: "relative",
                 overflow: "hidden",
                 background,
-                minWidth: 1200,
-                minHeight: 800,
                 width: typeof width === "number" && width > 0 ? width : "100%",
                 height: typeof height === "number" && height > 0 ? height : "100%",
                 ...style,

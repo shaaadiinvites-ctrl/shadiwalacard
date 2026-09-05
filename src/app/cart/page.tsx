@@ -55,7 +55,7 @@ function CartPageContent() {
     if (templateId) {
       setTemplate(getTemplate(templateId));
     } else {
-      setTemplate(getTemplate("royal-heritage"));
+      setTemplate(getTemplate("grand-palace"));
     }
   }, [templateId]);
 

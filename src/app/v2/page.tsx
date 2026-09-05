@@ -41,9 +41,18 @@ export default function StarfallPage() {
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    let resizeTimer: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        setWindowWidth(window.innerWidth);
+      }, 100);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -67,8 +76,8 @@ export default function StarfallPage() {
 
       {/* ─────────────────── PAGE STYLES ─────────────────── */}
       <style>{`
-        /* caret-color: transparent completely hides the blinking text cursor on mobile when tapping */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; caret-color: transparent; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        button, a, .sf-tcard, .sf-step-card { caret-color: transparent; }
         html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         body { overflow-x: clip; }
         a { text-decoration: none; color: inherit; }
@@ -146,7 +155,7 @@ export default function StarfallPage() {
         /* ── Mobile nav menu toggle ── */
         @media (max-width: 767px) { .sf-mobile-demo-btn { display: inline-flex !important; } }
         .sf-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 12px; margin: -8px; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
-        .sf-hamburger span { width: 22px; height: 1.5px; background: #1A202C; display: block; transition: all 0.3s; pointer-events: none; }
+        .sf-hamburger span { width: 22px; height: 1.5px; background: #FFFFFF; display: block; transition: all 0.3s; pointer-events: none; }
         .sf-mobile-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
         @media (min-width: 768px) { .sf-mobile-controls { display: none !important; } }
         .sf-nav-links { display: flex; align-items: center; gap: 20px; margin-left: auto; }
@@ -1063,7 +1072,7 @@ export default function StarfallPage() {
             <Link href="/terms" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Terms of Service</Link>
             <Link href="/refund-policy" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Refund Policy</Link>
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             © 2026 shadiwalacard.com — Made in India 
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2 }}>
               <rect width="900" height="200" fill="#FF9933"/>

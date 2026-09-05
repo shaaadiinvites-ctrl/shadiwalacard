@@ -131,8 +131,18 @@ function LiquidButton({
 }
 
 function GlassFilter() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Avoid injecting duplicate filter with same ID into the document
+  if (mounted && typeof document !== "undefined" && document.querySelectorAll("#container-glass").length > 0) {
+    return null;
+  }
+
   return (
-    <svg className="hidden">
+    <svg className="hidden" aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
       <defs>
         <filter
           id="container-glass"
