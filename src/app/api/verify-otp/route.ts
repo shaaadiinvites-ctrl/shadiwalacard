@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/firebaseAdmin";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
