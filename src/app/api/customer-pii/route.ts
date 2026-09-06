@@ -6,9 +6,9 @@ export async function POST(req: Request) {
   try {
     const { email, phone } = await req.json();
 
-    if (!phone || !email) {
+    if (!phone) {
       return NextResponse.json(
-        { error: "Email and phone are required" },
+        { error: "Phone number is required" },
         { status: 400 }
       );
     }
@@ -23,13 +23,22 @@ export async function POST(req: Request) {
 
     const supabase = createServerSupabaseClient();
 
+    // Check if customer already has a stored email to avoid overwriting with empty
+    const { data: existing } = await supabase
+      .from("customer_pii")
+      .select("email")
+      .eq("phone_number", phone)
+      .maybeSingle();
+
+    const resolvedEmail = (email && typeof email === "string" && email.trim()) || existing?.email || "";
+
     const { error } = await supabase
       .from("customer_pii")
       .upsert(
         {
           customer_id: customerId,
           phone_number: phone,
-          email: email,
+          email: resolvedEmail,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "phone_number" }

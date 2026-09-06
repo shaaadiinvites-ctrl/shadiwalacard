@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getTemplate, TemplateMeta } from "@/lib/templates";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { usePostHog } from 'posthog-js/react';
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
+import FindMyInviteModal from "@/components/FindMyInviteModal";
 
 function CartPageContent() {
   const searchParams = useSearchParams();
@@ -17,12 +17,16 @@ function CartPageContent() {
   const templateId = searchParams.get("template");
   const posthog = usePostHog();
 
+  const detailsSectionRef = useRef<HTMLDivElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+  const [highlightDetails, setHighlightDetails] = useState(false);
+
   const [template, setTemplate] = useState<TemplateMeta | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [isFindModalOpen, setIsFindModalOpen] = useState(false);
   const [loadingRazorpay, setLoadingRazorpay] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
@@ -31,13 +35,33 @@ function CartPageContent() {
   // Firebase OTP State
   const [isVerified, setIsVerified] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState("");
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
   const [otpError, setOtpError] = useState("");
-
-
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
+  const [resendTimer, setResendTimer] = useState(30);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (showOtpModal && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showOtpModal, resendTimer]);
+
+  useEffect(() => {
+    if (showOtpModal) {
+      const timer = setTimeout(() => {
+        const firstBox = document.querySelector<HTMLInputElement>(".otp-digit-box");
+        firstBox?.focus();
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [showOtpModal]);
 
   const validatePhone = (code: string, number: string) => {
     const digitsOnly = number.replace(/\D/g, '');
@@ -65,19 +89,18 @@ function CartPageContent() {
     }
   }, [template, posthog]);
 
-  // Auto-save Customer Details when both email and phone are filled out
+  // Auto-save Customer Details when phone is valid
   useEffect(() => {
-    if (!email || !phone) return;
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(email) && validatePhone(countryCode, phone)) {
+    if (!phone) return;
+
+    if (validatePhone(countryCode, phone)) {
       const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
       const timer = setTimeout(async () => {
         try {
           await fetch("/api/customer-pii", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, phone: fullPhone }),
+            body: JSON.stringify({ email: "", phone: fullPhone }),
           });
         } catch (e) {
           console.error("Auto-save failed", e);
@@ -86,14 +109,18 @@ function CartPageContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [email, phone]);
+  }, [phone, countryCode]);
 
-  // Load Razorpay Script
+  // Load Razorpay Script & cleanup reCAPTCHA on unmount
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
+
+    return () => {
+      cleanupRecaptcha();
+    };
   }, []);
 
   const handleApplyCoupon = () => {
@@ -106,61 +133,153 @@ function CartPageContent() {
     }
   };
 
-  const sendOtp = async () => {
-    if (!validatePhone(countryCode, phone)) {
-      setError(`Please enter a valid phone number for ${countryCode}.`);
-      return;
-    }
-    setError("");
-    setVerifying(true);
-    setOtpError("");
-    setOtpArray(["", "", "", "", "", ""]);
-    try {
-      const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
-      
-      // ALWAYS clear existing verifier before trying to make a new one to prevent stale DOM node errors
+  const cleanupRecaptcha = () => {
+    if (typeof window !== "undefined") {
       if ((window as any).recaptchaVerifier) {
         try {
           (window as any).recaptchaVerifier.clear();
         } catch (e) {}
         (window as any).recaptchaVerifier = null;
       }
+      try {
+        (window as any).grecaptcha?.reset();
+      } catch (e) {}
 
-      // Re-initialize a fresh verifier attached to the current DOM node
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-        size: "invisible",
+      // Reset recaptcha container in DOM with a pristine node
+      const wrapper = document.getElementById("recaptcha-wrapper");
+      if (wrapper) {
+        wrapper.innerHTML = '<div id="recaptcha-container"></div>';
+      } else {
+        const container = document.getElementById("recaptcha-container");
+        if (container) {
+          container.innerHTML = "";
+          const freshDiv = document.createElement("div");
+          freshDiv.id = "recaptcha-container";
+          container.parentNode?.replaceChild(freshDiv, container);
+        }
+      }
+
+      // Remove any lingering floating badge elements
+      document.querySelectorAll(".grecaptcha-badge").forEach((el) => {
+        try { el.remove(); } catch (e) {}
       });
-      const appVerifier = (window as any).recaptchaVerifier;
-
-      const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
-      setConfirmationResult(result);
-      setShowOtpModal(true); // Re-purposing this as 'isOtpSent' flag
-    } catch (err: any) {
-      console.error("Error sending OTP", err);
-      setError(err.message || "Failed to send OTP. Please try again.");
     }
-    setVerifying(false);
   };
 
-  const handleOtpChange = (element: any, index: number) => {
-    if (isNaN(element.value)) return false;
+  const handleCloseOtpModal = () => {
+    setShowOtpModal(false);
+    setOtpError("");
+    cleanupRecaptcha();
+  };
+
+  const handleEditPhoneFromModal = () => {
+    setShowOtpModal(false);
+    setOtpError("");
+    cleanupRecaptcha();
+    setTimeout(() => {
+      phoneInputRef.current?.focus();
+    }, 150);
+  };
+
+  const sendOtp = async (): Promise<boolean> => {
+    if (!validatePhone(countryCode, phone)) {
+      setError(`Please enter a valid phone number for ${countryCode}.`);
+      setHighlightDetails(true);
+      setTimeout(() => setHighlightDetails(false), 2500);
+      phoneInputRef.current?.focus();
+      return false;
+    }
+    setError("");
+    setVerifying(true);
+    setOtpError("");
+    setOtpArray(["", "", "", "", "", ""]);
+    setResendTimer(30);
+    try {
+      const fullPhone = `${countryCode}${phone.replace(/\D/g, '')}`;
+      
+      // Clean up previous reCAPTCHA instance and reset container to avoid "already been rendered" error
+      cleanupRecaptcha();
+
+      // Re-initialize a fresh verifier attached to the fresh pristine DOM node
+      const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "invisible",
+      });
+      (window as any).recaptchaVerifier = verifier;
+
+      const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+      setConfirmationResult(result);
+      setShowOtpModal(true);
+      return true;
+    } catch (err: any) {
+      console.error("Error sending OTP", err);
+      cleanupRecaptcha();
+      let userMsg = err.message || "Failed to send OTP. Please try again.";
+      if (userMsg.includes("reCAPTCHA") || userMsg.includes("rendered in this element")) {
+        userMsg = "Security verification timed out. Please click Proceed to Payment again.";
+      } else if (err.code === "auth/invalid-phone-number") {
+        userMsg = `Please enter a valid phone number for ${countryCode}.`;
+      } else if (err.code === "auth/too-many-requests") {
+        userMsg = "Too many OTP attempts. Please wait a few moments before trying again.";
+      } else if (err.code === "auth/invalid-app-credential") {
+        userMsg = "Security verification failed. On localhost, please test using a registered test phone number or test on the live production domain.";
+      } else if (err.code === "auth/quota-exceeded") {
+        userMsg = "Daily SMS quota exceeded. Please contact support.";
+      }
+      setError(userMsg);
+      setHighlightDetails(true);
+      setTimeout(() => setHighlightDetails(false), 2500);
+      return false;
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleOtpChange = (element: HTMLInputElement, index: number) => {
+    const val = element.value.replace(/\D/g, '');
     const newOtpArray = [...otpArray];
-    newOtpArray[index] = element.value;
+    newOtpArray[index] = val ? val.slice(-1) : "";
     setOtpArray(newOtpArray);
     setOtpError("");
     
-    if (element.nextSibling && element.value !== "") {
-      element.nextSibling.focus();
+    if (element.nextElementSibling && val !== "") {
+      (element.nextElementSibling as HTMLInputElement).focus();
     }
     
-    if (index === 5 && element.value !== "") {
-      verifyOtp(newOtpArray.join(""));
+    const combinedOtp = newOtpArray.join("");
+    if (combinedOtp.length === 6 && !newOtpArray.includes("")) {
+      verifyOtp(combinedOtp);
     }
   };
 
-  const handleOtpKeyDown = (e: any, index: number) => {
-    if (e.key === "Backspace" && !otpArray[index] && e.target.previousSibling) {
-      e.target.previousSibling.focus();
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace") {
+      if (!otpArray[index] && (e.target as HTMLElement).previousElementSibling) {
+        ((e.target as HTMLElement).previousElementSibling as HTMLInputElement).focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim().replace(/\D/g, "");
+    if (!pastedData) return;
+
+    const digits = pastedData.slice(0, 6).split("");
+    const newOtpArray = [...otpArray];
+    digits.forEach((d, i) => {
+      newOtpArray[i] = d;
+    });
+    setOtpArray(newOtpArray);
+    setOtpError("");
+
+    const nextFocusIndex = Math.min(digits.length, 5);
+    const inputs = document.querySelectorAll<HTMLInputElement>(".otp-digit-box");
+    if (inputs[nextFocusIndex]) {
+      inputs[nextFocusIndex].focus();
+    }
+
+    if (digits.length === 6) {
+      verifyOtp(digits.join(""));
     }
   };
 
@@ -172,6 +291,9 @@ function CartPageContent() {
     setVerifying(true);
     setOtpError("");
     try {
+      if (!confirmationResult) {
+        throw new Error("Verification session expired. Please request a new code.");
+      }
       const result = await confirmationResult.confirm(otpString);
       const token = await result.user.getIdToken();
       
@@ -184,36 +306,28 @@ function CartPageContent() {
       });
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Failed to verify phone number");
 
       setIsVerified(true);
       setShowOtpModal(false);
+
+      // Seamless One-Click Transition: Immediately open Razorpay payment modal!
+      await initiateRazorpayPayment(fullPhone);
     } catch (err: any) {
       console.error("Error verifying OTP", err);
-      setOtpError("Invalid OTP. Please try again.");
+      setOtpError(err.message || "Invalid OTP. Please check the code and try again.");
+    } finally {
+      setVerifying(false);
     }
-    setVerifying(false);
   };
 
-  const handleCheckout = async () => {
-    if (!template) return;
+  const initiateRazorpayPayment = async (overridePhone?: string) => {
+    if (!template || loadingRazorpay) return;
+
     setLoadingRazorpay(true);
     setError("");
 
     posthog?.capture('checkout_started', { template_id: template.id });
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      setLoadingRazorpay(false);
-      return;
-    }
-
-    if (!isVerified) {
-      setError("Please verify your phone number first.");
-      setLoadingRazorpay(false);
-      return;
-    }
 
     try {
       // 1. Create order on server
@@ -228,6 +342,8 @@ function CartPageContent() {
       if (!createRes.ok) {
         throw new Error(orderData.error || "Failed to create order");
       }
+
+      const checkoutPhone = overridePhone || `${countryCode}${phone.replace(/\D/g, '')}`;
 
       // 2. Open Razorpay Checkout Modal
       const options = {
@@ -248,26 +364,25 @@ function CartPageContent() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              email: email,
-              phone: phone,
+              email: "",
+              phone: checkoutPhone,
             }),
           });
 
           const verifyData = await verifyRes.json();
           if (verifyRes.ok && verifyData.verified) {
-            // Payment success -> Redirect to success page!
-            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}&e=${encodeURIComponent(email)}&p=${encodeURIComponent(phone)}`);
+            const sigParam = verifyData.signature ? `&sig=${encodeURIComponent(verifyData.signature)}` : "";
+            router.push(`/success?po=${verifyData.paymentOrderId}&template=${template.id}&p=${encodeURIComponent(checkoutPhone)}${sigParam}`);
           } else {
             setIsProcessingPayment(false);
             setError(verifyData.error || "Payment verification failed.");
           }
         },
         theme: {
-          color: "#9d174d",
+          color: "#e11d48",
         },
         prefill: {
-          email: email,
-          contact: phone
+          contact: checkoutPhone
         }
       };
 
@@ -283,6 +398,35 @@ function CartPageContent() {
     } finally {
       setLoadingRazorpay(false);
     }
+  };
+
+  const handleCheckout = async () => {
+    if (!template || loadingRazorpay || verifying) return;
+
+    const isPhoneEntered = Boolean(phone && validatePhone(countryCode, phone));
+
+    // Validate phone
+    if (!isPhoneEntered) {
+      setError(`Please enter a valid mobile number for ${countryCode}.`);
+      setHighlightDetails(true);
+      setTimeout(() => setHighlightDetails(false), 2500);
+      setTimeout(() => phoneInputRef.current?.focus(), 450);
+      if (detailsSectionRef.current) {
+        const yOffset = -75;
+        const y = detailsSectionRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+      return;
+    }
+
+    // If phone is not verified yet, automatically send OTP and slide up verification bottom sheet
+    if (!isVerified) {
+      await sendOtp();
+      return;
+    }
+
+    // If already verified, directly initiate Razorpay payment
+    await initiateRazorpayPayment();
   };
 
   if (!template) return null;
@@ -304,93 +448,215 @@ function CartPageContent() {
   const specialOfferPercent = ((specialOfferDiscount / mrpVal) * 100).toFixed(2);
   const couponDiscountExclGst = basePriceBeforeCoupon - basePrice;
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isFormValid = emailRegex.test(email) && validatePhone(countryCode, phone) && isVerified;
-  const isButtonDisabled = loadingRazorpay || !isFormValid;
+  const isPhoneValid = Boolean(phone && validatePhone(countryCode, phone));
+  const isReadyToProceed = isPhoneValid;
+  const isButtonDisabled = loadingRazorpay || verifying;
 
   return (
-    <div className="min-h-screen text-[#1A202C] relative flex flex-col pb-24 font-manrope" style={{ background: '#F2F4F8' }}>
+    <div style={{ background: '#050505', color: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "var(--font-body), 'Inter', sans-serif", overflowX: 'hidden', width: '100%' }}>
       {isProcessingPayment && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#F2F4F8]/90 backdrop-blur-sm">
-          <div className="w-12 h-12 border-4 border-[#4a148c] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <h2 className="text-[20px] font-bold text-[#4a148c] mb-2">Processing Payment...</h2>
-          <p className="text-[14px] font-medium text-gray-600">Please do not close or refresh this window.</p>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(16px)' }}>
+          <div style={{ width: 48, height: 48, border: '4px solid rgba(225, 29, 72, 0.2)', borderTopColor: '#e11d48', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite', marginBottom: 16 }} />
+          <h2 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>Processing Payment...</h2>
+          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)' }}>Please do not close or refresh this window.</p>
         </div>
       )}
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-        .font-manrope { font-family: 'Manrope', sans-serif; }
-        input { font-family: 'Manrope', sans-serif; }
-        button { font-family: 'Manrope', sans-serif; }
-        select { font-family: 'Manrope', sans-serif; }
+        @keyframes cartSpin { to { transform: rotate(360deg); } }
+        @keyframes cartShake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-6px); }
+          40%, 80% { transform: translateX(6px); }
+        }
+        .cart-card {
+          background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%);
+          backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+          padding: 24px;
+          transition: border-color 0.2s ease;
+        }
+        @media (max-width: 640px) {
+          .cart-card {
+            padding: 18px 16px !important;
+            border-radius: 16px;
+          }
+        }
+        .cart-main {
+          flex: 1;
+          padding: 32px 20px 140px;
+        }
+        @media (max-width: 640px) {
+          .cart-main {
+            padding: 20px 14px 140px !important;
+          }
+        }
+        .cart-input {
+          width: 100%;
+          min-width: 0;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 12px;
+          color: #FFFFFF;
+          font-family: var(--font-body), 'Inter', sans-serif;
+          font-size: 0.938rem;
+          outline: none;
+          transition: all 0.25s ease;
+          box-sizing: border-box;
+        }
+        .cart-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+        .cart-input:focus {
+          border-color: #e11d48;
+          background: rgba(255, 255, 255, 0.06);
+          box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18);
+        }
+        .cart-input:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .cart-select {
+          background: #141419;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 12px;
+          color: #FFFFFF;
+          font-family: var(--font-body), 'Inter', sans-serif;
+          font-size: 0.875rem;
+          outline: none;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          box-sizing: border-box;
+        }
+        .cart-select:focus {
+          border-color: #e11d48;
+          box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18);
+        }
+        .otp-digit-box {
+          width: 46px;
+          height: 54px;
+          text-align: center;
+          font-size: 1.4rem;
+          font-weight: 700;
+          border-radius: 12px;
+        }
+        @media (max-width: 420px) {
+          .otp-digit-box {
+            width: 40px !important;
+            height: 48px !important;
+            font-size: 1.2rem !important;
+          }
+        }
       `}</style>
       
-      {/* HEADER matching Contact Us */}
-      <header className="sticky top-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-gray-200">
-        <div className="w-full max-w-[1220px] mx-auto px-5 h-[60px] flex items-center justify-center relative">
+      {/* HEADER matching Brand Navigation */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(5, 5, 5, 0.85)', backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        padding: '12px 16px'
+      }}>
+        <div style={{ maxWidth: 880, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
           {/* Back Button */}
-          <Link href="/" className="absolute left-5 flex items-center text-[#2e1065] p-2 hover:bg-gray-50 rounded-xl transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          <Link 
+            href="/" 
+            style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: '6px', 
+              color: 'rgba(255,255,255,0.75)', textDecoration: 'none', 
+              fontSize: '0.813rem', fontWeight: 500,
+              padding: '7px 12px', borderRadius: '999px',
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.03)',
+              transition: 'all 0.2s ease', flexShrink: 0
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            <span>Back</span>
           </Link>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0 select-none">
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
             <img 
-              src="/uploads/envelope_icon_transparent.png" 
-              alt="shadiwalacard.com Icon" 
-              className="h-8 w-8 object-contain rounded"
+              src="/uploads/logo.png" 
+              alt="ShadiwalaCard Logo" 
+              style={{ height: '26px', width: 'auto' }}
             />
-            <span className="font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', letterSpacing: '0.2px' }}>
-              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+            <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.1rem', color: '#FFFFFF', fontWeight: 600, letterSpacing: '-0.2px' }}>
+              Shadiwala<span style={{ color: '#e11d48' }}>Card</span>
             </span>
           </Link>
+
+          {/* Safe empty balance container for centering */}
+          <div style={{ width: '60px', flexShrink: 0 }} />
         </div>
       </header>
 
-      <div className="flex-1 p-5 md:p-8 pb-32 md:pb-36">
-        <div className="max-w-xl mx-auto space-y-6 relative z-10">
+      <main className="cart-main">
+        <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
           
           {/* Section 1: Template Summary */}
-          <div className="rounded-xl p-6 flex gap-6 items-center bg-white border border-gray-200/60 shadow-sm">
-            <div className="w-24 h-32 relative rounded-xl overflow-hidden flex-shrink-0">
-              <Image src={template.img} alt={template.name} fill sizes="96px" className="object-cover" />
+          <div className="cart-card" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div style={{ width: 84, height: 105, position: 'relative', borderRadius: 14, overflow: 'hidden', flexShrink: 0, boxShadow: '0 8px 20px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <Image src="/project3-assets/cover.webp" alt={template.name} fill sizes="84px" style={{ objectFit: 'cover' }} priority />
             </div>
-            <div className="flex-1">
-              <div className="text-[12px] font-medium text-[#9d174d] tracking-wider uppercase mb-1">
-                WEB INVITE
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999, background: 'rgba(255, 188, 75, 0.12)', border: '1px solid rgba(255, 188, 75, 0.3)', color: '#ffbc4b', fontSize: '0.688rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 8 }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#ffbc4b', boxShadow: '0 0 6px #ffbc4b' }} />
+                DIGITAL WEB INVITE
               </div>
-              <h2 className="text-[20px] font-semibold text-[#2e1065] mb-2">{template.name}</h2>
-              <div className="text-[24px] font-bold text-[#1A202C] leading-tight">₹{template.priceInr}</div>
+              <h2 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.2rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {template.name}
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '1.35rem', fontWeight: 700, color: '#FFFFFF' }}>₹{template.priceInr}</span>
+                <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>₹{template.mrp}</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#ffbc4b', background: 'rgba(255, 188, 75, 0.15)', padding: '2px 7px', borderRadius: 6 }}>
+                  {Math.round(((mrpVal - template.priceInr) / mrpVal) * 100)}% OFF
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Section 2: Order Summary & Coupon */}
-          <div className="rounded-xl p-6 bg-white border border-gray-200/60 shadow-sm">
+          <div className="cart-card">
             <div 
-              className="flex justify-between items-center mb-6 cursor-pointer"
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: 16 }}
               onClick={() => setIsOrderSummaryOpen(!isOrderSummaryOpen)}
             >
-              <h2 className="text-[20px] font-semibold text-[#2e1065]">Order Summary</h2>
-              <svg 
-                className={`w-5 h-5 text-gray-500 transition-transform ${isOrderSummaryOpen ? 'rotate-180' : ''}`} 
-                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#FFFFFF', margin: 0 }}>
+                Order Summary
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.6)', fontSize: '0.813rem', flexShrink: 0 }}>
+                <span>{isOrderSummaryOpen ? 'Hide breakdown' : 'View breakdown'}</span>
+                <svg 
+                  style={{ width: 15, height: 15, transition: 'transform 0.25s ease', transform: isOrderSummaryOpen ? 'rotate(180deg)' : 'none' }} 
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
             {/* Coupon Section */}
-            <div className="flex gap-2 mb-6 h-[44px]">
+            <div style={{ display: 'flex', gap: 8, marginBottom: 18, height: 46 }}>
               <input
                 type="text"
-                placeholder="Enter coupon code"
+                placeholder="Coupon (e.g. SHADI10)"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
-                className="flex-1 border border-gray-300 rounded-xl px-4 text-[14px] font-medium outline-none bg-white text-[#1A202C] transition-colors focus:border-[#4a148c]"
+                className="cart-input"
+                style={{ flex: 1, minWidth: 0, padding: '0 14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
               />
               <button
                 onClick={handleApplyCoupon}
-                className="h-full px-5 flex items-center justify-center text-[#4a148c] font-semibold text-[14px] bg-transparent rounded-xl border border-[#4a148c] cursor-pointer transition-colors hover:bg-purple-50"
+                type="button"
+                style={{
+                  height: '100%', padding: '0 18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(225, 29, 72, 0.15)', color: '#FFFFFF',
+                  border: '1px solid rgba(225, 29, 72, 0.4)', borderRadius: 12,
+                  fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                  transition: 'all 0.2s ease', whiteSpace: 'nowrap', flexShrink: 0
+                }}
               >
                 Apply
               </button>
@@ -402,162 +668,273 @@ function CartPageContent() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden"
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  style={{ overflow: 'hidden' }}
                 >
-                  <div className="space-y-4 text-[14px] mb-6 border-b border-gray-100 pb-6 text-gray-700">
-                    <div className="flex justify-between items-center font-medium">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: '0.875rem', paddingBottom: 20, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.75)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>Original Price</span>
-                      <span className="text-gray-400 line-through decoration-gray-400 decoration-1">₹{template.mrp}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>₹{template.mrp}</span>
                     </div>
-                    <div className="flex justify-between items-center text-[#16a34a] font-bold">
-                      <span>Special Offer ({specialOfferPercent}% OFF)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#10b981', fontWeight: 600 }}>
+                      <span>Special Launch Offer ({specialOfferPercent}% OFF)</span>
                       <span>-₹{specialOfferDiscount.toFixed(2)}</span>
                     </div>
 
                     {discountPercent > 0 && (
-                      <div className="flex justify-between text-[#9d174d] font-semibold">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ffbc4b', fontWeight: 600 }}>
                         <span>Coupon Discount ({discountPercent}%)</span>
                         <span>-₹{couponDiscountExclGst.toFixed(2)}</span>
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 font-medium">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       <span>Subtotal (excl. GST)</span>
-                      <span className="text-[#1A202C]">₹{basePrice.toFixed(2)}</span>
+                      <span style={{ color: '#FFFFFF' }}>₹{basePrice.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center mt-3 font-medium">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>GST (18%)</span>
-                      <span className="text-[#1A202C]">₹{gstAmount.toFixed(2)}</span>
+                      <span style={{ color: '#FFFFFF' }}>₹{gstAmount.toFixed(2)}</span>
                     </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className={`flex justify-between items-center ${!isOrderSummaryOpen ? 'border-t border-gray-100 pt-6' : ''}`}>
-              <span className="text-[14px] font-medium text-[#2e1065]">Total (incl. GST)</span>
-              <span className="text-[24px] font-bold text-[#4a148c] leading-tight">₹{total}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: isOrderSummaryOpen ? 0 : 4 }}>
+              <span style={{ fontSize: '0.938rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>Total (incl. GST)</span>
+              <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.625rem', fontWeight: 700, color: '#FFFFFF' }}>
+                ₹{total}
+              </span>
             </div>
           </div>
 
           {/* Section 3: Customer Details & Checkout */}
-          <div className="rounded-xl p-6 bg-white border border-gray-200/60 shadow-sm">
-            <h2 className="text-[20px] font-semibold text-[#2e1065] mb-2">Checkout details</h2>
-            <p className="text-[12px] font-normal text-gray-500 mb-6 leading-relaxed">
-              We'll send your receipt and dashboard link here.
+          <div 
+            ref={detailsSectionRef}
+            className="cart-card"
+            style={{
+              transition: 'all 0.3s ease',
+              ...(highlightDetails ? {
+                borderColor: 'rgba(225, 29, 72, 0.85)',
+                boxShadow: '0 0 0 2px rgba(225, 29, 72, 0.5), 0 12px 36px rgba(225, 29, 72, 0.25)'
+              } : {})
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#FFFFFF', margin: 0 }}>
+                Your WhatsApp Number
+              </h3>
+              {!isVerified ? (
+                <span style={{ fontSize: '0.688rem', color: '#ff4d6d', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  Required
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.688rem', color: '#10b981', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Verified
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: '0.813rem', color: 'rgba(255,255,255,0.55)', margin: '0 0 16px', lineHeight: 1.5 }}>
+              Your private invite dashboard link and order updates will be sent directly to this WhatsApp number.
             </p>
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-[14px] font-medium text-[#1A202C] mb-1">Email Address <span className="text-red-500">*</span></label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full border border-gray-300 rounded-xl p-3 text-[14px] font-medium outline-none bg-white text-[#1A202C] transition-colors focus:border-[#4a148c]"
-                />
+
+            {error && (
+              <div 
+                style={{ 
+                  marginBottom: 16, 
+                  background: 'rgba(225, 29, 72, 0.14)', 
+                  border: '1px solid rgba(225, 29, 72, 0.45)', 
+                  color: '#ff4d6d', 
+                  padding: '12px 14px', 
+                  borderRadius: 12, 
+                  fontSize: '0.813rem', 
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  animation: highlightDetails ? 'cartShake 0.4s ease' : 'none'
+                }}
+              >
+                <svg style={{ width: 18, height: 18, flexShrink: 0, color: '#e11d48' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{error}</span>
               </div>
-              <div>
-                <label className="block text-[14px] font-medium text-[#1A202C] mb-1">Phone Number <span className="text-red-500">*</span></label>
-                <div className="flex gap-2 h-[44px]">
+            )}
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>
+                WhatsApp Number (for instant delivery) <span style={{ color: '#e11d48' }}>*</span>
+              </label>
+                <div style={{ display: 'flex', gap: 8, height: 46 }}>
                   <select
                     value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    disabled={isVerified}
-                    className="w-[70px] border border-gray-300 rounded-xl px-1 text-[14px] font-medium outline-none bg-white text-[#1A202C] cursor-pointer text-center flex-shrink-0 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    <option value="+91">+91</option>
-                    <option value="+1">+1</option>
-                    <option value="+44">+44</option>
-                    <option value="+61">+61</option>
-                    <option value="+971">+971</option>
-                  </select>
-                  <input
-                    type="tel"
-                    value={phone}
                     onChange={(e) => {
-                      setPhone(e.target.value.replace(/\D/g, ''));
+                      setCountryCode(e.target.value);
                       setIsVerified(false);
+                      if (error) setError("");
+                      cleanupRecaptcha();
                     }}
                     disabled={isVerified}
-                    placeholder="Phone Number"
-                    maxLength={15}
-                    className="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 text-[14px] font-medium outline-none bg-white text-[#1A202C] transition-colors focus:border-[#4a148c] disabled:opacity-70 disabled:cursor-not-allowed"
-                  />
-                  {!isVerified && (
-                    <button
-                      onClick={sendOtp}
-                      disabled={verifying || !phone}
-                      className="h-full flex items-center justify-center px-4 text-[#4a148c] font-semibold text-[14px] bg-transparent rounded-xl border border-[#4a148c] cursor-pointer transition-colors hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                      type="button"
-                    >
-                      {verifying ? "Sending..." : "Get OTP"}
-                    </button>
-                  )}
+                    className="cart-select"
+                    style={{ width: 72, minWidth: 72, padding: '0 6px', textAlign: 'center', flexShrink: 0 }}
+                  >
+                    <option value="+91">+91 (IN)</option>
+                    <option value="+1">+1 (US)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+61">+61 (AU)</option>
+                    <option value="+971">+971 (AE)</option>
+                  </select>
+                  <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+                    <input
+                      ref={phoneInputRef}
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(e.target.value.replace(/\D/g, ''));
+                        setIsVerified(false);
+                        if (error) setError("");
+                        cleanupRecaptcha();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleCheckout();
+                        }
+                      }}
+                      disabled={isVerified}
+                      placeholder="10-digit WhatsApp number"
+                      maxLength={15}
+                      className="cart-input"
+                      style={{ 
+                        width: '100%',
+                        height: '100%',
+                        padding: isVerified ? '0 90px 0 14px' : '0 14px',
+                        ...(highlightDetails && (!phone || !validatePhone(countryCode, phone)) ? { borderColor: '#e11d48', background: 'rgba(225,29,72,0.06)' } : {})
+                      }}
+                    />
+                    {isVerified && (
+                      <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 999, padding: '3px 9px', color: '#10b981', fontSize: '0.72rem', fontWeight: 700, pointerEvents: 'none' }}>
+                        <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Verified</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 {isVerified && (
-                  <div className="text-green-600 text-[12px] mt-2 font-medium flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    Number Verified!
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <div style={{ color: '#10b981', fontSize: '0.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <svg style={{ width: 14, height: 14 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Number verified for WhatsApp delivery</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsVerified(false);
+                        cleanupRecaptcha();
+                        setTimeout(() => phoneInputRef.current?.focus(), 50);
+                      }}
+                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: '2px 4px' }}
+                    >
+                      Change number
+                    </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 border border-red-200 text-[12px] font-semibold">
-                {error}
-              </div>
-            )}
-          </div>
-
           {/* Section 4: 100% Satisfaction & Money-Back Guarantee */}
-          <div className="rounded-xl p-5 bg-gradient-to-br from-amber-50 to-orange-50/40 border border-amber-200/80 shadow-sm flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0 text-amber-700 mt-0.5">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="cart-card" style={{ background: 'linear-gradient(135deg, rgba(30, 20, 10, 0.6) 0%, rgba(15, 10, 5, 0.8) 100%)', border: '1px solid rgba(255, 188, 75, 0.25)', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255, 188, 75, 0.15)', border: '1px solid rgba(255, 188, 75, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffbc4b', flexShrink: 0 }}>
+              <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <path d="M9 12l2 2 4-4" />
               </svg>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-[14px] font-bold text-amber-950">100% Money-Back Guarantee</h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-200/70 text-amber-800">Risk Free</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                <h4 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '0.938rem', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+                  100% Money-Back Guarantee
+                </h4>
+                <span style={{ fontSize: '0.625rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.8px', padding: '2px 6px', borderRadius: 4, background: 'rgba(255, 188, 75, 0.2)', color: '#ffbc4b' }}>
+                  Risk Free
+                </span>
               </div>
-              <p className="text-[12.5px] text-amber-900/80 leading-relaxed mt-1">
-                Zero doubts, zero risk. If you are not completely satisfied with your digital wedding invitation, simply message us for a 100% full refund &mdash; zero questions asked.
+              <p style={{ fontSize: '0.813rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: 0 }}>
+                Zero doubts, zero risk. If you are not completely happy with your digital wedding invitation, contact us for a full refund &mdash; zero questions asked.
               </p>
             </div>
           </div>
           
         </div>
-      </div>
+      </main>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-        <div className="max-w-xl mx-auto flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[12px] font-normal text-gray-500">Total to pay</span>
-              <span className="text-[24px] font-bold text-[#1A202C]">₹{total}</span>
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'rgba(10, 10, 12, 0.95)', backdropFilter: 'blur(24px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+        zIndex: 50, boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.8)'
+      }}>
+        <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+              <span style={{ fontSize: '0.688rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total to pay</span>
+              <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1 }}>₹{total}</span>
             </div>
             
             <button
               onClick={handleCheckout}
-              disabled={isButtonDisabled}
-              className="flex-1 md:flex-none md:w-64 h-[54px] rounded-xl flex items-center justify-center text-white font-bold text-[18px] transition-all"
-              style={{ 
-                background: isButtonDisabled ? '#9ca3af' : '#4a148c',
-                cursor: isButtonDisabled ? 'not-allowed' : 'pointer'
+              disabled={loadingRazorpay || verifying}
+              type="button"
+              style={{
+                flex: 1, minWidth: 0, maxWidth: 280, height: 48, borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8,
+                background: !isReadyToProceed ? 'rgba(255,255,255,0.1)' : '#FFFFFF',
+                color: !isReadyToProceed ? 'rgba(255,255,255,0.35)' : '#050505',
+                fontFamily: "var(--font-display), 'Montserrat', sans-serif",
+                fontSize: '0.938rem', fontWeight: 700, border: 'none',
+                cursor: (loadingRazorpay || verifying) ? 'not-allowed' : 'pointer',
+                boxShadow: !isReadyToProceed ? 'none' : '0 4px 20px rgba(255,255,255,0.25)',
+                transition: 'all 0.25s ease', whiteSpace: 'nowrap'
               }}
             >
-              {loadingRazorpay ? "Connecting..." : "Checkout & Pay"}
+              {loadingRazorpay ? (
+                <>
+                  <div style={{ width: 15, height: 15, border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000000', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite' }} />
+                  <span>Connecting...</span>
+                </>
+              ) : verifying ? (
+                <>
+                  <div style={{ width: 15, height: 15, border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000000', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite' }} />
+                  <span>Sending Code...</span>
+                </>
+              ) : (
+                <>
+                  <span>Proceed to Payment</span>
+                  <svg style={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </>
+              )}
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
-            <svg className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.688rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center', flexWrap: 'wrap' }}>
+            <svg style={{ width: 13, height: 13, color: '#ffbc4b', flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               <path d="M9 12l2 2 4-4" />
             </svg>
@@ -567,26 +944,45 @@ function CartPageContent() {
       </div>
       
       {/* FOOTER */}
-      <footer className="border-t border-gray-200 pt-8 pb-24 w-full">
-        <div className="flex flex-col items-center justify-center gap-4 w-full mx-auto max-w-4xl text-center">
-          <Link href="/" className="flex items-center justify-center gap-2 flex-shrink-0 select-none">
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '32px 20px 100px', width: '100%', textAlign: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, maxWidth: 800, margin: '0 auto' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
             <img 
               src="/uploads/logo.png" 
               alt="ShadiwalaCard Logo" 
-              className="h-8 w-auto object-contain rounded"
+              style={{ height: '24px', width: 'auto' }}
             />
-            <span className="text-[18px] font-bold text-[#2e1065] tracking-wide">
-              Shadiwala<span className="text-[#9d174d]">Card</span>
+            <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.05rem', fontWeight: 600, color: '#FFFFFF' }}>
+              Shadiwala<span style={{ color: '#e11d48' }}>Card</span>
             </span>
           </Link>
-          <div className="flex items-center justify-center gap-6 text-[14px] font-medium text-gray-500 flex-wrap">
-            <Link href="/terms" className="hover:text-[#4a148c] transition-colors">Terms of Service</Link>
-            <Link href="/privacy-policy" className="hover:text-[#4a148c] transition-colors">Privacy Policy</Link>
-            <Link href="/refund-policy" className="hover:text-[#4a148c] transition-colors">Refund Policy</Link>
-            <Link href="/contact-us" className="hover:text-[#4a148c] transition-colors">Support</Link>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: '0.813rem', color: 'rgba(255,255,255,0.6)', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setIsFindModalOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffbc4b',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '0.813rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: 0,
+              }}
+            >
+              <span>✦</span>
+              <span>Find My Invite</span>
+            </button>
+            <Link href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Service</Link>
+            <Link href="/privacy-policy" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</Link>
+            <Link href="/refund-policy" style={{ color: 'inherit', textDecoration: 'none' }}>Refund Policy</Link>
+            <Link href="/contact-us" style={{ color: 'inherit', textDecoration: 'none' }}>Support</Link>
           </div>
-          <span className="text-[12px] font-normal text-gray-400 flex items-center justify-center gap-1.5 mt-2">
-            © 2026 shadiwalacard.com — Made in India 
+          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            &copy; 2026 shadiwalacard.com &mdash; Made in India 
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="16" height="11" style={{ display: 'inline-block', borderRadius: 2 }}>
               <rect width="900" height="200" fill="#FF9933"/>
               <rect y="200" width="900" height="200" fill="#FFFFFF"/>
@@ -599,9 +995,11 @@ function CartPageContent() {
       </footer>
 
       {/* Firebase recaptcha container */}
-      <div id="recaptcha-container"></div>
+      <div id="recaptcha-wrapper">
+        <div id="recaptcha-container"></div>
+      </div>
 
-      {/* OTP Bottom Sheet */}
+      {/* OTP Bottom Sheet / Modal */}
       <AnimatePresence>
         {showOtpModal && (
           <>
@@ -610,8 +1008,8 @@ function CartPageContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowOtpModal(false)}
-              className="fixed inset-0 bg-black/40 z-[9998]"
+              onClick={handleCloseOtpModal}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', zIndex: 9998 }}
             />
 
             {/* Bottom Sheet */}
@@ -619,42 +1017,106 @@ function CartPageContent() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[9999] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-[env(safe-area-inset-bottom)]"
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                background: '#0d0d12', borderTop: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '28px 28px 0 0', zIndex: 9999,
+                boxShadow: '0 -12px 40px rgba(0,0,0,0.8)',
+                paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))'
+              }}
             >
-              <div className="w-full max-w-lg mx-auto p-6 pt-4">
-                <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
+              <div style={{ maxWidth: 460, margin: '0 auto', padding: '24px 20px 10px' }}>
+                <div style={{ width: 44, height: 5, background: 'rgba(255,255,255,0.2)', borderRadius: 999, margin: '0 auto 24px' }} />
                 
-                <h3 className="text-[20px] font-semibold text-[#2e1065] text-center mb-2">Verify Phone Number</h3>
-                <p className="text-[14px] font-medium text-gray-500 text-center mb-8">
-                  Enter the 6-digit OTP sent to <span className="font-semibold text-gray-800">{countryCode} {phone}</span>
+                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', margin: '0 0 8px' }}>
+                  Verify Your Phone Number
+                </h3>
+                <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', margin: '0 0 6px', lineHeight: 1.5 }}>
+                  Enter the 6-digit code sent to <strong style={{ color: '#FFFFFF' }}>{countryCode} {phone}</strong>
                 </p>
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                  <button
+                    type="button"
+                    onClick={handleEditPhoneFromModal}
+                    style={{ background: 'none', border: 'none', color: '#ffbc4b', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', padding: '4px 8px' }}
+                  >
+                    Wrong number? Change
+                  </button>
+                </div>
 
-                <div className="flex justify-center gap-2 md:gap-3 mb-6">
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(6px, 1.8vw, 10px)', marginBottom: 20 }}>
                   {otpArray.map((digit, index) => (
                     <input
                       key={index}
                       type="text"
                       maxLength={1}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
                       value={digit}
                       onChange={(e) => handleOtpChange(e.target, index)}
                       onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                      className="w-12 h-14 md:w-14 md:h-16 text-center text-[24px] font-bold border rounded-xl focus:border-[#9d174d] focus:ring-2 focus:ring-[#9d174d]/20 focus:outline-none transition-all bg-gray-50 text-[#1A202C]"
-                      style={{ borderColor: 'rgba(26, 32, 44, 0.2)' }}
+                      onPaste={handleOtpPaste}
+                      className="cart-input otp-digit-box"
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        borderColor: digit ? '#e11d48' : 'rgba(255,255,255,0.15)',
+                        color: '#FFFFFF'
+                      }}
                     />
                   ))}
                 </div>
 
-                {otpError && <p className="text-red-500 text-[14px] font-medium text-center mb-4">{otpError}</p>}
-                {verifying && <p className="text-blue-500 text-[14px] font-medium text-center mb-4">Verifying OTP...</p>}
+                {otpError && <p style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>}
+                {verifying && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600, margin: '0 0 16px' }}>
+                    <div style={{ width: 14, height: 14, border: '2px solid rgba(255,188,75,0.3)', borderTopColor: '#ffbc4b', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite' }} />
+                    <span>Verifying code &amp; connecting to payment...</span>
+                  </div>
+                )}
 
-                <div className="mt-8">
+                {/* Resend Code row */}
+                <div style={{ textAlign: 'center', marginBottom: 20, fontSize: '0.813rem', color: 'rgba(255,255,255,0.55)' }}>
+                  {resendTimer > 0 ? (
+                    <span>Resend code in <strong style={{ color: 'rgba(255,255,255,0.85)' }}>{resendTimer}s</strong></span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={sendOtp}
+                      disabled={verifying}
+                      style={{ background: 'none', border: 'none', color: '#FFFFFF', fontWeight: 600, cursor: verifying ? 'not-allowed' : 'pointer', textDecoration: 'underline', padding: '4px 8px' }}
+                    >
+                      Resend Verification Code
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ marginTop: 8, display: 'flex', gap: 12 }}>
                   <button 
-                    onClick={() => setShowOtpModal(false)}
-                    className="w-full py-4 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                    onClick={handleCloseOtpModal}
+                    type="button"
+                    style={{
+                      flex: 1, height: 48, borderRadius: 12,
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                      color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer'
+                    }}
                     disabled={verifying}
                   >
                     Cancel
+                  </button>
+                  <button 
+                    onClick={() => verifyOtp(otpArray.join(""))}
+                    type="button"
+                    style={{
+                      flex: 1, height: 48, borderRadius: 12,
+                      background: '#FFFFFF', border: 'none',
+                      color: '#050505', fontWeight: 700, fontSize: '0.875rem',
+                      cursor: verifying ? 'not-allowed' : 'pointer',
+                      opacity: verifying ? 0.6 : 1
+                    }}
+                    disabled={verifying}
+                  >
+                    Confirm &amp; Pay
                   </button>
                 </div>
               </div>
@@ -662,14 +1124,16 @@ function CartPageContent() {
           </>
         )}
       </AnimatePresence>
+
+      <FindMyInviteModal isOpen={isFindModalOpen} onClose={() => setIsFindModalOpen(false)} />
     </div>
   );
 }
   
 export default function CartPage() {
-    return (
-      <Suspense fallback={<div className="p-10 text-center">Loading cart...</div>}>
-        <CartPageContent />
-      </Suspense>
-    );
+  return (
+    <Suspense fallback={<div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.6)', background: '#050505', minHeight: '100vh' }}>Loading checkout...</div>}>
+      <CartPageContent />
+    </Suspense>
+  );
 }

@@ -55,18 +55,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This payment was already used or could not be verified." }, { status: 400 });
     }
 
-    // Send setup email if we got the email
+    // Safely record customer_phone on payment_orders if column exists
+    if (phone) {
+      try {
+        await supabase
+          .from("payment_orders")
+          .update({ customer_phone: phone })
+          .eq("id", row.id);
+      } catch (e) {
+        // Gracefully ignore if customer_phone column is not yet present
+      }
+    }
+
+    const { signSetupLink } = await import("@/lib/linkSecurity");
+    const signature = signSetupLink({
+      po: row.id,
+      template: row.template_id,
+      email: email || "",
+      phone: phone || "",
+    });
+
+    const origin = req.headers.get("origin") || "https://shadiwalacard.com";
+    let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
+    if (email) setupUrl += `&e=${encodeURIComponent(email)}`;
+    if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
+    setupUrl += `&sig=${signature}`;
+
+    // 1. Send automated WhatsApp confirmation with direct customization link
+    if (phone) {
+      const { sendWhatsAppOrderConfirmation } = await import("@/lib/whatsapp");
+      const { getTemplate } = await import("@/lib/templates");
+      const tmpl = getTemplate(row.template_id);
+      sendWhatsAppOrderConfirmation({
+        phone,
+        templateName: tmpl.name,
+        customizeUrl: setupUrl,
+      }).catch(console.error);
+    }
+
+    // 2. Send setup email if email was provided
     if (email) {
-      const origin = req.headers.get("origin") || "https://shadiwalacard.com";
-      let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}&e=${encodeURIComponent(email)}`;
-      if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
-      
       const { sendSetupLinkEmail } = await import("@/lib/email");
       // Fire and forget (don't await so we don't slow down the response)
       sendSetupLinkEmail(email, setupUrl).catch(console.error);
     }
 
-    return NextResponse.json({ verified: true, paymentOrderId: row.id, templateId: row.template_id });
+    return NextResponse.json({
+      verified: true,
+      paymentOrderId: row.id,
+      templateId: row.template_id,
+      signature,
+    });
   } catch (err) {
     console.error("verify-payment route error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

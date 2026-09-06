@@ -24,6 +24,7 @@ interface WeddingFormProps {
   /** id of the verified payment_orders row — required to submit (payment gate) */
   paymentOrderId?: string;
   templateId?: string;
+  sig?: string;
   /** "edit" is used by the secret-token edit link (/edit/[token]) — skips the
    *  payment gate and PATCHes an existing wedding instead of creating one. */
   mode?: "create" | "edit";
@@ -37,6 +38,7 @@ interface WeddingFormProps {
 export default function WeddingForm({
   paymentOrderId,
   templateId,
+  sig,
   mode = "create",
   editToken,
   initialData,
@@ -200,7 +202,7 @@ export default function WeddingForm({
       const { coverPhoto, galleryImages, ...rest } = formattedData;
 
       const formData = new FormData();
-      const extra = mode === "edit" ? { editToken, existingGalleryUrls: retainedGalleryUrls } : { paymentOrderId, templateId };
+      const extra = mode === "edit" ? { editToken, existingGalleryUrls: retainedGalleryUrls } : { paymentOrderId, templateId, sig };
       formData.append("payload", JSON.stringify({ ...rest, ...extra }));
 
       if (coverPhoto && coverPhoto.length > 0) {

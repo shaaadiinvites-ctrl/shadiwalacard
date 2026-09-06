@@ -1,0 +1,29 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": "{REPLACE: Event / Celebration Name}",
+  "description": "{REPLACE: Description of the event or wedding invitation}",
+  "startDate": "{REPLACE: ISO 8601 Date e.g. 2026-11-20T18:00:00+05:30}",
+  "endDate": "{REPLACE: ISO 8601 Date e.g. 2026-11-20T23:00:00+05:30}",
+  "eventStatus": "https://schema.org/EventScheduled",
+  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+  "location": {
+    "@type": "Place",
+    "name": "{REPLACE: Venue Name}",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{REPLACE: Street Address}",
+      "addressLocality": "{REPLACE: City}",
+      "addressRegion": "{REPLACE: State / Region}",
+      "postalCode": "{REPLACE: Postal Code}",
+      "addressCountry": "{REPLACE: Country Code e.g. IN or US}"
+    }
+  },
+  "image": [
+    "{REPLACE: Image URL 1200x800 minimum}"
+  ],
+  "organizer": {
+    "@type": "Person",
+    "name": "{REPLACE: Host / Couple Names}"
+  }
+}

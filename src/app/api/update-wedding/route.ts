@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     const { data: existing, error: lookupError } = await supabase
       .from("weddings")
-      .select("id, slug")
+      .select("id, slug, primary_email, contact_number")
       .eq("edit_token", body.editToken)
       .maybeSingle();
 
@@ -127,8 +127,8 @@ export async function POST(req: NextRequest) {
         bride_name: body.brideName,
         groom_name: body.groomName,
         hashtag: body.hashtag || null,
-        contact_number: body.contactNumber || null,
-        primary_email: body.primaryEmail || null,
+        contact_number: (body.contactNumber && body.contactNumber.trim()) || existing.contact_number || null,
+        primary_email: (body.primaryEmail && body.primaryEmail.trim()) || existing.primary_email || null,
         events: body.events ?? [],
         our_story: body.ourStory || null,
         video_link: body.videoLink || null,

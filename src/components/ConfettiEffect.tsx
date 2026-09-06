@@ -10,7 +10,7 @@ export default function ConfettiEffect() {
     const defaults = {
       origin: { y: 0.3 }, // Near the "Payment Successful" heading
       zIndex: 1000,
-      colors: ['#2e1065', '#9d174d', '#F59E0B', '#38bdf8', '#f5d0fe', '#ffffff', '#FFD700']
+      colors: ['#ffbc4b', '#e11d48', '#f59e0b', '#10b981', '#ffffff', '#fb7185', '#ffd700']
     };
 
     function fire(particleRatio: number, opts: confetti.Options) {

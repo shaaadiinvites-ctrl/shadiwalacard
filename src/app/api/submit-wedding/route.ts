@@ -8,7 +8,7 @@ import { isAllowedImage } from "@/lib/imageValidation";
 import { validateWeddingPayload } from "@/lib/validateWedding";
 import { sendInviteReadyEmail } from "@/lib/sendEmail";
 
-type SubmitBody = WeddingFormData & { paymentOrderId?: string; templateId?: string };
+type SubmitBody = WeddingFormData & { paymentOrderId?: string; templateId?: string; sig?: string };
 
 const MEDIA_BUCKET = "wedding-media";
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB per image
@@ -137,6 +137,45 @@ export async function POST(req: NextRequest) {
 
     if (paymentLookupError || !paymentOrder) {
       return NextResponse.json({ error: "Payment not verified, or this payment was already used." }, { status: 402 });
+    }
+
+    // ── Signature / Ownership Verification ─────────────────────────────────
+    // If a signed setup token (sig) was provided with the submission, verify
+    // that the submitted contact details match the authorized payment.
+    if (body.sig) {
+      const { verifySetupLink } = await import("@/lib/linkSecurity");
+      let isSigValid = verifySetupLink({
+        po: body.paymentOrderId,
+        template: body.templateId || paymentOrder.template_id,
+        email: body.primaryEmail || "",
+        phone: body.contactNumber || "",
+        sig: body.sig,
+      });
+
+      // If checkout was phone-first and signed with email="", allow submitting with an email
+      // as long as the payment order and phone number strictly match the signature.
+      if (!isSigValid && body.primaryEmail) {
+        isSigValid = verifySetupLink({
+          po: body.paymentOrderId,
+          template: body.templateId || paymentOrder.template_id,
+          email: "",
+          phone: body.contactNumber || "",
+          sig: body.sig,
+        });
+      }
+
+      if (!isSigValid) {
+        // Roll back payment order status from 'used' back to 'verified'
+        await supabase
+          .from("payment_orders")
+          .update({ status: "verified", used_at: null })
+          .eq("id", paymentOrder.id);
+
+        return NextResponse.json(
+          { error: "Security validation failed: contact details do not match the authorized payment." },
+          { status: 403 }
+        );
+      }
     }
 
     const template = getTemplate(body.templateId || paymentOrder.template_id);

@@ -2,14 +2,37 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import Smooth3DSlideshow from '@/components/originkit/coverflowgallery';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
-import { FaqSection } from '@/components/ui/faq';
-import LightCurtain from '@/components/originkit/ui/light-curtain';
-import WaveArcs from '@/components/originkit/ui/wave-arcs';
-import VectorRoadGrid from '@/components/ui/vector-road-grid';
 import { usePostHog } from 'posthog-js/react';
+
+const Smooth3DSlideshow = dynamic(() => import('@/components/originkit/coverflowgallery'), {
+  ssr: false,
+  loading: () => <div style={{ height: 420, width: '100%', borderRadius: 16, background: 'rgba(255,255,255,0.02)' }} />
+});
+
+const LightCurtain = dynamic(() => import('@/components/originkit/ui/light-curtain'), {
+  ssr: false
+});
+
+const WaveArcs = dynamic(() => import('@/components/originkit/ui/wave-arcs'), {
+  ssr: false
+});
+
+const VectorRoadGrid = dynamic(() => import('@/components/ui/vector-road-grid'), {
+  ssr: false,
+  loading: () => <div style={{ height: 360, width: '100%', borderRadius: 24, background: 'rgba(255,255,255,0.02)' }} />
+});
+
+const FaqSection = dynamic(() => import('@/components/ui/faq').then(mod => ({ default: mod.FaqSection })), {
+  ssr: false,
+  loading: () => <div style={{ minHeight: 380, width: '100%' }} />
+});
+
+const FindMyInviteModal = dynamic(() => import('@/components/FindMyInviteModal'), {
+  ssr: false,
+});
 
 const faqs = [
   { q: "Can I edit my details after buying?", a: "Yes! You get a private link to update your venue, dates, or photos anytime before the wedding. The live link updates instantly for all your guests." },
@@ -21,9 +44,9 @@ const faqs = [
 ];
 
 const gallerySlides = [
-  { image: { src: '/uploads/prewedding_sunset.jpg', alt: 'Pre-wedding sunset couple portrait' } },
-  { image: { src: '/uploads/prewedding_candid.jpg', alt: 'Pre-wedding candid moment' } },
-  { image: { src: '/uploads/prewedding_palace.jpg', alt: 'Pre-wedding palace photoshoot' } }
+  { image: { src: '/uploads/prewedding_sunset.webp', alt: 'Pre-wedding sunset couple portrait' } },
+  { image: { src: '/uploads/prewedding_candid.webp', alt: 'Pre-wedding candid moment' } },
+  { image: { src: '/uploads/prewedding_palace.webp', alt: 'Pre-wedding palace photoshoot' } }
 ];
 
 export default function HomePage() {
@@ -31,6 +54,7 @@ export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [isFindModalOpen, setIsFindModalOpen] = useState(false);
   const posthog = usePostHog();
 
   const jsonLdProduct = {
@@ -166,6 +190,12 @@ export default function HomePage() {
         .sf-tcard:active { transform: scale(0.98); }
         @media (max-width: 767px) {
           .sf-tcard { transform: none !important; }
+        }
+
+        /* ── Off-screen layout optimization ── */
+        .sf-content-lazy {
+          content-visibility: auto;
+          contain-intrinsic-size: 0 700px;
         }
 
         /* ── Wave arcs background (hidden on mobile to prevent distortion & text slicing) ── */
@@ -672,6 +702,24 @@ export default function HomePage() {
                 Contact Us
               </Link>
 
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsFindModalOpen(true);
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  width: '100%', padding: '12px 18px', borderRadius: '14px',
+                  background: 'none', border: 'none',
+                  color: '#ffbc4b', fontSize: '0.938rem', fontWeight: 600,
+                  cursor: 'pointer', textAlign: 'left'
+                }}
+              >
+                <span>✦</span>
+                <span>Find My Invite</span>
+              </button>
+
               <div style={{ marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <Link 
                   href="/cart?template=grand-palace" 
@@ -694,10 +742,12 @@ export default function HomePage() {
           <div style={{ position: 'absolute', inset: 0, borderRadius: '24px', overflow: 'hidden', background: '#000', pointerEvents: 'none' }}>
             <video 
               src="/uploads/bg.mp4" 
+              poster="/uploads/hero_poster.webp"
               autoPlay 
               loop 
               muted 
               playsInline
+              preload="metadata"
               style={{ 
                 position: 'absolute', 
                 inset: 0, 
@@ -782,7 +832,7 @@ export default function HomePage() {
                 overflow: 'hidden', 
                 boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.35)'
               }}>
-                <Image src="/project3-assets/cover.jpg" alt="The Grand Palace" fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
+                <Image src="/project3-assets/cover.webp" alt="The Grand Palace" fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:768px) 100vw, 400px" />
               </div>
               
               <div style={{ padding: '20px 20px 22px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
@@ -952,8 +1002,59 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* ─────────────────── HOW IT WORKS ─────────────────── */}
+      <section id="sf-how" className="sf-content-lazy" style={{ 
+        position: 'relative',
+        background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
+        padding: '120px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        <div className="sf-container" style={{ maxWidth: 1000, width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: 0, letterSpacing: '-0.5px' }}>
+              How it <em style={{ color: '#e11d48', fontStyle: 'italic' }}>Works.</em>
+            </h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+            {/* Step 1 */}
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>01</div>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              </div>
+              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Buy The Invite</h3>
+              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>Make the Grand Palace design yours in seconds with a simple, secure checkout.</p>
+            </div>
+            
+            {/* Step 2 */}
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>02</div>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </div>
+              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Add Your Magic</h3>
+              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>Upload couple photos, add all the events and functions with timings, and location.</p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>03</div>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              </div>
+              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Share The Link</h3>
+              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>No more basic PDFs or videos! Send your interactive web link to family and friends anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------- MULTI-DEVICE RESPONSIVE SHOWCASE ------------------- */}
-      <section id="sf-devices" style={{ 
+      <section id="sf-devices" className="sf-content-lazy" style={{ 
         position: 'relative', 
         background: '#050505',
         padding: '120px 20px', 
@@ -1021,7 +1122,7 @@ export default function HomePage() {
             margin: '0 auto' 
           }}>
             <Image 
-              src="/uploads/multidevice.png" 
+              src="/uploads/multidevice.webp" 
               alt="ShadiwalaCard responsive multi-device preview on iPhone, Tablet and Laptop" 
               width={1200} 
               height={675} 
@@ -1032,59 +1133,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─────────────────── HOW IT WORKS ─────────────────── */}
-      <section id="sf-how" style={{ 
-        position: 'relative',
-        background: 'linear-gradient(180deg, #0a0405 0%, #120608 45%, #080304 85%, #050505 100%)', 
-        padding: '120px 20px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        overflow: 'hidden'
-      }}>
-        <div className="sf-container" style={{ maxWidth: 1000, width: '100%' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 className="sf-section-h2" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF', margin: 0, letterSpacing: '-0.5px' }}>
-              How it <em style={{ color: '#e11d48', fontStyle: 'italic' }}>Works.</em>
-            </h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-            {/* Step 1 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>01</div>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-              </div>
-              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Buy The Invite</h3>
-              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>Make the Grand Palace design yours in seconds with a simple, secure checkout.</p>
-            </div>
-            
-            {/* Step 2 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>02</div>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-              </div>
-              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Add Your Magic</h3>
-              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>Upload couple photos, add all the events and functions with timings, and location.</p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="sf-step-card" style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(5,5,5,0.95) 100%)', backdropFilter: 'blur(10px)', borderRadius: 24, padding: 'clamp(36px, 5vw, 56px) clamp(22px, 4vw, 32px)', textAlign: 'left', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: 'clamp(5rem, 11vw, 7.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.05)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>03</div>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(225, 29, 72, 0.1)', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ fillOpacity: 0.15 }}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-              </div>
-              <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.375rem', color: '#FFFFFF', marginBottom: 12, fontWeight: 600 }}>Share The Link</h3>
-              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, position: 'relative', zIndex: 2 }}>No more basic PDFs or videos! Send your interactive web link to family and friends anywhere.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─────────────────── VENUE SECTION (VECTOR ROAD GRID WITH MOVING LIGHT PULSES) ─────────────────── */}
-      <section id="sf-venue" className="sf-sec" style={{ 
+      <section id="sf-venue" className="sf-sec sf-content-lazy" style={{ 
         position: 'relative', 
         textAlign: 'center', 
         overflow: 'hidden',
@@ -1133,7 +1183,7 @@ export default function HomePage() {
       </section>
 
       {/* ─────────────────── PRE-WEDDING GALLERY (ORIGINKIT 3D SLIDESHOW) ─────────────────── */}
-      <section id="sf-gallery" style={{ 
+      <section id="sf-gallery" className="sf-content-lazy" style={{ 
         position: 'relative',
         background: 'radial-gradient(circle at 50% 40%, rgba(225, 29, 72, 0.14) 0%, rgba(30, 5, 10, 0.4) 50%, #050505 80%)', 
         overflow: 'hidden', 
@@ -1230,7 +1280,7 @@ export default function HomePage() {
 
       {/* ─────────────────── FOOTER ─────────────────── */}
       {/* ------------------- FAQ SECTION ------------------- */}
-      <section id="sf-faq" style={{ 
+      <section id="sf-faq" className="sf-content-lazy" style={{ 
         position: 'relative',
         background: 'radial-gradient(circle at 50% 25%, rgba(240, 125, 20, 0.2) 0%, rgba(130, 45, 15, 0.28) 45%, rgba(35, 10, 10, 0.4) 65%, #050505 80%)', 
         padding: '120px 20px', 
@@ -1266,7 +1316,28 @@ export default function HomePage() {
               ShadiwalaCard
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 24, fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setIsFindModalOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffbc4b',
+                fontWeight: 600,
+                padding: '8px 12px',
+                margin: '-8px -12px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'color 0.2s',
+              }}
+            >
+              <span style={{ color: '#ffbc4b' }}>✦</span>
+              <span>Find My Invite</span>
+            </button>
             <Link href="/contact-us" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Contact Us</Link>
             <Link href="/privacy-policy" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Terms of Service</Link>
@@ -1356,6 +1427,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      <FindMyInviteModal isOpen={isFindModalOpen} onClose={() => setIsFindModalOpen(false)} />
     </main>
   );
 }

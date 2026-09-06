@@ -6,20 +6,23 @@ import "./globals.css";
 const montserrat = Montserrat({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  style: ['normal', 'italic'],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 const caveat = Caveat({
   variable: "--font-handwriting",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {

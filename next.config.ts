@@ -27,11 +27,35 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // @ts-ignore
   allowedDevOrigins: ['192.168.1.2', '192.168.1.158'],
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days edge cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
   async headers() {
     return [
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/uploads/:all*(svg|jpg|png|webp)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/project3-assets/:all*(svg|jpg|png|webp)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
       },
     ];
   },

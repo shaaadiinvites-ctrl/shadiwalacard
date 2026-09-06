@@ -14,3 +14,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  auth.settings.appVerificationDisabledForTesting = true;
+}
+
