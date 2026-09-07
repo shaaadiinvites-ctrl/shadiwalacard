@@ -130,48 +130,33 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    const payload = {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: recipient,
-      type: "template",
-      template: {
-        name: "shadiwalacard_order_confirmed_v1",
-        language: { code: "en" },
-        components: [
-          {
-            type: "body",
-            parameters: [
-              { type: "text", text: templateName },
-              { type: "text", text: customizeUrl },
-            ],
-          },
-        ],
-      },
-    };
+    // We support both template candidates (UTILITY: shadiwalacard_order_ready_v1, MARKETING: shadiwalacard_order_confirmed_v1)
+    const templateCandidates = [
+      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
+      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
+    ];
 
-    let res = await postJsonIPv4(
-      `https://graph.facebook.com/v20.0/${phoneId}/messages`,
-      {
-        Authorization: `Bearer ${token}`,
-      },
-      payload,
-      8000
-    );
+    let res: any = null;
+    let templateSent = false;
 
-    // If custom template is not found in Meta account yet (#132001), fallback to hello_world for testing
-    if (!res.ok && res.data?.error?.code === 132001) {
-      console.warn(
-        "⚠️ Custom template 'shadiwalacard_order_confirmed_v1' not yet created in Meta WhatsApp Manager. Falling back to 'hello_world' test template."
-      );
-      const fallbackPayload = {
+    for (const cand of templateCandidates) {
+      const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
         to: recipient,
         type: "template",
         template: {
-          name: "hello_world",
-          language: { code: "en_US" },
+          name: cand.name,
+          language: { code: cand.lang },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: templateName },
+                { type: "text", text: customizeUrl },
+              ],
+            },
+          ],
         },
       };
 
@@ -180,9 +165,53 @@ export async function sendWhatsAppOrderConfirmation({
         {
           Authorization: `Bearer ${token}`,
         },
-        fallbackPayload,
+        payload,
         8000
       );
+
+      if (res.ok) {
+        templateSent = true;
+        break;
+      }
+
+      // If template not found or pending approval (code 132001), try next candidate
+      if (res.data?.error?.code === 132001) {
+        continue;
+      } else {
+        // Break early on other non-template errors (e.g. invalid phone number)
+        break;
+      }
+    }
+
+    // If neither custom template is approved yet, only test sandboxes can use hello_world
+    const isTestSandboxNumber = phoneId === "1078713025316047";
+    if (!templateSent && res && res.data?.error?.code === 132001) {
+      if (isTestSandboxNumber) {
+        console.warn("⚠️ Custom templates pending Meta approval. Using 'hello_world' on test sandbox number.");
+        const fallbackPayload = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipient,
+          type: "template",
+          template: {
+            name: "hello_world",
+            language: { code: "en_US" },
+          },
+        };
+
+        res = await postJsonIPv4(
+          `https://graph.facebook.com/v20.0/${phoneId}/messages`,
+          {
+            Authorization: `Bearer ${token}`,
+          },
+          fallbackPayload,
+          8000
+        );
+      } else {
+        console.warn(
+          "⏳ WhatsApp templates ('shadiwalacard_order_ready_v1' & 'shadiwalacard_order_confirmed_v1') are currently under Meta review (PENDING). Meta restricts sending unapproved templates from real registered numbers."
+        );
+      }
     }
 
     if (!res.ok) {
