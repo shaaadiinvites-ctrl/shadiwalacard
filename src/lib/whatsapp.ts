@@ -123,7 +123,7 @@ export async function sendWhatsAppOrderConfirmation({
       },
     };
 
-    const res = await postJsonIPv4(
+    let res = await postJsonIPv4(
       `https://graph.facebook.com/v20.0/${phoneId}/messages`,
       {
         Authorization: `Bearer ${token}`,
@@ -131,6 +131,32 @@ export async function sendWhatsAppOrderConfirmation({
       payload,
       8000
     );
+
+    // If custom template is not found in Meta account yet (#132001), fallback to hello_world for testing
+    if (!res.ok && res.data?.error?.code === 132001) {
+      console.warn(
+        "⚠️ Custom template 'shadiwalacard_order_confirmed_v1' not yet created in Meta WhatsApp Manager. Falling back to 'hello_world' test template."
+      );
+      const fallbackPayload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: recipient,
+        type: "template",
+        template: {
+          name: "hello_world",
+          language: { code: "en_US" },
+        },
+      };
+
+      res = await postJsonIPv4(
+        `https://graph.facebook.com/v20.0/${phoneId}/messages`,
+        {
+          Authorization: `Bearer ${token}`,
+        },
+        fallbackPayload,
+        8000
+      );
+    }
 
     if (!res.ok) {
       console.error("❌ WhatsApp Meta Cloud API Error:", JSON.stringify(res.data, null, 2));
