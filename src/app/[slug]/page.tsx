@@ -63,23 +63,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
   const canonicalUrl = `https://${slug}.${rootDomain}`;
 
-  // Image: Use couple's uploaded cover photo or fallback to optimized royal template cover
-  const imageUrl = wedding.cover_photo_url || `https://${rootDomain}/og-image.jpg`;
+  // Dynamic OpenGraph image generated via Next.js ImageResponse + Sharp:
+  // Guaranteed < 60KB JPEG, pixel-perfect on WhatsApp & social platforms
+  const ogSearchParams = new URLSearchParams();
+  ogSearchParams.set("names", coupleNames);
+  if (mainEvent?.date) ogSearchParams.set("date", mainEvent.date);
+  if (mainEvent?.venue) ogSearchParams.set("venue", mainEvent.venue);
+  if (wedding.hashtag) ogSearchParams.set("hashtag", wedding.hashtag);
+  if (wedding.cover_photo_url && wedding.cover_photo_url.startsWith("http")) {
+    ogSearchParams.set("photo", wedding.cover_photo_url);
+  }
+
+  const dynamicOgUrl = `https://${rootDomain}/api/og?${ogSearchParams.toString()}`;
 
   return {
     title,
     description,
     openGraph: {
       type: "website",
-      url: canonicalUrl,
+      url: `https://${rootDomain}/${slug}`,
       title,
       description,
       siteName: "ShadiwalaCard",
       images: [
         {
-          url: imageUrl,
+          url: dynamicOgUrl,
           width: 1200,
           height: 630,
+          type: "image/jpeg",
           alt: `${coupleNames} Wedding Invitation`,
         },
       ],
@@ -88,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description,
-      images: [imageUrl],
+      images: [dynamicOgUrl],
     },
   };
 }

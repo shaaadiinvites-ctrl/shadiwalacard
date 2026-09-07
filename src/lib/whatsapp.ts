@@ -1,4 +1,30 @@
 import https from "https";
+import dns from "dns";
+
+/**
+ * Custom DNS resolver that bypasses blackholed or unresponsive edge IPs
+ * by falling back to Google (8.8.8.8) and Cloudflare (1.1.1.1) public DNS.
+ */
+function customDnsLookup(
+  hostname: string,
+  options: any,
+  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+) {
+  dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+    // If the OS returned an unresponsive IP or failed, resolve directly via reliable public DNS
+    if (!err && address && address !== "163.70.145.20") {
+      return callback(null, address, family || 4);
+    }
+    const resolver = new dns.Resolver();
+    resolver.setServers(["8.8.8.8", "1.1.1.1"]);
+    resolver.resolve4(hostname, (resErr, addresses) => {
+      if (!resErr && addresses && addresses.length > 0) {
+        return callback(null, addresses[0], 4);
+      }
+      callback(err || resErr, address || "57.144.48.141", family || 4);
+    });
+  });
+}
 
 /**
  * WhatsApp Meta Cloud API Delivery Module
@@ -47,7 +73,8 @@ function postJsonIPv4(
         "Content-Type": "application/json",
         "Content-Length": Buffer.byteLength(payload),
       },
-      family: 4, // Enforces IPv4 to bypass link-local/broken IPv6 routing
+      family: 4, // Enforces IPv4
+      lookup: customDnsLookup,
       timeout: timeoutMs,
     };
 

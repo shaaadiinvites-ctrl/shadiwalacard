@@ -7,8 +7,18 @@ import SuccessLinkActions from "@/components/SuccessLinkActions";
 import { getTemplate } from "@/lib/templates";
 
 export const metadata = {
-  title: "Payment Successful | ShadiwalaCard",
-  description: "Your payment was successful. Start customizing your ShadiwalaCard digital wedding invitation.",
+  title: "Order Confirmed — Customize Your Wedding Invite | ShadiwalaCard",
+  description: "Congratulations! Your payment is confirmed. Start customizing your royal digital wedding card.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    type: "website",
+    title: "Order Confirmed | ShadiwalaCard",
+    description: "Your digital wedding invitation workspace is ready to customize.",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }],
+  },
 };
 
 interface Props {

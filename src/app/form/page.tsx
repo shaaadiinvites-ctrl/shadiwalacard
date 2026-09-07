@@ -6,8 +6,30 @@ import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { isWeddingOwnerMatch, verifySetupLink } from "@/lib/linkSecurity";
 
 export const metadata = {
-  title: "Wedding Invitation Form | ShadiwalaCard",
-  description: "Fill in your wedding details to create your personalised invitation site",
+  title: "Customize Your Wedding Invitation | ShadiwalaCard",
+  description: "Fill in your wedding details to create and personalize your royal invitation site.",
+  openGraph: {
+    type: "website",
+    url: "https://shadiwalacard.com/form",
+    title: "Customize Your Wedding Invitation | ShadiwalaCard",
+    description: "Personalize your royal digital wedding card with 1-tap Google Maps venue navigation and photo galleries.",
+    siteName: "ShadiwalaCard",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Customize Your ShadiwalaCard Invitation",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Customize Your Wedding Invitation | ShadiwalaCard",
+    description: "Personalize your royal digital wedding card with 1-tap Google Maps venue navigation.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 interface Props {
