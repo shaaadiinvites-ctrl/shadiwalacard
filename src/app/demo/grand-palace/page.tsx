@@ -9,9 +9,33 @@ import { FlowersOverlay } from "@/components/templates/project3/FlowersOverlay";
 import { GallerySection } from "@/components/templates/project3/GallerySection";
 import Watermark from "@/components/Watermark";
 
-export const metadata = {
-  title: "The Grand Palace Theme - Demo",
-  description: "Live preview of The Grand Palace Theme",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "The Grand Palace — Royal Digital Wedding Invitation Demo 👑",
+  description: "Experience India's most luxurious digital wedding card. Features 1-tap Google Maps venue navigation, royal 3D animations, music, and interactive RSVP.",
+  openGraph: {
+    type: "website",
+    url: "https://shadiwalacard.com/demo/grand-palace",
+    title: "The Grand Palace — Royal Digital Wedding Invitation Demo 👑",
+    description: "Experience India's most luxurious digital wedding card. Features 1-tap Google Maps venue navigation, royal 3D animations, music, and interactive RSVP.",
+    siteName: "ShadiwalaCard",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "The Grand Palace Royal Digital Wedding Card Demo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Grand Palace — Royal Digital Wedding Invitation Demo 👑",
+    description: "Experience India's most luxurious digital wedding card with 1-tap venue navigation and 3D animations.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export default function GrandPalaceDemo() {

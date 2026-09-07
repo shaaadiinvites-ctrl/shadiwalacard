@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import TemplateRenderer from "@/components/templates/TemplateRenderer";
@@ -6,20 +8,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export default async function SlugPage({ params }: Props) {
-  const { slug } = await params;
+// React cache dedupes the Supabase query between generateMetadata and SlugPage
+const getWeddingBySlug = cache(async (slug: string) => {
   const supabase = createServerSupabaseClient();
-
-  // IMPORTANT: never select("*") here. This page hands `data` straight to
-  // "use client" template components, and Next.js embeds whatever we pass
-  // as plain text in the page's HTML for hydration — visible to anyone via
-  // "View Page Source". Only list columns the templates actually render.
-  // In particular: edit_token, razorpay_order_id, razorpay_payment_id, and
-  // price_inr must NEVER appear in this select — edit_token is the secret
-  // that grants edit access to this invite.
-  // NOTE: this must be a single string literal (not built via + concatenation)
-  // — supabase-js infers the return shape from the literal text of the
-  // select string, and falls back to an unusable error type otherwise.
   const { data, error } = await supabase
     .from("weddings")
     .select(
@@ -32,7 +23,82 @@ export default async function SlugPage({ params }: Props) {
     .eq("slug", slug)
     .maybeSingle();
 
+  return { data, error };
+});
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { data: wedding } = await getWeddingBySlug(slug);
+
+  if (!wedding) {
+    return {
+      title: "Wedding Invitation | ShadiwalaCard",
+      description: "Digital Wedding Invitation",
+    };
+  }
+
+  const coupleNames =
+    wedding.name_order === "bride_first"
+      ? `${wedding.bride_name} & ${wedding.groom_name}`
+      : `${wedding.groom_name} & ${wedding.bride_name}`;
+
+  const title = `${coupleNames}'s Wedding Invitation 💍`;
+
+  // Extract main event or first event details for rich snippet
+  const events = Array.isArray(wedding.events) ? (wedding.events as any[]) : [];
+  const mainEvent = events.find((e: any) => e.isMainEvent) || events[0];
+
+  let eventSummary = "";
+  if (mainEvent) {
+    if (mainEvent.name) eventSummary += `${mainEvent.name}`;
+    if (mainEvent.date) eventSummary += ` on ${mainEvent.date}`;
+    if (mainEvent.venue) eventSummary += ` at ${mainEvent.venue}`;
+  }
+
+  const hashtagPart = wedding.hashtag ? ` ${wedding.hashtag} •` : "";
+  const description = eventSummary
+    ? `You are cordially invited to celebrate the wedding of ${coupleNames}!${hashtagPart} ${eventSummary}. Tap to view ceremony schedule, Google Maps venue navigation, and photo gallery.`
+    : `You are cordially invited to celebrate the wedding of ${coupleNames}!${hashtagPart} Tap to view ceremony schedule, 1-tap Google Maps venue navigation, and our royal invitation.`;
+
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
+  const canonicalUrl = `https://${slug}.${rootDomain}`;
+
+  // Image: Use couple's uploaded cover photo or fallback to optimized royal template cover
+  const imageUrl = wedding.cover_photo_url || `https://${rootDomain}/og-image.jpg`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      url: canonicalUrl,
+      title,
+      description,
+      siteName: "ShadiwalaCard",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${coupleNames} Wedding Invitation`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
+
+export default async function SlugPage({ params }: Props) {
+  const { slug } = await params;
+  const { data, error } = await getWeddingBySlug(slug);
+
   if (error || !data) notFound();
 
   return <TemplateRenderer wedding={data} />;
 }
+

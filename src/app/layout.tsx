@@ -48,10 +48,11 @@ export const metadata: Metadata = {
     description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, and HD couple galleries.",
     images: [
       {
-        url: "/project3-assets/cover.jpg",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "The Grand Palace Digital Wedding Invitation Preview",
+        type: "image/jpeg",
+        alt: "The Grand Palace Digital Wedding Invitation Preview - ShadiwalaCard",
       },
     ],
   },
@@ -59,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
     description: "Ultra-premium digital wedding invitations with 1-tap Google Maps venue navigation & live countdowns.",
-    images: ["/project3-assets/cover.jpg"],
+    images: ["/og-image.jpg"],
   },
   icons: {
     icon: "/icon.png",
