@@ -228,7 +228,17 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div id="find-recaptcha-wrapper" style={{ display: "none" }}>
+      <div
+        id="find-recaptcha-wrapper"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          overflow: "hidden",
+          opacity: 0,
+          pointerEvents: "none",
+        }}
+      >
         <div id="find-recaptcha-container" />
       </div>
 

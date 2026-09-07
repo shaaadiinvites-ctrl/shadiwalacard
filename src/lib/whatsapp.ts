@@ -1,3 +1,5 @@
+import https from "https";
+
 /**
  * WhatsApp Meta Cloud API Delivery Module
  * Automatically dispatches order confirmation and wedding customization links
@@ -25,13 +27,73 @@ export function formatWhatsAppRecipient(phone: string): string {
   return digits;
 }
 
+function postJsonIPv4(
+  url: string,
+  headers: Record<string, string>,
+  body: Record<string, any>,
+  timeoutMs: number = 8000
+): Promise<{ ok: boolean; status: number; data: any }> {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify(body);
+    const parsed = new URL(url);
+
+    const options: https.RequestOptions = {
+      hostname: parsed.hostname,
+      port: 443,
+      path: parsed.pathname + parsed.search,
+      method: "POST",
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(payload),
+      },
+      family: 4, // Enforces IPv4 to bypass link-local/broken IPv6 routing
+      timeout: timeoutMs,
+    };
+
+    const req = https.request(options, (res) => {
+      let raw = "";
+      res.on("data", (chunk) => {
+        raw += chunk;
+      });
+      res.on("end", () => {
+        try {
+          const data = JSON.parse(raw);
+          const ok = (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300;
+          resolve({ ok, status: res.statusCode || 500, data });
+        } catch {
+          resolve({
+            ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+            status: res.statusCode || 500,
+            data: raw,
+          });
+        }
+      });
+    });
+
+    req.on("timeout", () => {
+      req.destroy(new Error(`Request timed out after ${timeoutMs}ms`));
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
 export async function sendWhatsAppOrderConfirmation({
   phone,
   templateName = "The Grand Palace",
   customizeUrl,
 }: SendWhatsAppParams): Promise<{ success: boolean; data?: any; error?: string }> {
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const rawPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const rawToken = process.env.WHATSAPP_ACCESS_TOKEN;
+
+  const phoneId = rawPhoneId?.replace(/^["']|["']$/g, "").trim();
+  const token = rawToken?.replace(/^["']|["']$/g, "").trim();
 
   if (!phoneId || !token) {
     console.warn("⚠️ WhatsApp delivery skipped: WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN missing.");
@@ -41,45 +103,50 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    // Attempt custom approved template: shadiwalacard_order_confirmed_v1
-    const res = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: recipient,
+      type: "template",
+      template: {
+        name: "shadiwalacard_order_confirmed_v1",
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: templateName },
+              { type: "text", text: customizeUrl },
+            ],
+          },
+        ],
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: recipient,
-        type: "template",
-        template: {
-          name: "shadiwalacard_order_confirmed_v1",
-          language: { code: "en" },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: templateName },
-                { type: "text", text: customizeUrl },
-              ],
-            },
-          ],
-        },
-      }),
-    });
+    };
 
-    const data = await res.json();
+    const res = await postJsonIPv4(
+      `https://graph.facebook.com/v20.0/${phoneId}/messages`,
+      {
+        Authorization: `Bearer ${token}`,
+      },
+      payload,
+      8000
+    );
 
     if (!res.ok) {
-      console.error("❌ WhatsApp Meta Cloud API Error:", JSON.stringify(data, null, 2));
-      return { success: false, error: data?.error?.message || "Failed to send WhatsApp message" };
+      console.error("❌ WhatsApp Meta Cloud API Error:", JSON.stringify(res.data, null, 2));
+      return {
+        success: false,
+        error: res.data?.error?.message || "Failed to send WhatsApp message",
+      };
     }
 
-    console.log(`✅ WhatsApp order confirmation sent successfully to ${recipient} (Message ID: ${data?.messages?.[0]?.id})`);
-    return { success: true, data };
+    console.log(
+      `✅ WhatsApp order confirmation sent successfully to ${recipient} (Message ID: ${res.data?.messages?.[0]?.id})`
+    );
+    return { success: true, data: res.data };
   } catch (err: any) {
-    console.error("❌ WhatsApp dispatch exception:", err);
-    return { success: false, error: err.message };
+    console.error("❌ WhatsApp dispatch exception:", err.message || err);
+    return { success: false, error: err.message || "Network exception during WhatsApp dispatch" };
   }
 }
+
