@@ -130,10 +130,11 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    // We support both template candidates (UTILITY: shadiwalacard_order_ready_v1, MARKETING: shadiwalacard_order_confirmed_v1)
+    // Primary: Luxury celebratory message (APPROVED by Meta)
+    // Fallback: Pure utility order ready message (APPROVED by Meta)
     const templateCandidates = [
-      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
       { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
+      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
     ];
 
     let res: any = null;
