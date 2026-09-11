@@ -304,9 +304,14 @@ function CartPageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken: token, phone: fullPhone }),
       });
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        console.warn("Non-JSON response from /api/verify-otp:", jsonErr);
+      }
       
-      if (!res.ok) throw new Error(data.error || "Failed to verify phone number");
+      if (!res.ok) throw new Error(data?.error || "Failed to verify phone number. Please try again.");
 
       setIsVerified(true);
       setShowOtpModal(false);

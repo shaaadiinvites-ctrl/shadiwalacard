@@ -25,6 +25,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["firebase-admin"],
   // @ts-ignore
   allowedDevOrigins: ['192.168.1.2', '192.168.1.158'],
   images: {

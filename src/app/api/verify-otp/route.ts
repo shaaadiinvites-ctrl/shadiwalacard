@@ -14,29 +14,29 @@ export async function POST(req: Request) {
     // 1. Verify the Firebase ID Token
     const decodedToken = await auth.verifyIdToken(idToken);
     
-    // Check if the phone number in the token matches what they sent (ensure +91 format)
-    const firebasePhone = decodedToken.phone_number;
-    const requestedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+    // Check if the phone number in the token matches what they sent (compare normalized 10 digits)
+    const firebaseDigits = (decodedToken.phone_number || "").replace(/\D/g, "").slice(-10);
+    const requestedDigits = phone.replace(/\D/g, "").slice(-10);
 
-    if (firebasePhone !== requestedPhone) {
-      return NextResponse.json({ error: "Phone number mismatch" }, { status: 400 });
+    if (!firebaseDigits || firebaseDigits !== requestedDigits) {
+      return NextResponse.json({ error: "Phone number does not match verification code" }, { status: 400 });
     }
 
-    // 2. Update Supabase
-    const supabase = createServerSupabaseClient();
-    const { error } = await supabase
-      .from("customer_pii")
-      .update({ is_verified: true })
-      .eq("phone_number", requestedPhone);
-
-    if (error) {
-      console.error("Supabase update error:", error);
-      return NextResponse.json({ error: "Failed to update verified status" }, { status: 500 });
+    // 2. Update Supabase customer_pii if present
+    try {
+      const supabase = createServerSupabaseClient();
+      const formattedPhone = `+91${requestedDigits}`;
+      await supabase
+        .from("customer_pii")
+        .update({ is_verified: true })
+        .or(`phone_number.eq.${formattedPhone},phone_number.eq.${requestedDigits}`);
+    } catch (dbErr) {
+      console.warn("Supabase customer_pii update notice:", dbErr);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, verifiedPhone: `+91${requestedDigits}` });
   } catch (err: any) {
     console.error("OTP Verification Error:", err);
-    return NextResponse.json({ error: "Invalid token or verification failed" }, { status: 401 });
+    return NextResponse.json({ error: err.message || "Invalid token or verification failed" }, { status: 401 });
   }
 }
