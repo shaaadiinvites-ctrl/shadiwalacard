@@ -111,6 +111,48 @@ function postJsonIPv4(
   });
 }
 
+async function postJson(
+  url: string,
+  headers: Record<string, string>,
+  body: Record<string, any>,
+  timeoutMs: number = 8000
+): Promise<{ ok: boolean; status: number; data: any }> {
+  // Strategy 1: Standard global fetch with AbortSignal timeout
+  // (Flawless on Vercel Edge/Serverless environments with native connection pooling)
+  if (typeof fetch === "function") {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+      return {
+        ok: res.ok,
+        status: res.status,
+        data,
+      };
+    } catch (fetchErr: any) {
+      console.warn("Native fetch to Meta API failed, trying IPv4 fallback:", fetchErr.message);
+    }
+  }
+
+  // Strategy 2: Custom IPv4 socket fallback
+  return postJsonIPv4(url, headers, body, timeoutMs);
+}
+
 export async function sendWhatsAppOrderConfirmation({
   phone,
   templateName = "The Grand Palace",
@@ -161,7 +203,7 @@ export async function sendWhatsAppOrderConfirmation({
         },
       };
 
-      res = await postJsonIPv4(
+      res = await postJson(
         `https://graph.facebook.com/v20.0/${phoneId}/messages`,
         {
           Authorization: `Bearer ${token}`,
@@ -200,7 +242,7 @@ export async function sendWhatsAppOrderConfirmation({
           },
         };
 
-        res = await postJsonIPv4(
+        res = await postJson(
           `https://graph.facebook.com/v20.0/${phoneId}/messages`,
           {
             Authorization: `Bearer ${token}`,

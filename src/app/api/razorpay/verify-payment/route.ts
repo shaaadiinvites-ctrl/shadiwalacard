@@ -81,23 +81,39 @@ export async function POST(req: NextRequest) {
     if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
     setupUrl += `&sig=${signature}`;
 
-    // 1. Send automated WhatsApp confirmation with direct customization link
+    // Dispatch automated WhatsApp confirmation and email in parallel before returning
+    const dispatchTasks: Promise<any>[] = [];
+
     if (phone) {
-      const { sendWhatsAppOrderConfirmation } = await import("@/lib/whatsapp");
-      const { getTemplate } = await import("@/lib/templates");
-      const tmpl = getTemplate(row.template_id);
-      sendWhatsAppOrderConfirmation({
-        phone,
-        templateName: tmpl.name,
-        customizeUrl: setupUrl,
-      }).catch(console.error);
+      dispatchTasks.push(
+        (async () => {
+          const { sendWhatsAppOrderConfirmation } = await import("@/lib/whatsapp");
+          const { getTemplate } = await import("@/lib/templates");
+          const tmpl = getTemplate(row.template_id);
+          const result = await sendWhatsAppOrderConfirmation({
+            phone,
+            templateName: tmpl.name,
+            customizeUrl: setupUrl,
+          });
+          if (!result.success) {
+            console.error("WhatsApp delivery issue:", result.error);
+          }
+          return result;
+        })().catch((err) => console.error("WhatsApp dispatch error:", err))
+      );
     }
 
-    // 2. Send setup email if email was provided
     if (email) {
-      const { sendSetupLinkEmail } = await import("@/lib/email");
-      // Fire and forget (don't await so we don't slow down the response)
-      sendSetupLinkEmail(email, setupUrl).catch(console.error);
+      dispatchTasks.push(
+        (async () => {
+          const { sendSetupLinkEmail } = await import("@/lib/email");
+          return sendSetupLinkEmail(email, setupUrl);
+        })().catch((err) => console.error("Email dispatch error:", err))
+      );
+    }
+
+    if (dispatchTasks.length > 0) {
+      await Promise.allSettled(dispatchTasks);
     }
 
     return NextResponse.json({
