@@ -193,9 +193,14 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
         body: JSON.stringify({ idToken, phone: fullPhone }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        console.warn("Non-JSON response from /api/find-invite:", jsonErr);
+      }
       if (!res.ok) {
-        throw new Error(data.error || "Could not retrieve invitation details.");
+        throw new Error(data?.error || "Could not retrieve invitation details.");
       }
 
       setLookupResult(data);
