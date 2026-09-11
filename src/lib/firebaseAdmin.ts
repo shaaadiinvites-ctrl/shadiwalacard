@@ -21,8 +21,8 @@ export async function verifyFirebaseIdToken(idToken: string): Promise<DecodedFir
         }
       );
 
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         const user = data.users?.[0];
         if (user) {
           return {
@@ -34,8 +34,17 @@ export async function verifyFirebaseIdToken(idToken: string): Promise<DecodedFir
           };
         }
       }
-    } catch (e) {
-      console.warn("Google identitytoolkit lookup failed, trying Firebase Admin SDK fallback:", e);
+
+      // If Google explicitly rejected the token, do not fall back to broken Admin SDK
+      const errMsg = data?.error?.message;
+      if (errMsg === "INVALID_ID_TOKEN" || errMsg === "TOKEN_EXPIRED" || errMsg === "USER_NOT_FOUND") {
+        throw new Error("Invalid or expired OTP verification session. Please request a new code.");
+      }
+    } catch (e: any) {
+      if (e.message?.includes("Invalid or expired OTP")) {
+        throw e;
+      }
+      console.warn("Google identitytoolkit lookup network notice:", e.message || e);
     }
   }
 
@@ -67,8 +76,8 @@ export async function verifyFirebaseIdToken(idToken: string): Promise<DecodedFir
     const adminAuth = getAuth(getApp());
     return (await adminAuth.verifyIdToken(idToken)) as DecodedFirebaseToken;
   } catch (err: any) {
-    console.error("Firebase Admin SDK verification failed:", err.message || err);
-    throw new Error(err.message || "Invalid or expired Firebase ID token");
+    console.error("Firebase Admin SDK verification fallback failed:", err.message || err);
+    throw new Error("Invalid or expired OTP verification session. Please request a new code.");
   }
 }
 
