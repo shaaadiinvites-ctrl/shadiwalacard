@@ -54,7 +54,11 @@ export async function POST(req: NextRequest) {
       phone: "",
     });
 
-    const origin = req.headers.get("origin") || "https://shadiwalacard.com";
+    const reqOrigin = req.headers.get("origin") || "";
+    const origin =
+      reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
+        ? reqOrigin
+        : "https://shadiwalacard.com";
     let setupUrl = `${origin}/form?po=${order.id}&template=${resolvedTemplate}&e=${encodeURIComponent(cleanEmail)}`;
     setupUrl += `&sig=${signature}`;
 

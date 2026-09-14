@@ -76,7 +76,11 @@ export async function POST(req: NextRequest) {
       phone: "",
     });
 
-    const origin = req.headers.get("origin") || "https://shadiwalacard.com";
+    const reqOrigin = req.headers.get("origin") || "";
+    const origin =
+      reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
+        ? reqOrigin
+        : "https://shadiwalacard.com";
     let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
     if (email) setupUrl += `&e=${encodeURIComponent(email)}`;
     // Omit &p= so the customer's phone number remains private in WhatsApp & shared URLs
