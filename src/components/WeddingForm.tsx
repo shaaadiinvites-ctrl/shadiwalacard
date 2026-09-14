@@ -106,24 +106,41 @@ export default function WeddingForm({
     defaultValues: { ...DEFAULT_VALUES, ...(initialData || {}) },
   });
 
+  // Scope draft to specific order and phone number to avoid bleeding past test data
+  const draftKey = paymentOrderId ? `weddingFormDraft_${paymentOrderId}` : "weddingFormDraft";
+
   useEffect(() => {
     if (mode === "create") {
       try {
-        const draft = localStorage.getItem("weddingFormDraft");
+        // Clear any old un-scoped legacy draft so past test data doesn't pollute new orders
+        if (paymentOrderId) {
+          localStorage.removeItem("weddingFormDraft");
+        }
+
+        const draft = localStorage.getItem(draftKey);
         if (draft) {
           const parsed = JSON.parse(draft);
-          const merged = { ...parsed, ...(initialData || {}) };
-          Object.keys(merged).forEach((key) => {
-            if (merged[key] !== undefined) {
-              setValue(key as FieldPath<WeddingFormData>, merged[key]);
-            }
-          });
+          
+          // Verify draft belongs to the same contact phone number if specified
+          const isPhoneMatch = !initialData?.contactNumber || !parsed.contactNumber || parsed.contactNumber === initialData.contactNumber;
+          
+          if (isPhoneMatch) {
+            const merged = { ...parsed, ...(initialData || {}) };
+            Object.keys(merged).forEach((key) => {
+              if (merged[key] !== undefined) {
+                setValue(key as FieldPath<WeddingFormData>, merged[key]);
+              }
+            });
+          } else {
+            // Mismatched phone: stale draft from another session, discard it
+            localStorage.removeItem(draftKey);
+          }
         }
       } catch (err) {
         console.error("Could not load draft", err);
       }
     }
-  }, [mode, initialData, setValue]);
+  }, [mode, initialData, setValue, draftKey, paymentOrderId]);
 
   // Fields validated per step
   const STEP_FIELDS: Record<number, FieldPath<WeddingFormData>[]> = {
@@ -151,7 +168,7 @@ export default function WeddingForm({
       if (mode === "create") {
         try {
           const { coverPhoto, galleryImages, ...textData } = getValues();
-          localStorage.setItem("weddingFormDraft", JSON.stringify(textData));
+          localStorage.setItem(draftKey, JSON.stringify(textData));
         } catch (err) {
           console.error("Could not save draft", err);
         }
@@ -254,6 +271,7 @@ export default function WeddingForm({
       
       if (mode === "create") {
         try {
+          localStorage.removeItem(draftKey);
           localStorage.removeItem("weddingFormDraft");
         } catch (err) {
           console.error("Could not clear draft", err);
