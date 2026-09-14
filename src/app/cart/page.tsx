@@ -1040,9 +1040,32 @@ function CartPageContent() {
                 paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))'
               }}
             >
-              <div style={{ maxWidth: 460, margin: '0 auto', padding: '24px 20px 10px' }}>
+              <div style={{ maxWidth: 460, margin: '0 auto', padding: '24px 20px 10px', position: 'relative' }}>
+                {/* Top drag handle indicator */}
                 <div style={{ width: 44, height: 5, background: 'rgba(255,255,255,0.2)', borderRadius: 999, margin: '0 auto 24px' }} />
                 
+                {/* Close Button Top-Right */}
+                <button
+                  type="button"
+                  onClick={handleCloseOtpModal}
+                  aria-label="Close"
+                  disabled={verifying}
+                  style={{
+                    position: 'absolute', top: 20, right: 20,
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.06)', border: 'none',
+                    color: 'rgba(255,255,255,0.6)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    cursor: verifying ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+
                 <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', margin: '0 0 8px' }}>
                   Verify Your Phone Number
                 </h3>
@@ -1053,13 +1076,14 @@ function CartPageContent() {
                   <button
                     type="button"
                     onClick={handleEditPhoneFromModal}
-                    style={{ background: 'none', border: 'none', color: '#ffbc4b', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', padding: '4px 8px' }}
+                    disabled={verifying}
+                    style={{ background: 'none', border: 'none', color: '#ffbc4b', fontSize: '0.78rem', cursor: verifying ? 'not-allowed' : 'pointer', textDecoration: 'underline', padding: '4px 8px' }}
                   >
                     Wrong number? Change
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(6px, 1.8vw, 10px)', marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(6px, 1.8vw, 10px)', marginBottom: 16 }}>
                   {otpArray.map((digit, index) => (
                     <input
                       key={index}
@@ -1081,12 +1105,18 @@ function CartPageContent() {
                   ))}
                 </div>
 
-                {otpError && <p style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>}
-                {verifying && (
+                {/* Auto-verify feedback & Error messages */}
+                {otpError ? (
+                  <p style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>
+                ) : verifying ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600, margin: '0 0 16px' }}>
                     <div style={{ width: 14, height: 14, border: '2px solid rgba(255,188,75,0.3)', borderTopColor: '#ffbc4b', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite' }} />
                     <span>Verifying code &amp; connecting to payment...</span>
                   </div>
+                ) : (
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem', textAlign: 'center', margin: '0 0 16px' }}>
+                    Code verifies automatically upon entering 6 digits
+                  </p>
                 )}
 
                 {/* Resend Code row */}
@@ -1105,32 +1135,20 @@ function CartPageContent() {
                   )}
                 </div>
 
-                <div style={{ marginTop: 8, display: 'flex', gap: 12 }}>
+                {/* Action button: Clean Cancel / Dismiss button */}
+                <div style={{ marginTop: 8 }}>
                   <button 
                     onClick={handleCloseOtpModal}
                     type="button"
                     style={{
-                      flex: 1, height: 48, borderRadius: 12,
+                      width: '100%', height: 48, borderRadius: 12,
                       background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                      color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer'
+                      color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.875rem', cursor: verifying ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                     disabled={verifying}
                   >
                     Cancel
-                  </button>
-                  <button 
-                    onClick={() => verifyOtp(otpArray.join(""))}
-                    type="button"
-                    style={{
-                      flex: 1, height: 48, borderRadius: 12,
-                      background: '#FFFFFF', border: 'none',
-                      color: '#050505', fontWeight: 700, fontSize: '0.875rem',
-                      cursor: verifying ? 'not-allowed' : 'pointer',
-                      opacity: verifying ? 0.6 : 1
-                    }}
-                    disabled={verifying}
-                  >
-                    Confirm &amp; Pay
                   </button>
                 </div>
               </div>
