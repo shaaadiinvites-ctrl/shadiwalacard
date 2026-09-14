@@ -222,6 +222,8 @@ function CartPageContent() {
         userMsg = "Too many OTP attempts. Please wait a few moments before trying again.";
       } else if (err.code === "auth/invalid-app-credential") {
         userMsg = "Security verification failed. On localhost, please test using a registered test phone number or test on the live production domain.";
+      } else if (err.code === "auth/captcha-check-failed") {
+        userMsg = "Verification check timed out. Please refresh the page and try again.";
       } else if (err.code === "auth/quota-exceeded") {
         userMsg = "Daily SMS quota exceeded. Please contact support.";
       }
