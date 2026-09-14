@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, FieldPath } from "react-hook-form";
+import { useForm, FieldPath, FieldErrors } from "react-hook-form";
 import { WeddingFormData, STEPS } from "@/types/wedding";
 import { CheckCircle, Circle, ArrowLeft } from "lucide-react";
 import { clsx } from "clsx";
@@ -184,6 +184,24 @@ export default function WeddingForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const onFormError = (formErrors: FieldErrors<WeddingFormData>) => {
+    console.warn("Form validation errors preventing submission:", formErrors);
+    if (formErrors.brideName || formErrors.groomName || formErrors.nameOrder) {
+      setCurrentStep(1);
+      setSubmitError("Please fill in the required couple names on Step 1.");
+    } else if (formErrors.events) {
+      setCurrentStep(2);
+      setSubmitError("Please complete the event schedule on Step 2 (ensure all ceremonies have an Event Name, Date, Time, and Venue).");
+    } else if (formErrors.rsvp1Phone || formErrors.rsvp2Phone) {
+      setCurrentStep(4);
+      setSubmitError(formErrors.rsvp1Phone?.message || formErrors.rsvp2Phone?.message || "Please check the RSVP phone number format.");
+    } else {
+      const keys = Object.keys(formErrors);
+      setSubmitError(`Please check required fields: ${keys.join(", ")}`);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const onSubmit = async (data: WeddingFormData) => {
     // Prevent mobile keyboards from submitting the form early via 'Enter'/'Go'
     if (currentStep < STEPS.length) {
@@ -281,10 +299,13 @@ export default function WeddingForm({
       posthog?.capture("form_submitted", { mode, edit_token: editToken, template_id: templateId });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
+      console.error("Submission error:", err);
       if (err?.error) {
         setSubmitError(err.error);
+      } else if (err?.message) {
+        setSubmitError(err.message);
       } else {
-        setSubmitError("Network error. Please check your connection and try again.");
+        setSubmitError("Submission failed. Please check your connection and try again.");
       }
     }
   };
@@ -572,11 +593,36 @@ export default function WeddingForm({
                   />
                 )}
                 {currentStep === 4 && (
-                  <Step5RSVP register={register} errors={errors} />
+                  <>
+                    <Step5RSVP register={register} errors={errors} />
+                    {submitError && (
+                      <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-sm">
+                        <span className="text-xl leading-none">⚠️</span>
+                        <div className="flex-1">
+                          <p className="font-bold text-red-800 mb-0.5">Unable to Submit</p>
+                          <p className="text-xs text-red-600 leading-relaxed">{submitError}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSubmitError(null)}
+                          className="text-red-400 hover:text-red-700 font-bold text-sm px-1 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
+
+          {submitError && (
+            <div className="bg-red-50 border-t border-red-200 px-4 py-2.5 text-center text-xs font-semibold text-red-700 flex items-center justify-center gap-2">
+              <span>⚠️</span>
+              <span>{submitError}</span>
+            </div>
+          )}
 
           {/* ── Sticky Footer Navigation ── */}
           <div className="p-4 sm:p-5 md:px-8 border-t border-gray-100 bg-[#F9FAFB] flex justify-between items-center shrink-0">
@@ -585,13 +631,13 @@ export default function WeddingForm({
                 type="button"
                 onClick={goBack}
                 disabled={currentStep === 1}
-                className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-[#4a148c] cursor-pointer transition-colors flex items-center justify-center hover:bg-purple-50"
+                className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-gray-700 cursor-pointer transition-colors flex items-center justify-center hover:bg-gray-100"
                 aria-label="Go Back"
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={22} />
               </button>
 
-              <span className="text-[12px] font-bold text-[#2e1065] text-center truncate px-2">
+              <span className="text-[12px] font-bold text-gray-700 text-center truncate px-2">
                 Step {currentStep} <span className="text-gray-400 font-normal">of {STEPS.length}</span>
               </span>
 
@@ -599,7 +645,7 @@ export default function WeddingForm({
                 <button
                   type="button"
                   onClick={goNext}
-                  className="h-[54px] px-6 sm:px-8 rounded-xl border-none bg-[#4a148c] text-white font-bold text-[18px] cursor-pointer transition-colors flex items-center justify-center shadow-md hover:bg-[#3b0764]"
+                  className="h-[54px] px-6 sm:px-8 rounded-xl border-none bg-[#050505] text-white font-bold text-[17px] cursor-pointer transition-colors flex items-center justify-center shadow-md hover:bg-[#1a1a1a]"
                 >
                   Continue →
                 </button>
@@ -607,9 +653,9 @@ export default function WeddingForm({
                 <div className="relative shrink-0 sm:w-auto">
                   <button
                     type="button"
-                    onClick={handleSubmit(onSubmit)}
+                    onClick={handleSubmit(onSubmit, onFormError)}
                     disabled={isSubmitting || ghostClickLock}
-                    className="h-[54px] px-6 sm:px-8 rounded-xl bg-[#4a148c] text-white text-[18px] font-bold shadow-md hover:bg-[#3b0764] transition-colors disabled:bg-[#9ca3af] disabled:opacity-60 disabled:cursor-not-allowed shrink-0 flex items-center justify-center"
+                    className="h-[54px] px-6 sm:px-8 rounded-xl bg-[#050505] text-white text-[17px] font-bold shadow-md hover:bg-[#1a1a1a] transition-colors disabled:bg-gray-400 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 flex items-center justify-center"
                   >
                     {isSubmitting 
                       ? (mode === "edit" ? "Saving…" : "Submitting…")

@@ -120,23 +120,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing payment reference. Please pay before submitting." }, { status: 402 });
     }
 
-    // Atomically claim this payment order: flip verified -> used in one
-    // conditional UPDATE. If two requests race with the same paymentOrderId
-    // (double-click, retry, or a deliberate script), only the first UPDATE
-    // actually matches a row (status = 'verified'); the second sees 0 rows
-    // affected and is rejected. This prevents one payment from producing
-    // two wedding sites. Do this BEFORE any expensive work (image uploads,
-    // insert) so nothing downstream runs unless the claim succeeded.
-    const { data: paymentOrder, error: paymentLookupError } = await supabase
-      .from("payment_orders")
-      .update({ status: "used", used_at: new Date().toISOString() })
-      .eq("id", body.paymentOrderId)
-      .eq("status", "verified")
-      .select("id, template_id, amount_inr, status, razorpay_order_id, razorpay_payment_id")
-      .maybeSingle();
+    let paymentOrder: any = null;
+    const isDevMock = process.env.NODE_ENV === "development" && body.paymentOrderId?.startsWith("test_");
 
-    if (paymentLookupError || !paymentOrder) {
-      return NextResponse.json({ error: "Payment not verified, or this payment was already used." }, { status: 402 });
+    if (isDevMock) {
+      paymentOrder = {
+        id: body.paymentOrderId,
+        template_id: body.templateId || "grand-palace",
+        amount_inr: 799,
+        status: "verified",
+        razorpay_order_id: "order_mock_dev",
+        razorpay_payment_id: "pay_mock_dev",
+      };
+    } else {
+      const { data, error: paymentLookupError } = await supabase
+        .from("payment_orders")
+        .update({ status: "used", used_at: new Date().toISOString() })
+        .eq("id", body.paymentOrderId)
+        .eq("status", "verified")
+        .select("id, template_id, amount_inr, status, razorpay_order_id, razorpay_payment_id")
+        .maybeSingle();
+
+      if (paymentLookupError || !data) {
+        return NextResponse.json({ error: "Payment not verified, or this payment was already used." }, { status: 402 });
+      }
+      paymentOrder = data;
     }
 
     // ── Signature / Ownership Verification ─────────────────────────────────
@@ -286,16 +294,20 @@ export async function POST(req: NextRequest) {
       console.error("Supabase insert error:", error);
       // Same rollback as above — the wedding row was never created, so give
       // the payment order back to 'verified' rather than burning it.
-      await supabase.from("payment_orders").update({ status: "verified", used_at: null }).eq("id", paymentOrder.id);
+      if (!isDevMock) {
+        await supabase.from("payment_orders").update({ status: "verified", used_at: null }).eq("id", paymentOrder.id);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Payment order was already atomically flipped to 'used' when we claimed
     // it above — just backfill which wedding it paid for.
-    await supabase
-      .from("payment_orders")
-      .update({ wedding_id: data.id })
-      .eq("id", paymentOrder.id);
+    if (!isDevMock) {
+      await supabase
+        .from("payment_orders")
+        .update({ wedding_id: data.id })
+        .eq("id", paymentOrder.id);
+    }
 
     const editUrl = `${req.nextUrl.origin}/edit/${data.edit_token}`;
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
