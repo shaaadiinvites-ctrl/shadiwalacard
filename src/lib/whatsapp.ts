@@ -3,25 +3,32 @@ import dns from "dns";
 
 /**
  * Custom DNS resolver that bypasses blackholed or unresponsive edge IPs
- * by falling back to Google (8.8.8.8) and Cloudflare (1.1.1.1) public DNS.
+ * by resolving directly via Google (8.8.8.8) and Cloudflare (1.1.1.1) public DNS.
+ * Fully supports Node.js lookup signature including { all: true }.
  */
 function customDnsLookup(
   hostname: string,
   options: any,
-  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+  callback: (err: NodeJS.ErrnoException | null, address: any, family?: number) => void
 ) {
-  dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-    // If the OS returned an unresponsive IP or failed, resolve directly via reliable public DNS
-    if (!err && address && address !== "163.70.145.20") {
-      return callback(null, address, family || 4);
-    }
-    const resolver = new dns.Resolver();
-    resolver.setServers(["8.8.8.8", "1.1.1.1"]);
-    resolver.resolve4(hostname, (resErr, addresses) => {
-      if (!resErr && addresses && addresses.length > 0) {
-        return callback(null, addresses[0], 4);
+  if (typeof options === "function") {
+    callback = options;
+    options = {};
+  }
+  const isAll = Boolean(options && options.all);
+
+  const resolver = new dns.Resolver();
+  resolver.setServers(["8.8.8.8", "1.1.1.1"]);
+  resolver.resolve4(hostname, (resErr, addresses) => {
+    if (!resErr && addresses && addresses.length > 0) {
+      if (isAll) {
+        return callback(null, addresses.map((ip) => ({ address: ip, family: 4 })));
       }
-      callback(err || resErr, address || "57.144.48.141", family || 4);
+      return callback(null, addresses[0], 4);
+    }
+    // Fallback: standard dns.lookup with original options
+    dns.lookup(hostname, options, (err, addr, fam) => {
+      callback(err, addr, fam);
     });
   });
 }
@@ -122,7 +129,8 @@ async function postJson(
   if (typeof fetch === "function") {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const fetchTimeout = Math.min(timeoutMs, 3500); // Fail fast to IPv4 fallback if ISP edge stalls
+      const timer = setTimeout(() => controller.abort(), fetchTimeout);
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -145,11 +153,11 @@ async function postJson(
         data,
       };
     } catch (fetchErr: any) {
-      console.warn("Native fetch to Meta API failed, trying IPv4 fallback:", fetchErr.message);
+      console.warn("Native fetch to Meta API failed/stalled, using resilient IPv4 resolver:", fetchErr.message);
     }
   }
 
-  // Strategy 2: Custom IPv4 socket fallback
+  // Strategy 2: Custom IPv4 socket fallback with Google/Cloudflare DNS
   return postJsonIPv4(url, headers, body, timeoutMs);
 }
 
