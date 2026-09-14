@@ -411,11 +411,23 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                     textAlign: "center",
                     fontSize: "1.3rem",
                     fontWeight: 700,
-                    background: "rgba(255, 255, 255, 0.06)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    background: digit ? "rgba(16, 185, 129, 0.08)" : "rgba(255, 255, 255, 0.06)",
+                    border: digit ? "1px solid #10b981" : "1px solid rgba(255, 255, 255, 0.15)",
                     borderRadius: 12,
                     color: "#FFFFFF",
                     outline: "none",
+                    caretColor: "#10b981",
+                    transition: "all 0.2s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#10b981";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.3)";
+                    e.currentTarget.style.background = "rgba(16, 185, 129, 0.08)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = digit ? "#10b981" : "rgba(255, 255, 255, 0.15)";
+                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.background = digit ? "rgba(16, 185, 129, 0.08)" : "rgba(255, 255, 255, 0.06)";
                   }}
                 />
               ))}

@@ -546,6 +546,13 @@ function CartPageContent() {
           font-size: 1.4rem;
           font-weight: 700;
           border-radius: 12px;
+          caret-color: #10b981;
+          transition: all 0.2s ease;
+        }
+        .otp-digit-box:focus {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.08) !important;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
         }
         @media (max-width: 420px) {
           .otp-digit-box {
@@ -1066,8 +1073,8 @@ function CartPageContent() {
                       onPaste={handleOtpPaste}
                       className="cart-input otp-digit-box"
                       style={{
-                        background: 'rgba(255,255,255,0.06)',
-                        borderColor: digit ? '#e11d48' : 'rgba(255,255,255,0.15)',
+                        background: digit ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.06)',
+                        borderColor: digit ? '#10b981' : 'rgba(255,255,255,0.15)',
                         color: '#FFFFFF'
                       }}
                     />
