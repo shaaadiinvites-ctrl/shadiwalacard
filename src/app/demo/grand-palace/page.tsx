@@ -87,7 +87,7 @@ export default function GrandPalaceDemo() {
       <CountdownSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
 
       {/* OriginKit Coverflow Gallery with Mood Backgrounds & Grand Palace Footer */}
-      <GallerySection galleryUrls={[]} />
+      <GallerySection galleryUrls={[]} isDemo={true} />
 
       {/* Sticky Buy Now Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-4 z-[9000] flex justify-center bg-gradient-to-t from-[#030c22] via-[#030c22cc] to-transparent pointer-events-none pb-6">

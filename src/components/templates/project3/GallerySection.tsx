@@ -37,14 +37,26 @@ const gallerySlides = [
 
 import { WeddingRecord } from "@/types/wedding";
 
-export function GallerySection({ galleryUrls = [], wedding }: { galleryUrls?: string[], wedding?: WeddingRecord }) {
-  const activeGallerySlides = galleryUrls && galleryUrls.length > 0 
+export function GallerySection({ 
+  galleryUrls = [], 
+  wedding, 
+  isDemo = false 
+}: { 
+  galleryUrls?: string[]; 
+  wedding?: WeddingRecord; 
+  isDemo?: boolean; 
+}) {
+  const hasUploadedImages = Boolean(galleryUrls && galleryUrls.length > 0);
+  const showGallery = hasUploadedImages || isDemo;
+
+  const activeGallerySlides = hasUploadedImages
     ? galleryUrls.map((url, idx) => ({
         image: { src: url },
         title: "",
         bgColor: ["#2b0e14", "#2a1e0b", "#301511", "#0c151c", "#0d2114"][idx % 5],
       }))
     : gallerySlides;
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [windowWidth, setWindowWidth] = useState(1200); // Default to desktop
   const sectionRef = useRef<HTMLElement>(null);
@@ -59,7 +71,9 @@ export function GallerySection({ galleryUrls = [], wedding }: { galleryUrls?: st
   // Trigger when 30% of the section is visible in the viewport
   const isInView = useInView(sectionRef, { once: false, amount: 0.3 });
 
-  const currentBgColor = gallerySlides[activeIndex]?.bgColor || "#09202b";
+  const currentBgColor = showGallery 
+    ? (activeGallerySlides[activeIndex]?.bgColor || "#09202b") 
+    : "#09202b";
 
   // Responsive card sizes
   const cardWidth = windowWidth < 400 ? 280 : (windowWidth < 768 ? 320 : 350);
@@ -67,46 +81,50 @@ export function GallerySection({ galleryUrls = [], wedding }: { galleryUrls?: st
 
   return (
     <section 
-      id="gallery"
+      id={showGallery ? "gallery" : "footer-section"}
       ref={sectionRef}
-      className="relative w-full pt-24 md:pt-32 pb-0 flex flex-col justify-center items-center overflow-hidden z-20 transition-colors duration-1000 ease-in-out"
+      className={`relative w-full ${showGallery ? "pt-24 md:pt-32" : "pt-12 md:pt-16"} pb-0 flex flex-col justify-center items-center overflow-hidden z-20 transition-colors duration-1000 ease-in-out`}
       style={{ backgroundColor: currentBgColor }}
     >
       {/* Top Gradient Blend - smooths the hard edge from the section above (#09202b) */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-[#09202b] via-[#09202b]/70 to-transparent pointer-events-none z-0"></div>
 
-      {/* Gallery Heading */}
-      <div className="text-center px-6 flex-shrink-0 text-[#f7ede2] mb-16 relative z-10">
-        <div className="font-montserrat text-sm md:text-base tracking-[5px] text-[#C8912A] uppercase mb-3 drop-shadow-sm">
-          Captured Moments
-        </div>
-        <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-4 drop-shadow-md">
-          A Glimpse in Time
-        </h2>
-        <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C8912A] to-transparent mx-auto"></div>
-      </div>
+      {showGallery && (
+        <>
+          {/* Gallery Heading */}
+          <div className="text-center px-6 flex-shrink-0 text-[#f7ede2] mb-16 relative z-10">
+            <div className="font-montserrat text-sm md:text-base tracking-[5px] text-[#C8912A] uppercase mb-3 drop-shadow-sm">
+              Captured Moments
+            </div>
+            <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-4 drop-shadow-md">
+              A Glimpse in Time
+            </h2>
+            <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C8912A] to-transparent mx-auto"></div>
+          </div>
+
+          {/* OriginKit Gallery */}
+          <div className="relative w-full z-10 flex justify-center overflow-hidden">
+            <Smooth3DSlideshow 
+              slides={activeGallerySlides}
+              cardWidth={cardWidth}
+              cardHeight={cardHeight}
+              showTitle={false}
+              autoplay={isInView}
+              transition={{
+                type: "tween",
+                duration: 0.6,
+                delay: 3.0,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              onSlideChange={setActiveIndex}
+            />
+          </div>
+        </>
+      )}
 
       {/* Sky and Fireflies covering footer and bottom half of gallery */}
       <Starfield className="absolute bottom-0 left-0 w-full h-[80%] z-0 pointer-events-none opacity-70 [mask-image:linear-gradient(to_top,black_50%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_50%,transparent_100%)]" />
       <Fireflies className="absolute bottom-0 left-0 w-full h-[80%] z-0 pointer-events-none opacity-80 mix-blend-screen [mask-image:linear-gradient(to_top,black_50%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_50%,transparent_100%)]" />
-
-      {/* OriginKit Gallery */}
-      <div className="relative w-full z-10 flex justify-center overflow-hidden">
-        <Smooth3DSlideshow 
-          slides={activeGallerySlides}
-          cardWidth={cardWidth}
-          cardHeight={cardHeight}
-          showTitle={false}
-          autoplay={isInView}
-          transition={{
-            type: "tween",
-            duration: 0.6,
-            delay: 3.0,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          onSlideChange={setActiveIndex}
-        />
-      </div>
 
       {/* Full width Footer Section */}
       <FooterSection wedding={wedding} />

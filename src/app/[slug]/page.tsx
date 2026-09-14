@@ -56,8 +56,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const hashtagPart = wedding.hashtag ? ` ${wedding.hashtag} •` : "";
+  const hasGallery = Array.isArray(wedding.gallery_urls) && wedding.gallery_urls.length > 0;
   const description = eventSummary
-    ? `You are cordially invited to celebrate the wedding of ${coupleNames}!${hashtagPart} ${eventSummary}. Tap to view ceremony schedule, Google Maps venue navigation, and photo gallery.`
+    ? `You are cordially invited to celebrate the wedding of ${coupleNames}!${hashtagPart} ${eventSummary}. Tap to view ceremony schedule, Google Maps venue navigation, ${hasGallery ? "and photo gallery." : "and our royal invitation."}`
     : `You are cordially invited to celebrate the wedding of ${coupleNames}!${hashtagPart} Tap to view ceremony schedule, 1-tap Google Maps venue navigation, and our royal invitation.`;
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
