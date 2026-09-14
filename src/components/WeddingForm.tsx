@@ -164,6 +164,19 @@ export default function WeddingForm({
       }
     }
 
+    // Custom Validation for Step 3: Media File Sizes (Max 8MB per photo)
+    if (currentStep === 3 && valid) {
+      const galleryImages = getValues("galleryImages");
+      if (galleryImages && galleryImages.length > 0) {
+        const oversized = Array.from(galleryImages).filter(f => f.size > 8 * 1024 * 1024);
+        if (oversized.length > 0) {
+          const names = oversized.map(f => `"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)} MB)`).join(", ");
+          setSubmitError(`Please remove photo(s) exceeding 8MB before proceeding: ${names}`);
+          return;
+        }
+      }
+    }
+
     if (valid) {
       if (mode === "create") {
         try {
@@ -192,6 +205,9 @@ export default function WeddingForm({
     } else if (formErrors.events) {
       setCurrentStep(2);
       setSubmitError("Please complete the event schedule on Step 2 (ensure all ceremonies have an Event Name, Date, Time, and Venue).");
+    } else if (formErrors.galleryImages) {
+      setCurrentStep(3);
+      setSubmitError(formErrors.galleryImages?.message || "Please check your gallery photos (max 8MB per photo).");
     } else if (formErrors.rsvp1Phone || formErrors.rsvp2Phone) {
       setCurrentStep(4);
       setSubmitError(formErrors.rsvp1Phone?.message || formErrors.rsvp2Phone?.message || "Please check the RSVP phone number format.");
@@ -583,14 +599,32 @@ export default function WeddingForm({
                   <Step2Events register={register} errors={errors} control={control} setValue={setValue} />
                 )}
                 {currentStep === 3 && (
-                  <Step3Media 
-                    register={register} 
-                    errors={errors} 
-                    watch={watch} 
-                    setValue={setValue} 
-                    existingGalleryUrls={retainedGalleryUrls}
-                    onRemoveExistingGalleryUrl={(url) => setRetainedGalleryUrls(prev => prev.filter(u => u !== url))}
-                  />
+                  <>
+                    <Step3Media 
+                      register={register} 
+                      errors={errors} 
+                      watch={watch} 
+                      setValue={setValue} 
+                      existingGalleryUrls={retainedGalleryUrls}
+                      onRemoveExistingGalleryUrl={(url) => setRetainedGalleryUrls(prev => prev.filter(u => u !== url))}
+                    />
+                    {submitError && (
+                      <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-sm">
+                        <span className="text-xl leading-none">⚠️</span>
+                        <div className="flex-1">
+                          <p className="font-bold text-red-800 mb-0.5">Media Validation Error</p>
+                          <p className="text-xs text-red-600 leading-relaxed">{submitError}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSubmitError(null)}
+                          className="text-red-400 hover:text-red-700 font-bold text-sm px-1 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
                 {currentStep === 4 && (
                   <>
