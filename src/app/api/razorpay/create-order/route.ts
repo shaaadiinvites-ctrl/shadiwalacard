@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
-import { getTemplate } from "@/lib/templates";
+import { getTemplate, TEMPLATES } from "@/lib/templates";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // Cloudflare Turnstile (free CAPTCHA) verification. If TURNSTILE_SECRET_KEY
@@ -42,6 +42,10 @@ export async function POST(req: NextRequest) {
 
     if (!(await verifyTurnstile(turnstileToken, ip))) {
       return NextResponse.json({ error: "Verification failed. Please refresh the page and try again." }, { status: 400 });
+    }
+
+    if (templateId && !TEMPLATES.some((t) => t.id === templateId)) {
+      return NextResponse.json({ error: "Invalid template selected." }, { status: 400 });
     }
 
     const template = getTemplate(templateId);

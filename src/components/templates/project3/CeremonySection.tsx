@@ -531,7 +531,7 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
 
                   <div className="flex justify-center relative z-10">
                     <a
-                      href={ceremony.mapLink}
+                      href={ceremony.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ceremony.venueName)}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_15px_rgba(200,145,42,0.4)] transition-transform hover:scale-105 active:scale-95"

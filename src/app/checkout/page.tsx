@@ -58,6 +58,11 @@ function CheckoutInner() {
   const turnstileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const qs = params.toString();
+    router.replace(qs ? `/cart?${qs}` : "/cart");
+  }, [params, router]);
+
+  useEffect(() => {
     loadRazorpayScript();
 
     if (TURNSTILE_SITE_KEY) {

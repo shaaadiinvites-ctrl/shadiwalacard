@@ -250,7 +250,19 @@ export default function Step3Media({ register, errors, watch, setValue, existing
         )}
       </FieldWrapper>
 
-
+      {/* Love Story Textarea */}
+      <FieldWrapper
+        label="Our Love Story (Optional)"
+        hint="Share how you first met, your journey together, or a heartfelt message to your guests."
+        error={errors.ourStory?.message}
+      >
+        <Textarea
+          {...register("ourStory")}
+          rows={5}
+          placeholder="It all began on a quiet evening in Delhi... From college best friends to lifelong partners, we cannot wait to celebrate our big day with you!"
+          className="w-full text-[14px]"
+        />
+      </FieldWrapper>
     </div>
   );
 }

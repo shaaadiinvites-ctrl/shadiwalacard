@@ -55,15 +55,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
     }
 
-    const formData = await req.formData();
-    const payloadRaw = formData.get("payload");
-    const body: UpdateBody = JSON.parse(typeof payloadRaw === "string" ? payloadRaw : "{}");
+    const contentType = req.headers.get("content-type") || "";
+    let body: UpdateBody;
+    let coverPhotoFile: File | null = null;
+    let galleryFiles: File[] = [];
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const payloadRaw = formData.get("payload");
+      body = JSON.parse(typeof payloadRaw === "string" ? payloadRaw : "{}");
+
+      const cp = formData.get("coverPhoto");
+      if (cp instanceof File && cp.size > 0) coverPhotoFile = cp;
+
+      galleryFiles = formData
+        .getAll("galleryImages")
+        .filter((f): f is File => f instanceof File && f.size > 0)
+        .slice(0, MAX_GALLERY_IMAGES);
+    } else {
+      try {
+        body = await req.json();
+      } catch {
+        return NextResponse.json({ error: "Invalid JSON request body." }, { status: 400 });
+      }
+    }
 
     if (!body.editToken) {
       return NextResponse.json({ error: "Missing edit link token." }, { status: 400 });
     }
 
-    const validationError = validateWeddingPayload(body);
+    const validationError = validateWeddingPayload(body, true);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
@@ -79,13 +100,6 @@ export async function POST(req: NextRequest) {
     if (lookupError || !existing) {
       return NextResponse.json({ error: "Invalid or expired edit link." }, { status: 404 });
     }
-
-    const cp = formData.get("coverPhoto");
-    const coverPhotoFile = cp instanceof File && cp.size > 0 ? cp : null;
-    const galleryFiles = formData
-      .getAll("galleryImages")
-      .filter((f): f is File => f instanceof File && f.size > 0)
-      .slice(0, MAX_GALLERY_IMAGES);
 
     const imageUpdates: { cover_photo_url?: string; gallery_urls?: string[] } = {};
 

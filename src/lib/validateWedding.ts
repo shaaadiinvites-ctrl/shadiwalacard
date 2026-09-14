@@ -36,7 +36,32 @@ const EVENT_LIMITS: Record<string, number> = {
   notes: 1000,
 };
 
-export function validateWeddingPayload(body: Partial<WeddingFormData>): string | null {
+export function validateWeddingPayload(body: Partial<WeddingFormData>, isUpdate = false): string | null {
+  // Required fields on creation
+  if (!isUpdate) {
+    if (!body.brideName || !body.brideName.trim()) {
+      return "Bride's name is required.";
+    }
+    if (!body.groomName || !body.groomName.trim()) {
+      return "Groom's name is required.";
+    }
+    if (!body.events || !Array.isArray(body.events) || body.events.length === 0) {
+      return "At least one event or ceremony is required.";
+    }
+  } else {
+    // If fields are passed during an update, they must not be empty strings
+    if (body.brideName !== undefined && !body.brideName.trim()) {
+      return "Bride's name cannot be empty.";
+    }
+    if (body.groomName !== undefined && !body.groomName.trim()) {
+      return "Groom's name cannot be empty.";
+    }
+    if (body.events !== undefined && (!Array.isArray(body.events) || body.events.length === 0)) {
+      return "At least one event or ceremony is required.";
+    }
+  }
+
+  // Length caps
   for (const [field, max] of Object.entries(LIMITS)) {
     const value = (body as Record<string, unknown>)[field];
     if (typeof value === "string" && value.length > max) {

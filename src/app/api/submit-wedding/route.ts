@@ -19,12 +19,25 @@ const MAX_GALLERY_IMAGES = 15;
 // so keep it lowercase, hyphenated, and comfortably under the 63-char label limit.
 function generateSlug(brideName: string, groomName: string, nameOrder: string = "groom_first"): string {
   const clean = (s: string) =>
-    s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").slice(0, 20);
+    (s || "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").slice(0, 20);
   const year = new Date().getFullYear();
-  if (nameOrder === "bride_first") {
-    return `${clean(brideName)}-weds-${clean(groomName)}-${year}`;
+
+  let cleanBride = clean(brideName);
+  let cleanGroom = clean(groomName);
+
+  // If both names resulted in empty strings (e.g. Devanagari/Hindi or special symbols)
+  if (!cleanBride && !cleanGroom) {
+    const randomHash = crypto.randomBytes(3).toString("hex");
+    return `shadi-${randomHash}-${year}`;
   }
-  return `${clean(groomName)}-weds-${clean(brideName)}-${year}`;
+
+  if (!cleanBride) cleanBride = "bride";
+  if (!cleanGroom) cleanGroom = "groom";
+
+  if (nameOrder === "bride_first") {
+    return `${cleanBride}-weds-${cleanGroom}-${year}`;
+  }
+  return `${cleanGroom}-weds-${cleanBride}-${year}`;
 }
 
 function extFromFile(file: File): string {
