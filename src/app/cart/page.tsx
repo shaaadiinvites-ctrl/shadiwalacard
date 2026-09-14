@@ -37,6 +37,7 @@ function CartPageContent() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
+  const [otpSuccess, setOtpSuccess] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(30);
@@ -315,11 +316,15 @@ function CartPageContent() {
       
       if (!res.ok) throw new Error(data?.error || "Failed to verify phone number. Please try again.");
 
-      setIsVerified(true);
-      setShowOtpModal(false);
+      setOtpSuccess(true);
+      setTimeout(async () => {
+        setIsVerified(true);
+        setShowOtpModal(false);
 
-      // Seamless One-Click Transition: Immediately open Razorpay payment modal!
-      await initiateRazorpayPayment(fullPhone);
+        // Seamless One-Click Transition: Immediately open Razorpay payment modal!
+        await initiateRazorpayPayment(fullPhone);
+        setOtpSuccess(false);
+      }, 700);
     } catch (err: any) {
       console.error("Error verifying OTP", err);
       setOtpError(err.message || "Invalid OTP. Please check the code and try again.");
@@ -550,9 +555,9 @@ function CartPageContent() {
           transition: all 0.2s ease;
         }
         .otp-digit-box:focus {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.08) !important;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
         }
         @media (max-width: 420px) {
           .otp-digit-box {
@@ -1097,9 +1102,9 @@ function CartPageContent() {
                       onPaste={handleOtpPaste}
                       className="cart-input otp-digit-box"
                       style={{
-                        background: digit ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.06)',
-                        borderColor: digit ? '#10b981' : 'rgba(255,255,255,0.15)',
-                        color: '#FFFFFF'
+                        background: otpSuccess ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.06)',
+                        borderColor: otpSuccess ? '#10b981' : (digit ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'),
+                        color: otpSuccess ? '#10b981' : '#FFFFFF'
                       }}
                     />
                   ))}
