@@ -77,13 +77,13 @@ export default function WeddingForm({
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F2F4F8', zIndex: -2 }} />
         <div className="rounded-2xl border border-[rgba(26,32,44,0.1)] p-8 text-center max-w-md w-full space-y-5" style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
           <div className="text-5xl">🔒</div>
-          <h2 className="text-2xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>Choose your template first</h2>
+          <h2 className="text-2xl font-bold text-[#0f172a]" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>Choose your template first</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
             Your personalized customization dashboard unlocks immediately after you select a royal design and complete your order.
           </p>
           <a
             href="/"
-            className="inline-block w-full px-6 py-3 rounded-full bg-[#2e1065] hover:bg-[#3b0764] text-white text-sm font-bold shadow-md transition duration-200"
+            className="inline-block w-full px-6 py-3 rounded-full bg-[#050505] hover:bg-[#1a1a1a] text-white text-sm font-bold shadow-md transition duration-200"
           >
             Browse ShadiwalaCard Designs →
           </a>
@@ -297,21 +297,21 @@ export default function WeddingForm({
         {/* HEADER matching Contact Us */}
         <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-gray-200">
           <div className="w-full max-w-[1220px] mx-auto px-5 h-[60px] flex items-center justify-center relative">
-            <a href="/" className="flex items-center gap-2 flex-shrink-0 select-none no-underline">
+            <a href="/" className="flex items-center gap-2.5 flex-shrink-0 select-none no-underline">
               <img 
-                src="/uploads/envelope_icon_transparent.png" 
-                alt="shadiwalacard.com Icon" 
-                className="h-8 w-8 object-contain rounded"
+                src="/uploads/logo.png" 
+                alt="ShadiwalaCard Logo" 
+                style={{ height: '28px', width: 'auto', objectFit: 'contain' }}
               />
-              <span className="font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', letterSpacing: '0.2px' }}>
-                Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+              <span className="font-bold text-[#0f172a]" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', letterSpacing: '-0.3px' }}>
+                Shadiwala<span style={{ color: '#e11d48' }}>Card</span>
               </span>
             </a>
           </div>
         </header>
         <div className="rounded-2xl border border-gray-200 p-8 text-center max-w-lg w-full space-y-6" style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
           <div className="text-6xl">✨</div>
-          <h2 className="text-3xl font-extrabold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h2 className="text-3xl font-extrabold text-[#0f172a]" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>
             {mode === "edit" ? "Your Invite is Updated!" : "Your Royal Invite is Ready!"}
           </h2>
           <p className="text-gray-600 text-sm leading-relaxed">
@@ -386,7 +386,7 @@ export default function WeddingForm({
             <div className="absolute inset-0 bg-gradient-to-r from-[#2e1065]/5 to-[#9d174d]/5 animate-pulse" />
             
             <div className="relative z-10">
-              <h3 className="text-xl font-bold text-[#2e1065]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h3 className="text-xl font-bold text-[#0f172a]" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>
                 Uploading Media
               </h3>
               <p className="text-sm text-gray-500 mt-1 mb-6">Please wait while we securely upload your images. Do not close this tab.</p>
@@ -411,24 +411,28 @@ export default function WeddingForm({
               type="button"
               onClick={goBack}
               disabled={currentStep === 1}
-              className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-[#4a148c] cursor-pointer transition-colors flex items-center justify-center hover:bg-purple-50 -ml-2"
+              className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-gray-700 cursor-pointer transition-colors flex items-center justify-center hover:bg-gray-100 -ml-2"
               aria-label="Go Back"
             >
-              <ArrowLeft size={24} />
+              <ArrowLeft size={22} />
             </button>
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2 flex justify-center">
-            <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-1.5">
-              <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={24} height={24} className="object-contain rounded" />
-              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
-                Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+            <a href="/" className="font-extrabold text-lg tracking-tight no-underline flex items-center gap-2 select-none">
+              <img 
+                src="/uploads/logo.png" 
+                alt="ShadiwalaCard Logo" 
+                style={{ height: '26px', width: 'auto', objectFit: 'contain' }} 
+              />
+              <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.15rem', color: '#0f172a', letterSpacing: '-0.3px', fontWeight: 700 }}>
+                Shadiwala<span style={{ color: '#e11d48' }}>Card</span>
               </span>
             </a>
           </div>
 
           <div className="flex-1 flex justify-end">
-            <span className="text-[11px] font-extrabold text-[#4a148c] bg-purple-50 px-2.5 py-1 rounded-full border border-[#4a148c]/20">
+            <span className="text-[11px] font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">
               {currentStep}/{STEPS.length}
             </span>
           </div>
@@ -438,13 +442,17 @@ export default function WeddingForm({
       {/* ── Desktop Sidebar (Hidden on mobile, visible on `md:flex`) ───── */}
       <aside className="hidden md:flex flex-col md:w-72 lg:w-80 border-r border-gray-200 p-6 lg:p-8 shrink-0 bg-white sticky top-0 h-screen overflow-y-auto">
         <div className="mb-8">
-          <a href="/" className="text-2xl font-extrabold tracking-tight flex items-center gap-2 mb-2 no-underline">
-            <img src="/uploads/envelope_icon_transparent.png" alt="Logo" width={32} height={32} className="object-contain rounded" />
-            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', color: '#2e1065', letterSpacing: '0.2px' }}>
-              Shadiwala<span style={{ color: '#9d174d' }}>Card</span>
+          <a href="/" className="text-2xl font-extrabold tracking-tight flex items-center gap-2.5 mb-3 no-underline select-none">
+            <img 
+              src="/uploads/logo.png" 
+              alt="ShadiwalaCard Logo" 
+              style={{ height: '30px', width: 'auto', objectFit: 'contain' }} 
+            />
+            <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.3rem', color: '#0f172a', letterSpacing: '-0.3px', fontWeight: 700 }}>
+              Shadiwala<span style={{ color: '#e11d48' }}>Card</span>
             </span>
           </a>
-          <h1 className="text-xl font-bold text-[#1A202C]" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h1 className="text-xl font-bold text-[#0f172a]" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif" }}>
             {mode === "edit" ? "Edit Your Invite" : "Customize Your Invite"}
           </h1>
           <p className="text-xs text-gray-500 mt-1">{mode === "edit" ? "Update any section, then save changes" : "Complete the steps below to make your shadi site live"}</p>
