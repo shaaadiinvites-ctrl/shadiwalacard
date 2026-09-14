@@ -30,10 +30,9 @@ export default async function SuccessPage({ searchParams }: Props) {
   const templateSlug = template || "grand-palace";
   const selectedTemplate = getTemplate(templateSlug);
 
-  // Build the form URL preserving email, phone, and cryptographic signature
+  // Build the form URL preserving signature without exposing phone number in the URL
   let formUrl = `/form?po=${po}&template=${templateSlug}`;
   if (e) formUrl += `&e=${encodeURIComponent(e)}`;
-  if (p) formUrl += `&p=${encodeURIComponent(p)}`;
   if (sig) formUrl += `&sig=${encodeURIComponent(sig)}`;
 
   const templateImage =

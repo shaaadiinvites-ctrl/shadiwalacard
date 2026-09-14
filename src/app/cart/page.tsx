@@ -410,14 +410,19 @@ function CartPageContent() {
       });
       rzp.open();
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Something went wrong.");
+      console.error("initiateRazorpayPayment error:", err);
+      let msg = err.message || "Failed to initiate payment. Please try again.";
+      if (msg === "Internal server error" || msg.toLowerCase().includes("failed to fetch")) {
+        msg = "Payment gateway connection timed out. Please tap Proceed to Payment to try again.";
+      }
+      setError(msg);
     } finally {
       setLoadingRazorpay(false);
     }
   };
 
   const handleCheckout = async () => {
+    setError("");
     if (!template || loadingRazorpay || verifying) return;
 
     const isPhoneEntered = Boolean(phone && validatePhone(countryCode, phone));

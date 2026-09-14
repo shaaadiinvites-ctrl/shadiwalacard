@@ -109,10 +109,10 @@ export async function POST(req: NextRequest) {
           po: order.id,
           template,
           email: "",
-          phone: requestedPhoneDigits,
+          phone: "",
         });
 
-        const formUrl = `/form?po=${order.id}&template=${template}&p=${encodeURIComponent(requestedPhoneDigits)}&sig=${signature}`;
+        const formUrl = `/form?po=${order.id}&template=${template}&sig=${signature}`;
 
         return NextResponse.json({
           found: true,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import https from "https";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getTemplate, TEMPLATES } from "@/lib/templates";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -23,6 +24,58 @@ async function verifyTurnstile(token: string | undefined, ip: string): Promise<b
     console.error("Turnstile verification error:", err);
     return false;
   }
+}
+
+function postRazorpayOrderIPv4(
+  payload: string,
+  authHeader: string,
+  timeoutMs: number = 6000
+): Promise<{ ok: boolean; status: number; order: any }> {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: "api.razorpay.com",
+        port: 443,
+        path: "/v1/orders",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+          Authorization: authHeader,
+        },
+        family: 4, // Enforce IPv4 socket so Windows dual-stack never hangs
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let raw = "";
+        res.on("data", (chunk) => {
+          raw += chunk;
+        });
+        res.on("end", () => {
+          try {
+            resolve({
+              ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+              status: res.statusCode || 500,
+              order: JSON.parse(raw),
+            });
+          } catch {
+            resolve({
+              ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+              status: res.statusCode || 500,
+              order: { error: { description: raw } },
+            });
+          }
+        });
+      }
+    );
+
+    req.on("timeout", () => {
+      req.destroy(new Error("Razorpay request timed out"));
+    });
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
+  });
 }
 
 // POST /api/razorpay/create-order
@@ -52,6 +105,7 @@ export async function POST(req: NextRequest) {
 
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
     if (!keyId || !keySecret) {
       return NextResponse.json(
         { error: "Payments aren't configured yet. RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are missing." },
@@ -66,22 +120,53 @@ export async function POST(req: NextRequest) {
 
     const amountPaise = finalPrice * 100;
 
-    const razorpayRes = await fetch("https://api.razorpay.com/v1/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64"),
-      },
-      body: JSON.stringify({
-        amount: amountPaise,
-        currency: "INR",
-        receipt: `tmpl_${template.id}_${Date.now()}`,
-        notes: { template_id: template.id },
-      }),
+    const authHeader = "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    const payload = JSON.stringify({
+      amount: amountPaise,
+      currency: "INR",
+      receipt: `tmpl_${template.id}_${Date.now()}`,
+      notes: { template_id: template.id },
     });
 
-    const order = await razorpayRes.json();
-    if (!razorpayRes.ok) {
+    let order: any = null;
+    let isOk = false;
+
+    // Fast attempt via global fetch (3.5s fail-fast timeout)
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3500);
+      const razorpayRes = await fetch("https://api.razorpay.com/v1/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: payload,
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      order = await razorpayRes.json();
+      isOk = razorpayRes.ok;
+    } catch (fetchErr: any) {
+      console.warn("Native fetch to Razorpay failed or timed out, switching to IPv4 fallback:", fetchErr.message);
+    }
+
+    // Resilient fallback via IPv4 socket
+    if (!order) {
+      try {
+        const ipv4Res = await postRazorpayOrderIPv4(payload, authHeader, 6000);
+        order = ipv4Res.order;
+        isOk = ipv4Res.ok;
+      } catch (sockErr: any) {
+        console.error("IPv4 socket to Razorpay failed:", sockErr.message);
+        return NextResponse.json(
+          { error: "Payment gateway connection timed out. Please click Proceed to Payment to try again." },
+          { status: 504 }
+        );
+      }
+    }
+
+    if (!isOk) {
       console.error("Razorpay order creation failed:", order);
       return NextResponse.json({ error: order?.error?.description || "Could not create payment order." }, { status: 502 });
     }
@@ -99,9 +184,6 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      // Full error goes to server logs only — never to the client. Internal
-      // DB error details (schema names, constraint names) shouldn't be
-      // handed to whoever is calling this API.
       console.error("Supabase payment_orders insert error:", error);
       return NextResponse.json({ error: "Could not save payment order." }, { status: 500 });
     }
@@ -113,8 +195,12 @@ export async function POST(req: NextRequest) {
       paymentOrderId: row.id,
       templateName: template.name,
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("create-order route error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const isTimeout = err?.name === "AbortError" || err?.message?.includes("timed out") || err?.message?.includes("Timeout");
+    return NextResponse.json(
+      { error: isTimeout ? "Payment gateway connection timed out. Please try again." : "Payment gateway is temporarily busy. Please try again." },
+      { status: 500 }
+    );
   }
 }

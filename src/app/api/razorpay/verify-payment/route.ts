@@ -68,17 +68,18 @@ export async function POST(req: NextRequest) {
     }
 
     const { signSetupLink } = await import("@/lib/linkSecurity");
+    // Sign setup link without exposing phone in the URL query string
     const signature = signSetupLink({
       po: row.id,
       template: row.template_id,
       email: email || "",
-      phone: phone || "",
+      phone: "",
     });
 
     const origin = req.headers.get("origin") || "https://shadiwalacard.com";
     let setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}`;
     if (email) setupUrl += `&e=${encodeURIComponent(email)}`;
-    if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
+    // Omit &p= so the customer's phone number remains private in WhatsApp & shared URLs
     setupUrl += `&sig=${signature}`;
 
     // Dispatch automated WhatsApp confirmation and email in parallel before returning
