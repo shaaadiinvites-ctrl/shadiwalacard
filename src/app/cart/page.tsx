@@ -37,6 +37,7 @@ function CartPageContent() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
+  const [otpSuccess, setOtpSuccess] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(30);
@@ -169,12 +170,14 @@ function CartPageContent() {
   const handleCloseOtpModal = () => {
     setShowOtpModal(false);
     setOtpError("");
+    setOtpSuccess(false);
     cleanupRecaptcha();
   };
 
   const handleEditPhoneFromModal = () => {
     setShowOtpModal(false);
     setOtpError("");
+    setOtpSuccess(false);
     cleanupRecaptcha();
     setTimeout(() => {
       phoneInputRef.current?.focus();
@@ -192,6 +195,7 @@ function CartPageContent() {
     setError("");
     setVerifying(true);
     setOtpError("");
+    setOtpSuccess(false);
     setOtpArray(["", "", "", "", "", ""]);
     setResendTimer(30);
     try {
@@ -315,13 +319,19 @@ function CartPageContent() {
       
       if (!res.ok) throw new Error(data?.error || "Failed to verify phone number. Please try again.");
 
+      setOtpSuccess(true);
       setIsVerified(true);
+
+      // Brief delay so user clearly sees the satisfying green feedback on the OTP boxes
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
       setShowOtpModal(false);
 
       // Seamless One-Click Transition: Immediately open Razorpay payment modal!
       await initiateRazorpayPayment(fullPhone);
     } catch (err: any) {
       console.error("Error verifying OTP", err);
+      setOtpSuccess(false);
       setOtpError(err.message || "Invalid OTP. Please check the code and try again.");
     } finally {
       setVerifying(false);
@@ -546,13 +556,21 @@ function CartPageContent() {
           font-size: 1.4rem;
           font-weight: 700;
           border-radius: 12px;
-          caret-color: #10b981;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.04);
+          caret-color: #FFFFFF;
           transition: all 0.2s ease;
         }
         .otp-digit-box:focus {
+          border-color: rgba(255, 255, 255, 0.45) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12) !important;
+        }
+        .otp-digit-box.otp-box-success {
           border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.08) !important;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+          background: rgba(16, 185, 129, 0.12) !important;
+          color: #10b981 !important;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35) !important;
         }
         @media (max-width: 420px) {
           .otp-digit-box {
@@ -1092,22 +1110,39 @@ function CartPageContent() {
                       inputMode="numeric"
                       autoComplete="one-time-code"
                       value={digit}
+                      disabled={otpSuccess || verifying}
                       onChange={(e) => handleOtpChange(e.target, index)}
                       onKeyDown={(e) => handleOtpKeyDown(e, index)}
                       onPaste={handleOtpPaste}
-                      className="cart-input otp-digit-box"
+                      className={`cart-input otp-digit-box ${otpSuccess ? 'otp-box-success' : ''}`}
                       style={{
-                        background: digit ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.06)',
-                        borderColor: digit ? '#10b981' : 'rgba(255,255,255,0.15)',
-                        color: '#FFFFFF'
+                        background: otpSuccess
+                          ? 'rgba(16, 185, 129, 0.12)'
+                          : digit
+                          ? 'rgba(255, 255, 255, 0.08)'
+                          : 'rgba(255, 255, 255, 0.04)',
+                        borderColor: otpSuccess
+                          ? '#10b981'
+                          : digit
+                          ? 'rgba(255, 255, 255, 0.32)'
+                          : 'rgba(255, 255, 255, 0.18)',
+                        color: otpSuccess ? '#10b981' : '#FFFFFF',
+                        boxShadow: otpSuccess ? '0 0 0 3px rgba(16, 185, 129, 0.35)' : undefined,
                       }}
                     />
                   ))}
                 </div>
 
-                {/* Auto-verify feedback & Error messages */}
+                {/* Auto-verify feedback, Success, & Error messages */}
                 {otpError ? (
                   <p style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>
+                ) : otpSuccess ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#10b981', fontSize: '0.813rem', fontWeight: 600, margin: '0 0 16px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Verified successfully! Connecting to payment...</span>
+                  </div>
                 ) : verifying ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#ffbc4b', fontSize: '0.813rem', fontWeight: 600, margin: '0 0 16px' }}>
                     <div style={{ width: 14, height: 14, border: '2px solid rgba(255,188,75,0.3)', borderTopColor: '#ffbc4b', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite' }} />
