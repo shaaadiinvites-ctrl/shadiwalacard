@@ -166,7 +166,7 @@ export async function sendWhatsAppOrderConfirmation({
   templateName = "The Grand Palace",
   customizeUrl,
 }: SendWhatsAppParams): Promise<{ success: boolean; data?: any; error?: string }> {
-  const rawPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const rawPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1252193697984713";
   const rawToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
   const phoneId = rawPhoneId?.replace(/^["']|["']$/g, "").trim();
@@ -180,11 +180,11 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    // Primary: Luxury celebratory message (APPROVED by Meta)
-    // Fallback: Pure utility order ready message (APPROVED by Meta)
+    // Primary: Pure UTILITY order confirmation message (free/standard tier approved by Meta)
+    // Fallback: Celebratory message
     const templateCandidates = [
-      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
       { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
+      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
     ];
 
     let res: any = null;
