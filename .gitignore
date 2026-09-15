@@ -46,3 +46,6 @@ next-env.d.ts
 /backups/
 *.bak
 scratch/
+public/uploads/*.pdf
+public/uploads/*Udyam*
+public/uploads/*copy*

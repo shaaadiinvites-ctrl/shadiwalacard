@@ -68,6 +68,28 @@ export default async function FormPage({ searchParams }: Props) {
       });
     }
 
+    // Handle privacy-first links where phone was omitted from URL
+    if (!isSigValid) {
+      isSigValid = verifySetupLink({
+        po,
+        template,
+        email: e,
+        phone: "",
+        sig,
+      });
+    }
+
+    // Handle privacy-first links where both email and phone were omitted from URL
+    if (!isSigValid) {
+      isSigValid = verifySetupLink({
+        po,
+        template,
+        email: "",
+        phone: "",
+        sig,
+      });
+    }
+
     if (!isSigValid) {
       return (
         <div style={{
@@ -143,14 +165,19 @@ export default async function FormPage({ searchParams }: Props) {
   }
 
   // ── 2. Order & Wedding Ownership Verification ─────────────────────────────
+  let resolvedPhone = p || "";
   if (po) {
     const supabase = createServerSupabaseClient();
 
     const { data: poRow } = await supabase
       .from("payment_orders")
-      .select("id, status, wedding_id")
+      .select("id, status, wedding_id, customer_phone")
       .eq("id", po)
       .maybeSingle();
+
+    if (poRow?.customer_phone && !resolvedPhone) {
+      resolvedPhone = poRow.customer_phone;
+    }
 
     if (poRow?.wedding_id) {
       // Fetch the wedding record including owner contact information
@@ -163,7 +190,7 @@ export default async function FormPage({ searchParams }: Props) {
       // STRICT OWNERSHIP CHECK:
       // If the wedding was already created, verify that the visitor's email and phone
       // strictly match the wedding owner. If mismatched or missing, NEVER reveal the edit token!
-      const isOwner = isWeddingOwnerMatch(wedding, e, p);
+      const isOwner = isWeddingOwnerMatch(wedding, e, resolvedPhone);
 
       if (!isOwner) {
         return (
@@ -272,7 +299,7 @@ export default async function FormPage({ searchParams }: Props) {
 
   const initialData = {
     primaryEmail: e || "",
-    contactNumber: p || "",
+    contactNumber: resolvedPhone || "",
   };
 
   return (

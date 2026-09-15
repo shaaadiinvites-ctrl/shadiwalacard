@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
         .update({ status: "used", used_at: new Date().toISOString() })
         .eq("id", body.paymentOrderId)
         .eq("status", "verified")
-        .select("id, template_id, amount_inr, status, razorpay_order_id, razorpay_payment_id")
+        .select("id, template_id, amount_inr, status, razorpay_order_id, razorpay_payment_id, customer_phone")
         .maybeSingle();
 
       if (paymentLookupError || !data) {
@@ -165,24 +165,71 @@ export async function POST(req: NextRequest) {
     // that the submitted contact details match the authorized payment.
     if (body.sig) {
       const { verifySetupLink } = await import("@/lib/linkSecurity");
+      const poId = body.paymentOrderId;
+      const tmpl = body.templateId || paymentOrder.template_id;
+      const submittedEmail = body.primaryEmail || "";
+      const submittedPhone = body.contactNumber || "";
+      const orderPhone = (paymentOrder as any).customer_phone || "";
+
+      // 1. Standard: submitted email + submitted phone
       let isSigValid = verifySetupLink({
-        po: body.paymentOrderId,
-        template: body.templateId || paymentOrder.template_id,
-        email: body.primaryEmail || "",
-        phone: body.contactNumber || "",
+        po: poId,
+        template: tmpl,
+        email: submittedEmail,
+        phone: submittedPhone,
         sig: body.sig,
       });
 
-      // If checkout was phone-first and signed with email="", allow submitting with an email
-      // as long as the payment order and phone number strictly match the signature.
-      if (!isSigValid && body.primaryEmail) {
+      // 2. Phone-first link signed without email
+      if (!isSigValid && submittedEmail) {
         isSigValid = verifySetupLink({
-          po: body.paymentOrderId,
-          template: body.templateId || paymentOrder.template_id,
+          po: poId,
+          template: tmpl,
           email: "",
-          phone: body.contactNumber || "",
+          phone: submittedPhone,
           sig: body.sig,
         });
+      }
+
+      // 3. Privacy-first link: signed without phone (phone kept private in URL)
+      if (!isSigValid) {
+        isSigValid = verifySetupLink({
+          po: poId,
+          template: tmpl,
+          email: submittedEmail,
+          phone: "",
+          sig: body.sig,
+        });
+      }
+
+      // 4. Privacy-first link: signed without email and without phone
+      if (!isSigValid) {
+        isSigValid = verifySetupLink({
+          po: poId,
+          template: tmpl,
+          email: "",
+          phone: "",
+          sig: body.sig,
+        });
+      }
+
+      // 5. Signed with original checkout order phone
+      if (!isSigValid && orderPhone) {
+        isSigValid =
+          verifySetupLink({
+            po: poId,
+            template: tmpl,
+            email: submittedEmail,
+            phone: orderPhone,
+            sig: body.sig,
+          }) ||
+          verifySetupLink({
+            po: poId,
+            template: tmpl,
+            email: "",
+            phone: orderPhone,
+            sig: body.sig,
+          });
       }
 
       if (!isSigValid) {

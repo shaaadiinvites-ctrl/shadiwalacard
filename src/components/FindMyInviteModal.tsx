@@ -38,6 +38,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
+  const [otpSuccess, setOtpSuccess] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [resendTimer, setResendTimer] = useState(30);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
@@ -49,6 +50,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
       setStep("phone");
       setError("");
       setOtpError("");
+      setOtpSuccess(false);
       setLookupResult(null);
       setOtpArray(["", "", "", "", "", ""]);
       setTimeout(() => phoneInputRef.current?.focus(), 200);
@@ -203,10 +205,15 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
         throw new Error(data?.error || "Could not retrieve invitation details.");
       }
 
-      setLookupResult(data);
-      setStep("result");
+      setOtpSuccess(true);
+      setTimeout(() => {
+        setLookupResult(data);
+        setStep("result");
+        setOtpSuccess(false);
+      }, 600);
     } catch (err: any) {
       console.error("Verification/Lookup Error", err);
+      setOtpSuccess(false);
       setOtpError(err.message || "Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
@@ -402,36 +409,57 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                   autoComplete="one-time-code"
                   maxLength={1}
                   value={digit}
-                  onChange={(e) => handleOtpChange(e.target, idx)}
+                  disabled={otpSuccess || loading}
+                  onChange={(e) => {
+                    setOtpSuccess(false);
+                    handleOtpChange(e.target, idx);
+                  }}
                   onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                  onPaste={handleOtpPaste}
+                  onPaste={(e) => {
+                    setOtpSuccess(false);
+                    handleOtpPaste(e);
+                  }}
                   style={{
                     width: 44,
                     height: 50,
                     textAlign: "center",
                     fontSize: "1.3rem",
                     fontWeight: 700,
-                    background: digit ? "rgba(16, 185, 129, 0.08)" : "rgba(255, 255, 255, 0.06)",
-                    border: digit ? "1px solid #10b981" : "1px solid rgba(255, 255, 255, 0.15)",
+                    background: otpSuccess ? "rgba(16, 185, 129, 0.12)" : digit ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)",
+                    border: otpSuccess ? "1px solid #10b981" : digit ? "1px solid rgba(255, 255, 255, 0.32)" : "1px solid rgba(255, 255, 255, 0.18)",
                     borderRadius: 12,
-                    color: "#FFFFFF",
+                    color: otpSuccess ? "#10b981" : "#FFFFFF",
                     outline: "none",
-                    caretColor: "#10b981",
+                    caretColor: "#FFFFFF",
+                    boxShadow: otpSuccess ? "0 0 0 3px rgba(16, 185, 129, 0.35)" : "none",
                     transition: "all 0.2s ease",
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#10b981";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.3)";
-                    e.currentTarget.style.background = "rgba(16, 185, 129, 0.08)";
+                    if (!otpSuccess) {
+                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.45)";
+                      e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255, 255, 255, 0.12)";
+                      e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = digit ? "#10b981" : "rgba(255, 255, 255, 0.15)";
-                    e.currentTarget.style.boxShadow = "none";
-                    e.currentTarget.style.background = digit ? "rgba(16, 185, 129, 0.08)" : "rgba(255, 255, 255, 0.06)";
+                    if (!otpSuccess) {
+                      e.currentTarget.style.borderColor = digit ? "rgba(255, 255, 255, 0.32)" : "rgba(255, 255, 255, 0.18)";
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.background = digit ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)";
+                    }
                   }}
                 />
               ))}
             </div>
+
+            {otpSuccess && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#10b981", fontSize: "0.813rem", fontWeight: 600, margin: "0 0 16px" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Code verified! Looking up your invitation...</span>
+              </div>
+            )}
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.75rem", color: "rgba(255, 255, 255, 0.6)" }}>
               <button

@@ -51,12 +51,15 @@ export async function POST(req: NextRequest) {
       po: order.id,
       template: resolvedTemplate,
       email: cleanEmail,
-      phone: phone || "",
+      phone: "",
     });
 
-    const origin = req.headers.get("origin") || "https://shadiwalacard.com";
+    const reqOrigin = req.headers.get("origin") || "";
+    const origin =
+      reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
+        ? reqOrigin
+        : "https://shadiwalacard.com";
     let setupUrl = `${origin}/form?po=${order.id}&template=${resolvedTemplate}&e=${encodeURIComponent(cleanEmail)}`;
-    if (phone) setupUrl += `&p=${encodeURIComponent(phone)}`;
     setupUrl += `&sig=${signature}`;
 
     // 1. If wedding was already created for this order, attach email to it
