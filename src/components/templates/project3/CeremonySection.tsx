@@ -2,6 +2,8 @@
 
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, animate } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
+import { t } from "@/lib/i18n";
+import { WeddingRecord } from "@/types/wedding";
 
 const sparkles = [
   { left: "15%", top: "20%", delay: "0s", duration: "2.5s", char: "✦" },
@@ -121,7 +123,8 @@ const bgFireflies = [
   { left: "62.44%", animDuration: "10.90s", animDelay: "-11.51s", drift: "-70px", glowDuration: "2.26s" },
 ];
 
-export function CeremonySection({ events = [] }: { events?: any[] }) {
+export function CeremonySection({ events, language }: { events: WeddingRecord["events"]; language?: "en" | "hi" }) {
+  const [activeTab, setActiveTab] = useState(0);
   // Use DB events if provided, otherwise fallback to hardcoded ceremonies
   const activeCeremonies = events && events.length > 0 
     ? [...events]
@@ -411,10 +414,10 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
         {/* Fixed Title inside Sticky Container */}
         <div className="text-center px-6 flex-shrink-0 text-[#f7ede2] mb-4 md:mb-12">
           <div className="font-montserrat text-sm md:text-base tracking-[5px] text-[#C8912A] uppercase mb-3 drop-shadow-sm">
-            The Festivities
+            {t("festivities", language)}
           </div>
           <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-4 drop-shadow-md">
-            Days of Celebration
+            {t("daysOfCelebration", language)}
           </h2>
           {activeCeremonies.length > 1 && (
             <>
@@ -519,7 +522,7 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
 
                   <div className="text-center flex flex-col gap-1 mb-5 md:mb-8">
                     <div className="font-montserrat font-bold text-[10px] tracking-widest text-[#FFD98A] uppercase mb-1">
-                      The Venue
+                      {t("theVenue", language)}
                     </div>
                     <div className="font-playfair font-bold text-lg text-white drop-shadow-md relative z-10">
                       {ceremony.venueName}
@@ -536,11 +539,11 @@ export function CeremonySection({ events = [] }: { events?: any[] }) {
                       rel="noreferrer"
                       className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_15px_rgba(200,145,42,0.4)] transition-transform hover:scale-105 active:scale-95"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                       </svg>
-                      GET DIRECTIONS
+                      {t("getDirections", language)}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2">
                         <line x1="5" y1="19" x2="19" y2="5"></line>
                         <polyline points="9 5 19 5 19 15"></polyline>

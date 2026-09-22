@@ -29,6 +29,7 @@ export interface WeddingFormData {
   hashtag: string;
   contactNumber: string;
   primaryEmail: string;
+  language?: "en" | "hi";
 
   // Section 2: Events
   events: WeddingEvent[];
@@ -107,6 +108,7 @@ export interface WeddingRecord {
   special_instructions?: string;
   template_id?: string;
   edit_token?: string;
+  language?: "en" | "hi";
 }
 
 export const STEPS = [

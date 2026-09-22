@@ -2,6 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import { WeddingRecord } from "@/types/wedding";
+import { t } from "@/lib/i18n";
 
 export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
   const revealVariants: Variants = {
@@ -35,8 +36,8 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
           || श्री गणेशाय नमः ||
         </motion.div>
 
-        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-lora text-[clamp(16px,3.8vw,20px)] leading-[1.7] text-white/90 max-w-[420px]">
-          With the heavenly blessings of<br/>our beloved grandparents
+        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-lora text-[clamp(16px,4vw,20px)] text-white/90 tracking-[1.5px] leading-relaxed max-w-[80%] mx-auto">
+          <span dangerouslySetInnerHTML={{ __html: t("heavenlyBlessings", wedding?.language).replace('\n', '<br/>') }} />
         </motion.p>
 
         {/* Ornate Gold Flourish Divider */}
@@ -49,11 +50,11 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
         </motion.div>
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-montserrat text-[clamp(18px,5vw,28px)] tracking-[5px] text-[#FFF8DC]/85 uppercase mb-4">
-          We Invite
+          {t("youAreInvited", wedding?.language)}
         </motion.div>
         
         <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-lora text-[clamp(15px,3.5vw,18px)] text-white/85 mb-12 tracking-[1.5px] leading-[1.6]">
-          you and your family to join us in the wedding celebrations of
+          {t("joinUs", wedding?.language)}
         </motion.p>
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="relative w-full max-w-[600px] mt-5 py-10">
@@ -64,9 +65,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
                 {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
                   <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                    Daughter of {wedding.bride_mother_name ? `Mrs. ${wedding.bride_mother_name}` : ""}
-                    {wedding.bride_mother_name && wedding.bride_father_name ? " & " : ""}
-                    {wedding.bride_father_name ? `Mr. ${wedding.bride_father_name}` : ""}
+                    {t("daughterOf", wedding?.language)} {wedding.bride_mother_name ? `${t("mrs", wedding?.language)} ${wedding.bride_mother_name}` : ""}
+                    {wedding.bride_mother_name && wedding.bride_father_name ? ` ${t("and", wedding?.language)} ` : ""}
+                    {wedding.bride_father_name ? `${t("mr", wedding?.language)} ${wedding.bride_father_name}` : ""}
                   </p>
                 )}
               </div>
@@ -79,9 +80,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
                 {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
                   <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                    Son of {wedding.groom_mother_name ? `Mrs. ${wedding.groom_mother_name}` : ""}
-                    {wedding.groom_mother_name && wedding.groom_father_name ? " & " : ""}
-                    {wedding.groom_father_name ? `Mr. ${wedding.groom_father_name}` : ""}
+                    {t("sonOf", wedding?.language)} {wedding.groom_mother_name ? `${t("mrs", wedding?.language)} ${wedding.groom_mother_name}` : ""}
+                    {wedding.groom_mother_name && wedding.groom_father_name ? ` ${t("and", wedding?.language)} ` : ""}
+                    {wedding.groom_father_name ? `${t("mr", wedding?.language)} ${wedding.groom_father_name}` : ""}
                   </p>
                 )}
               </div>
@@ -92,9 +93,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
                 {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
                   <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                    Son of {wedding.groom_mother_name ? `Mrs. ${wedding.groom_mother_name}` : ""}
-                    {wedding.groom_mother_name && wedding.groom_father_name ? " & " : ""}
-                    {wedding.groom_father_name ? `Mr. ${wedding.groom_father_name}` : ""}
+                    {t("sonOf", wedding?.language)} {wedding.groom_mother_name ? `${t("mrs", wedding?.language)} ${wedding.groom_mother_name}` : ""}
+                    {wedding.groom_mother_name && wedding.groom_father_name ? ` ${t("and", wedding?.language)} ` : ""}
+                    {wedding.groom_father_name ? `${t("mr", wedding?.language)} ${wedding.groom_father_name}` : ""}
                   </p>
                 )}
               </div>
@@ -107,9 +108,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
                 {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
                   <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
-                    Daughter of {wedding.bride_mother_name ? `Mrs. ${wedding.bride_mother_name}` : ""}
-                    {wedding.bride_mother_name && wedding.bride_father_name ? " & " : ""}
-                    {wedding.bride_father_name ? `Mr. ${wedding.bride_father_name}` : ""}
+                    {t("daughterOf", wedding?.language)} {wedding.bride_mother_name ? `${t("mrs", wedding?.language)} ${wedding.bride_mother_name}` : ""}
+                    {wedding.bride_mother_name && wedding.bride_father_name ? ` ${t("and", wedding?.language)} ` : ""}
+                    {wedding.bride_father_name ? `${t("mr", wedding?.language)} ${wedding.bride_father_name}` : ""}
                   </p>
                 )}
               </div>

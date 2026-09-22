@@ -1,15 +1,50 @@
 "use client";
 
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { WeddingFormData } from "@/types/wedding";
 import { FieldWrapper, Input } from "@/components/FormFields";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
   errors: FieldErrors<WeddingFormData>;
+  watch: UseFormWatch<WeddingFormData>;
+  setValue: UseFormSetValue<WeddingFormData>;
 }
 
-export default function Step5RSVP({ register, errors }: Props) {
+export default function Step5RSVP({ register, errors, watch, setValue }: Props) {
+  const language = watch("language");
+
+  const handleBlurTranslate = async (e: React.FocusEvent<HTMLInputElement>, fieldName: keyof WeddingFormData) => {
+    if (language === 'hi' && e.target.value && /[a-zA-Z]/.test(e.target.value)) {
+      try {
+        const res = await fetch('/api/transliterate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: e.target.value })
+        });
+        const data = await res.json();
+        if (data.result) {
+          setValue(fieldName, data.result, { shouldValidate: true, shouldDirty: true });
+        }
+      } catch (err) {}
+    }
+  };
+
+  const SmartInput = ({ name, placeholder, required }: { name: keyof WeddingFormData; placeholder?: string; required?: string }) => {
+    const reg = register(name, { required });
+    return (
+      <Input
+        {...reg}
+        placeholder={placeholder}
+        className="capitalize"
+        onBlur={async (e) => {
+          reg.onBlur(e);
+          await handleBlurTranslate(e, name);
+        }}
+      />
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,10 +56,7 @@ export default function Step5RSVP({ register, errors }: Props) {
         <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">RSVP 1</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FieldWrapper label="Contact Name" error={errors.rsvp1Name?.message}>
-            <Input
-              {...register("rsvp1Name")}
-              className="capitalize"
-            />
+            <SmartInput name="rsvp1Name" />
           </FieldWrapper>
           <FieldWrapper label="Contact Number" error={errors.rsvp1Phone?.message}>
             <Input
@@ -55,10 +87,7 @@ export default function Step5RSVP({ register, errors }: Props) {
         <h3 className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">RSVP 2</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FieldWrapper label="Contact Name" error={errors.rsvp2Name?.message}>
-            <Input
-              {...register("rsvp2Name")}
-              className="capitalize"
-            />
+            <SmartInput name="rsvp2Name" />
           </FieldWrapper>
           <FieldWrapper label="Contact Number" error={errors.rsvp2Phone?.message}>
             <Input

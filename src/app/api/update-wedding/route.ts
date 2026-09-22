@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
         hashtag: body.hashtag || null,
         contact_number: (body.contactNumber && body.contactNumber.trim()) || existing.contact_number || null,
         primary_email: (body.primaryEmail && body.primaryEmail.trim()) || existing.primary_email || null,
+        language: body.language || 'en',
         events: body.events ?? [],
         our_story: body.ourStory || null,
         video_link: body.videoLink || null,

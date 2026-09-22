@@ -1,0 +1,77 @@
+export const DICTIONARY = {
+  en: {
+    daughterOf: "Daughter of",
+    sonOf: "Son of",
+    mrs: "Mrs.",
+    mr: "Mr.",
+    and: "&",
+    youAreInvited: "You are invited to the wedding of",
+    joinUs: "Join us as we celebrate",
+    ourStory: "Our Story",
+    theCeremony: "The Ceremony",
+    theReception: "The Reception",
+    events: "Wedding Events",
+    rsvp: "R.S.V.P",
+    festivities: "The Festivities",
+    daysOfCelebration: "Days of Celebration",
+    awaitingPresence: "Awaiting your benign presence at the auspicious occasion",
+    withBlessings: "With the divine blessings of our elders",
+    giftPolicy: "Gift Policy",
+    liveStream: "Live Stream",
+    watchLive: "Watch Live",
+    contactUs: "Contact Us",
+    venue: "Venue",
+    when: "When",
+    dressCode: "Dress Code",
+    specialNotes: "Special Notes",
+    countdown: "Countdown to the big day",
+    days: "Days",
+    hours: "Hours",
+    minutes: "Minutes",
+    seconds: "Seconds",
+    heavenlyBlessings: "With the heavenly blessings of our beloved grandparents",
+    theVenue: "The Venue",
+    getDirections: "GET DIRECTIONS"
+  },
+  hi: {
+    daughterOf: "सुपुत्री",
+    sonOf: "सुपुत्र",
+    mrs: "श्रीमती",
+    mr: "श्री",
+    and: "एवं",
+    youAreInvited: "आप सप्रेम आमंत्रित हैं",
+    joinUs: "आपकी उपस्थिति हमारी खुशी को दोगुना कर देगी",
+    ourStory: "हमारी कहानी",
+    theCeremony: "विवाह समारोह",
+    theReception: "प्रीतिभोज",
+    events: "समारोह",
+    rsvp: "संपर्क (R.S.V.P)",
+    festivities: "मांगलिक कार्यक्रम",
+    daysOfCelebration: "विवाह के शुभ अवसर",
+    awaitingPresence: "इस शुभ अवसर पर हमें आपकी गरिमामयी उपस्थिति की प्रतीक्षा रहेगी",
+    withBlessings: "ईश्वर एवं बड़ों के आशीर्वाद से",
+    giftPolicy: "उपहार",
+    liveStream: "लाइव स्ट्रीम",
+    watchLive: "लाइव देखें",
+    contactUs: "संपर्क करें",
+    venue: "स्थान",
+    when: "समय",
+    dressCode: "परिधान",
+    specialNotes: "विशेष जानकारी",
+    countdown: "शुभ घड़ी की प्रतीक्षा",
+    days: "दिन",
+    hours: "घंटे",
+    minutes: "मिनट",
+    seconds: "सेकंड",
+    heavenlyBlessings: "हमारे प्रिय दादा-दादी के स्वर्गीय आशीर्वाद से",
+    theVenue: "स्थान (Venue)",
+    getDirections: "नक्शा (Map)"
+  }
+};
+
+export type LanguageCode = keyof typeof DICTIONARY;
+
+export function t(key: keyof typeof DICTIONARY.en, lang?: string | null): string {
+  const currentLang = (lang === "hi" ? "hi" : "en") as LanguageCode;
+  return DICTIONARY[currentLang][key] || DICTIONARY.en[key];
+}

@@ -593,7 +593,7 @@ export default function WeddingForm({
             <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
               <div className="max-w-3xl mx-auto">
                 {currentStep === 1 && (
-                  <Step1Basics register={register} errors={errors} watch={watch} />
+                  <Step1Basics register={register} errors={errors} watch={watch} control={control} setValue={setValue} />
                 )}
                 {currentStep === 2 && (
                   <Step2Events register={register} errors={errors} control={control} setValue={setValue} />
@@ -628,7 +628,7 @@ export default function WeddingForm({
                 )}
                 {currentStep === 4 && (
                   <>
-                    <Step5RSVP register={register} errors={errors} />
+                    <Step5RSVP register={register} errors={errors} watch={watch} setValue={setValue} />
                     {submitError && (
                       <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-sm">
                         <span className="text-xl leading-none">⚠️</span>

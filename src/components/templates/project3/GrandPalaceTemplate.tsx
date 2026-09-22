@@ -39,7 +39,7 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
 
       <HeroSection wedding={wedding} />
       <InvitationSection wedding={wedding} />
-      <CeremonySection events={wedding.events || []} />
+      <CeremonySection events={wedding.events || []} language={wedding.language} />
       
       {/* Only show countdown if there's a main event with a date in the future */}
       <CountdownSection wedding={wedding} />

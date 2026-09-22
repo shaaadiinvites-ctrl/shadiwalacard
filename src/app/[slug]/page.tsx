@@ -18,7 +18,7 @@ const getWeddingBySlug = cache(async (slug: string) => {
        events, our_story, cover_photo_url, gallery_urls, video_link, music_link,
        bride_mother_name, bride_father_name, groom_mother_name, groom_father_name,
        wedding_party, rsvp1_name, rsvp1_phone, rsvp2_name, rsvp2_phone,
-       live_stream_link, live_stream_notes, visual_theme, special_instructions, template_id`
+       live_stream_link, live_stream_notes, visual_theme, special_instructions, template_id, language`
     )
     .eq("slug", slug)
     .maybeSingle();

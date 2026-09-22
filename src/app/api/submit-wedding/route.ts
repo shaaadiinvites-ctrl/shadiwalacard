@@ -307,6 +307,7 @@ export async function POST(req: NextRequest) {
         hashtag: body.hashtag || null,
         contact_number: body.contactNumber || null,
         primary_email: body.primaryEmail || null,
+        language: body.language || 'en',
 
         // Section 2 — events array stored as JSONB
         events: body.events ?? [],
