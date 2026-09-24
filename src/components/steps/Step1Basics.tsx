@@ -131,10 +131,7 @@ export default function Step1Basics({ register, errors, watch, control, setValue
             </label>
           </div>
         </FieldWrapper>
-        <div className="hidden md:block"></div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FieldWrapper label="Name Display Order" error={errors.nameOrder?.message}>
           <div className="flex gap-4">
             <label className={clsx(
@@ -173,7 +170,6 @@ export default function Step1Basics({ register, errors, watch, control, setValue
             </label>
           </div>
         </FieldWrapper>
-        <div className="hidden md:block"></div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

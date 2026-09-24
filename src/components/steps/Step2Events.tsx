@@ -6,7 +6,7 @@ import { FieldWrapper, Input, Textarea, LocationInput, Select } from "@/componen
 import { MobileSheetSelect, MobileSheetDatePicker } from "@/components/MobileSheetPickers";
 import { WheelTimePickerSheet } from "@/components/ui/WheelTimePickerSheet";
 import { Plus, Trash2, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { clsx } from "clsx";
 
 interface Props {
@@ -23,6 +23,25 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
   const watchedEvents = useWatch({ control, name: "events" });
   const [activeTimePicker, setActiveTimePicker] = useState<number | null>(null);
 
+  // Auto-manage main event logic
+  useEffect(() => {
+    if (!watchedEvents || watchedEvents.length === 0) return;
+    
+    // If only 1 event, force it to be the main event
+    if (watchedEvents.length === 1) {
+      if (String(watchedEvents[0]?.isMainEvent) !== "true") {
+        setValue('events.0.isMainEvent', true, { shouldValidate: true, shouldDirty: true });
+      }
+    } 
+    // If multiple events, ensure exactly one is selected. If none is, select the first one.
+    else {
+      const hasMain = watchedEvents.some(e => String(e?.isMainEvent) === "true");
+      if (!hasMain) {
+        setValue('events.0.isMainEvent', true, { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [watchedEvents, setValue]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -36,7 +55,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm relative space-y-6"
+            className="event-card border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm relative space-y-6"
           >
             <div className="flex items-center justify-between">
               <span className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">
@@ -51,41 +70,6 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                   <Trash2 size={16} />
                 </button>
               )}
-            </div>
-
-            <div>
-              <label className={clsx(
-                "flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
-                String(watchedEvents?.[index]?.isMainEvent) === "true" 
-                  ? "border-[#4a148c] bg-purple-50" 
-                  : "border-gray-200 bg-white hover:border-[#4a148c]/30"
-              )}>
-                <div className="flex items-center gap-3">
-                  <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "border-[#4a148c]" : "border-gray-300")}>
-                    {String(watchedEvents?.[index]?.isMainEvent) === "true" && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className={clsx("font-semibold text-[15px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]" : "text-gray-600")}>
-                      Set as Main Event
-                    </span>
-                    <span className={clsx("text-[12px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]/70" : "text-gray-400")}>
-                      This event will be used for countdown.
-                    </span>
-                  </div>
-                </div>
-                <input
-                  type="radio"
-                  value="true"
-                  {...register(`events.${index}.isMainEvent`)}
-                  checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
-                  onChange={() => {
-                    watchedEvents?.forEach((_, i) => {
-                      setValue(`events.${i}.isMainEvent`, i === index);
-                    });
-                  }}
-                  className="sr-only"
-                />
-              </label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -234,14 +218,76 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
 
       <button
         type="button"
-        onClick={() =>
-          append({ name: "", customName: "", isMainEvent: fields.length === 0, date: "", time: "", venue: "", mapsLink: "", dressCode: "", notes: "" })
-        }
+        onClick={() => {
+          append({ name: "", customName: "", isMainEvent: fields.length === 0, date: "", time: "", venue: "", mapsLink: "", dressCode: "", notes: "" });
+          setTimeout(() => {
+            const elements = document.querySelectorAll('.event-card');
+            if (elements.length > 0) {
+              elements[elements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }}
         className="flex items-center gap-2 bg-transparent border border-[#4a148c] text-[#4a148c] font-semibold text-[14px] hover:bg-purple-50 rounded-xl px-5 h-[44px] transition-all w-full justify-center"
       >
         <Plus size={18} />
         Add Another Event
       </button>
+
+      {fields.length > 1 && (
+        <div className="border border-gray-200/60 rounded-xl p-6 bg-white shadow-sm space-y-6 mt-6">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-bold text-[#9d174d] uppercase tracking-widest">
+              Set Main Event
+            </span>
+          </div>
+          <p className="text-[14px] text-gray-500 mt-[-16px]">Select the event to be used for your invitation's countdown timer.</p>
+          <div className="grid grid-cols-1 gap-4">
+            {fields.map((field, index) => {
+              const eventName = watchedEvents?.[index]?.name === "Other" 
+                ? (watchedEvents?.[index]?.customName || `Event ${index + 1}`)
+                : (watchedEvents?.[index]?.name || `Event ${index + 1}`);
+              
+              return (
+                <label 
+                  key={`main-event-select-${field.id}`}
+                  className={clsx(
+                    "flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+                    String(watchedEvents?.[index]?.isMainEvent) === "true" 
+                      ? "border-[#4a148c] bg-purple-50" 
+                      : "border-gray-200 bg-white hover:border-[#4a148c]/30"
+                  )}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "border-[#4a148c]" : "border-gray-300")}>
+                      {String(watchedEvents?.[index]?.isMainEvent) === "true" && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className={clsx("font-semibold text-[15px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]" : "text-gray-600")}>
+                        {eventName}
+                      </span>
+                      <span className={clsx("text-[12px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]/70" : "text-gray-400")}>
+                        This event will be used for countdown.
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    type="radio"
+                    value="true"
+                    {...register(`events.${index}.isMainEvent`)}
+                    checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
+                    onChange={() => {
+                      watchedEvents?.forEach((_, i) => {
+                        setValue(`events.${i}.isMainEvent`, i === index);
+                      });
+                    }}
+                    className="sr-only"
+                  />
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
