@@ -22,6 +22,7 @@ export const EVENT_NAME_OPTIONS = [
 ] as const;
 
 export interface WeddingFormData {
+  originalEnglishTexts?: Record<string, string>;
   // Section 1: The Basics
   brideName: string;
   groomName: string;

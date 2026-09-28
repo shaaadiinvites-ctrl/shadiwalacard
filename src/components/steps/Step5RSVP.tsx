@@ -1,6 +1,6 @@
 "use client";
 
-import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue, UseFormGetValues } from "react-hook-form";
 import { WeddingFormData } from "@/types/wedding";
 import { FieldWrapper, Input } from "@/components/FormFields";
 
@@ -9,22 +9,26 @@ interface Props {
   errors: FieldErrors<WeddingFormData>;
   watch: UseFormWatch<WeddingFormData>;
   setValue: UseFormSetValue<WeddingFormData>;
+  getValues: UseFormGetValues<WeddingFormData>;
 }
 
-export default function Step5RSVP({ register, errors, watch, setValue }: Props) {
+export default function Step5RSVP({ register, errors, watch, setValue, getValues }: Props) {
   const language = watch("language");
 
   const handleBlurTranslate = async (e: React.FocusEvent<HTMLInputElement>, fieldName: keyof WeddingFormData) => {
     if (language === 'hi' && e.target.value && /[a-zA-Z]/.test(e.target.value)) {
+      const originalText = e.target.value;
       try {
         const res = await fetch('/api/transliterate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: e.target.value })
+          body: JSON.stringify({ text: originalText })
         });
         const data = await res.json();
         if (data.result) {
           setValue(fieldName, data.result, { shouldValidate: true, shouldDirty: true });
+          const currentOriginals = getValues('originalEnglishTexts') || {};
+          setValue('originalEnglishTexts', { ...currentOriginals, [fieldName]: originalText });
         }
       } catch (err) {}
     }

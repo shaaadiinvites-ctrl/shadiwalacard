@@ -138,7 +138,17 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                   render={({ field }) => (
                     <>
                       <div className="hidden md:block">
-                        <Input {...field} type="date" min={new Date().toISOString().split("T")[0]} />
+                        <Input 
+                          {...field} 
+                          type="date" 
+                          min={new Date().toISOString().split("T")[0]} 
+                          onClick={(e) => {
+                             try { (e.target as any).showPicker?.(); } catch(e){}
+                          }}
+                          onFocus={(e) => {
+                             try { (e.target as any).showPicker?.(); } catch(e){}
+                          }}
+                        />
                       </div>
                       <div className="md:hidden">
                         <MobileSheetDatePicker
@@ -242,49 +252,26 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
           </div>
           <p className="text-[14px] text-gray-500 mt-[-16px]">Select the event to be used for your invitation's countdown timer.</p>
           <div className="grid grid-cols-1 gap-4">
-            {fields.map((field, index) => {
-              const eventName = watchedEvents?.[index]?.name === "Other" 
-                ? (watchedEvents?.[index]?.customName || `Event ${index + 1}`)
-                : (watchedEvents?.[index]?.name || `Event ${index + 1}`);
-              
-              return (
-                <label 
-                  key={`main-event-select-${field.id}`}
-                  className={clsx(
-                    "flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
-                    String(watchedEvents?.[index]?.isMainEvent) === "true" 
-                      ? "border-[#4a148c] bg-purple-50" 
-                      : "border-gray-200 bg-white hover:border-[#4a148c]/30"
-                  )}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className={clsx("flex items-center justify-center w-5 h-5 rounded-full border-2", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "border-[#4a148c]" : "border-gray-300")}>
-                      {String(watchedEvents?.[index]?.isMainEvent) === "true" && <div className="w-2.5 h-2.5 bg-[#4a148c] rounded-full" />}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className={clsx("font-semibold text-[15px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]" : "text-gray-600")}>
-                        {eventName}
-                      </span>
-                      <span className={clsx("text-[12px]", String(watchedEvents?.[index]?.isMainEvent) === "true" ? "text-[#4a148c]/70" : "text-gray-400")}>
-                        This event will be used for countdown.
-                      </span>
-                    </div>
-                  </div>
-                  <input
-                    type="radio"
-                    value="true"
-                    {...register(`events.${index}.isMainEvent`)}
-                    checked={String(watchedEvents?.[index]?.isMainEvent) === "true"}
-                    onChange={() => {
-                      watchedEvents?.forEach((_, i) => {
-                        setValue(`events.${i}.isMainEvent`, i === index);
-                      });
-                    }}
-                    className="sr-only"
-                  />
-                </label>
-              );
-            })}
+            <Select
+              value={watchedEvents?.findIndex(e => String(e?.isMainEvent) === "true")?.toString() || "0"}
+              onChange={(e) => {
+                const selectedIdx = parseInt(e.target.value);
+                watchedEvents?.forEach((_, i) => {
+                  setValue(`events.${i}.isMainEvent`, i === selectedIdx);
+                });
+              }}
+            >
+              {fields.map((field, index) => {
+                const eventName = watchedEvents?.[index]?.name === "Other" 
+                  ? (watchedEvents?.[index]?.customName || `Event ${index + 1}`)
+                  : (watchedEvents?.[index]?.name || `Event ${index + 1}`);
+                return (
+                  <option key={`main-event-select-${field.id}`} value={index}>
+                    {eventName}
+                  </option>
+                );
+              })}
+            </Select>
           </div>
         </div>
       )}

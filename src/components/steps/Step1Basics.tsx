@@ -1,9 +1,10 @@
 "use client";
 
-import { UseFormRegister, FieldErrors, UseFormWatch, Control, Controller, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, FieldErrors, UseFormWatch, Control, Controller, UseFormSetValue, UseFormGetValues } from "react-hook-form";
 import { WeddingFormData } from "@/types/wedding";
 import { FieldWrapper, Input } from "@/components/FormFields";
 import { clsx } from "clsx";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -11,24 +12,113 @@ interface Props {
   watch: UseFormWatch<WeddingFormData>;
   control: Control<WeddingFormData>;
   setValue: UseFormSetValue<WeddingFormData>;
+  getValues: UseFormGetValues<WeddingFormData>;
 }
 
-export default function Step1Basics({ register, errors, watch, control, setValue }: Props) {
+export default function Step1Basics({ register, errors, watch, control, setValue, getValues }: Props) {
   const nameOrder = watch("nameOrder");
   const language = watch("language");
   const isBrideFirst = nameOrder === "bride_first";
 
+  const prevLangRef = useRef<"en" | "hi" | undefined>(language);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  useEffect(() => {
+    if (prevLangRef.current && prevLangRef.current !== language) {
+      const doTranslation = async () => {
+        setIsTranslating(true);
+        const data = getValues();
+        
+        const pathsToTranslate: { path: any, value: string }[] = [];
+        const rootFields: (keyof WeddingFormData)[] = [
+          "brideName", "groomName", "brideMotherName", "brideFatherName",
+          "groomMotherName", "groomFatherName", "ourStory", "weddingParty",
+          "rsvp1Name", "rsvp2Name", "liveStreamNotes"
+        ];
+        
+        for (const f of rootFields) {
+           if (data[f] && typeof data[f] === 'string') {
+              pathsToTranslate.push({ path: f, value: data[f] as string });
+           }
+        }
+        
+        if (data.events && Array.isArray(data.events)) {
+           data.events.forEach((ev, idx) => {
+              if (ev.customName) pathsToTranslate.push({ path: `events.${idx}.customName`, value: ev.customName });
+              if (ev.venue) pathsToTranslate.push({ path: `events.${idx}.venue`, value: ev.venue });
+              if (ev.dressCode) pathsToTranslate.push({ path: `events.${idx}.dressCode`, value: ev.dressCode });
+              if (ev.notes) pathsToTranslate.push({ path: `events.${idx}.notes`, value: ev.notes });
+           });
+        }
+        
+        if (pathsToTranslate.length > 0) {
+           let pathsToCallApi = pathsToTranslate;
+           const original = { ...(data.originalEnglishTexts || {}) };
+           
+           if (language === 'en') {
+              // Switching to English, try to restore from original first
+              pathsToCallApi = [];
+              pathsToTranslate.forEach(pt => {
+                 if (original[pt.path]) {
+                    setValue(pt.path, original[pt.path], { shouldDirty: true, shouldValidate: true });
+                 } else {
+                    pathsToCallApi.push(pt);
+                 }
+              });
+           } else {
+              // Switching to Hindi, save current English texts
+              pathsToTranslate.forEach(pt => {
+                 if (/[a-zA-Z]/.test(pt.value)) {
+                    original[pt.path] = pt.value;
+                 }
+              });
+              setValue('originalEnglishTexts', original);
+           }
+
+           if (pathsToCallApi.length > 0) {
+              try {
+                const res = await fetch('/api/translate-bulk', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    texts: pathsToCallApi.map(t => t.value), 
+                    targetLang: language 
+                  })
+                });
+                const resultData = await res.json();
+                if (resultData.results && resultData.results.length === pathsToCallApi.length) {
+                   resultData.results.forEach((translatedText: string, i: number) => {
+                      setValue(pathsToCallApi[i].path as any, translatedText, { shouldDirty: true, shouldValidate: true });
+                   });
+                }
+              } catch (err) {
+                console.error(err);
+              }
+           }
+        }
+        setIsTranslating(false);
+      };
+      
+      doTranslation();
+    }
+    prevLangRef.current = language;
+  }, [language, getValues, setValue]);
+
   const handleBlurTranslate = async (e: React.FocusEvent<HTMLInputElement>, fieldName: keyof WeddingFormData) => {
     if (language === 'hi' && e.target.value && /[a-zA-Z]/.test(e.target.value)) {
+      const originalText = e.target.value;
       try {
         const res = await fetch('/api/transliterate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: e.target.value })
+          body: JSON.stringify({ text: originalText })
         });
         const data = await res.json();
         if (data.result) {
           setValue(fieldName, data.result, { shouldValidate: true, shouldDirty: true });
+          
+          const currentOriginals = getValues('originalEnglishTexts') || {};
+          setValue('originalEnglishTexts', { ...currentOriginals, [fieldName]: originalText });
         }
       } catch (err) {}
     }
@@ -92,8 +182,24 @@ export default function Step1Basics({ register, errors, watch, control, setValue
         <p className="text-[14px] font-normal text-gray-500">Tell us about the two of you to personalize your digital invite.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FieldWrapper label="Invitation Language" error={errors.language?.message}>
+      <div className="grid grid-cols-1 gap-6">
+        <FieldWrapper 
+          label={
+            <div className="flex items-center gap-2">
+              Invitation Language
+              {isTranslating && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold animate-pulse">
+                  <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  TRANSLATING...
+                </div>
+              )}
+            </div>
+          } 
+          error={errors.language?.message}
+        >
           <div className="flex gap-4">
             <label className={clsx(
               "flex-1 flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all",
