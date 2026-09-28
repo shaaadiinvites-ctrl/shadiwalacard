@@ -333,7 +333,17 @@ function CartPageContent() {
     } catch (err: any) {
       console.error("Error verifying OTP", err);
       setOtpSuccess(false);
-      setOtpError(err.message || "Invalid OTP. Please check the code and try again.");
+      
+      let userMsg = "Invalid OTP. Please check the code and try again.";
+      if (err.code === "auth/invalid-verification-code") {
+        userMsg = "Incorrect OTP. Please enter the correct code.";
+      } else if (err.code === "auth/code-expired") {
+        userMsg = "OTP expired. Please request a new one.";
+      } else if (err.message && !err.message.includes("Firebase")) {
+        userMsg = err.message;
+      }
+      
+      setOtpError(userMsg);
     } finally {
       setVerifying(false);
     }

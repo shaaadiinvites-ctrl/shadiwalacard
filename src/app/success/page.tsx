@@ -252,34 +252,6 @@ export default async function SuccessPage({ searchParams }: Props) {
             <SuccessLinkActions formUrl={formUrl} phone={p} />
           </div>
 
-          {/* Quick Feature Chips */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 24 }}>
-            {[
-              {
-                icon: (
-                  <svg style={{ width: 14, height: 14, color: '#ffbc4b', flexShrink: 0 }} viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l2.4 7.2h7.6l-6.1 4.5 2.3 7.3-6.2-4.6-6.2 4.6 2.3-7.3-6.1-4.5h7.6z" />
-                  </svg>
-                ),
-                text: "3D Royal Experience"
-              },
-              {
-                icon: (
-                  <svg style={{ width: 14, height: 14, color: '#e11d48', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                ),
-                text: "Interactive Map Venue"
-              }
-            ].map((feat, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
-                {feat.icon}
-                <span>{feat.text}</span>
-              </div>
-            ))}
-          </div>
-
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
             <Link
