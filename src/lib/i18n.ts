@@ -31,7 +31,8 @@ export const DICTIONARY = {
     seconds: "Seconds",
     heavenlyBlessings: "With the heavenly blessings of our beloved grandparents",
     theVenue: "The Venue",
-    getDirections: "GET DIRECTIONS"
+    getDirections: "GET DIRECTIONS",
+    weds: "weds"
   },
   hi: {
     daughterOf: "सुपुत्री",
@@ -65,7 +66,8 @@ export const DICTIONARY = {
     seconds: "सेकंड",
     heavenlyBlessings: "हमारे प्रिय दादा-दादी के स्वर्गीय आशीर्वाद से",
     theVenue: "स्थान (Venue)",
-    getDirections: "नक्शा (Map)"
+    getDirections: "नक्शा (Map)",
+    weds: "संग"
   }
 };
 

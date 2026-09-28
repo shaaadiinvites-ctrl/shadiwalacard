@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { WeddingRecord } from "@/types/wedding";
+import { t } from "@/lib/i18n";
 
 export function HeroSection({ wedding }: { wedding?: WeddingRecord }) {
   const isBrideFirst = wedding?.name_order === "bride_first";
@@ -31,7 +32,7 @@ export function HeroSection({ wedding }: { wedding?: WeddingRecord }) {
             transition={{ duration: 1, delay: 1 }}
             className="font-cinzel font-normal text-xl md:text-3xl tracking-[3px] my-4 text-[#C8912A]"
           >
-            weds
+            {t('weds', wedding?.language)}
           </motion.span>
           <motion.span 
             initial={{ opacity: 0, y: 30 }}
