@@ -103,7 +103,7 @@ export function GallerySection({
           </div>
 
           {/* OriginKit Gallery */}
-          <div className="relative w-full z-10 flex justify-center overflow-hidden">
+          <div className="relative w-full z-10 flex justify-center overflow-hidden mb-12 md:mb-20">
             <Smooth3DSlideshow 
               slides={activeGallerySlides}
               cardWidth={cardWidth}
