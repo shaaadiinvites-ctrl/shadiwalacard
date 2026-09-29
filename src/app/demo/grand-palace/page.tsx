@@ -10,6 +10,7 @@ import { GallerySection } from "@/components/templates/project3/GallerySection";
 import Watermark from "@/components/Watermark";
 
 import type { Metadata } from "next";
+import type { WeddingRecord } from "@/types/wedding";
 
 export const metadata: Metadata = {
   title: "The Grand Palace — Royal Digital Wedding Invitation Demo 👑",
@@ -36,6 +37,35 @@ export const metadata: Metadata = {
     description: "Experience India's most luxurious digital wedding card with 1-tap venue navigation and 3D animations.",
     images: ["/og-image.jpg"],
   },
+};
+
+const demoWedding: WeddingRecord = {
+  id: "demo",
+  slug: "demo",
+  bride_name: "Kanika",
+  groom_name: "Abhishek",
+  name_order: "groom_first",
+  bride_mother_name: "Sunita Sharma",
+  bride_father_name: "Rajesh Sharma",
+  groom_mother_name: "Meenakshi Verma",
+  groom_father_name: "Suresh Verma",
+  rsvp1_name: "Mr. & Mrs. Sharma",
+  rsvp1_phone: "+91 98765 43210",
+  rsvp2_name: "The Verma Family",
+  rsvp2_phone: "+91 87654 32109",
+  events: [
+    {
+      name: "Shaadi",
+      date: "2026-11-28",
+      time: "19:00",
+      venue: "The Grand Palace, Udaipur",
+      mapsLink: "https://maps.google.com",
+      dressCode: "Royal Traditional",
+      notes: "Dinner to follow",
+      isMainEvent: true,
+    },
+  ],
+  language: "en",
 };
 
 export default function GrandPalaceDemo() {
@@ -81,13 +111,13 @@ export default function GrandPalaceDemo() {
       {/* Parallax Flowers floating across the document */}
       <FlowersOverlay />
 
-      <HeroSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
-      <InvitationSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
-      <CeremonySection events={[]} />
-      <CountdownSection wedding={{ slug: 'demo', bride_name: 'Kanika', groom_name: 'Abhishek', events: [] }} />
+      <HeroSection wedding={demoWedding} />
+      <InvitationSection wedding={demoWedding} />
+      <CeremonySection events={[]} language={demoWedding.language} />
+      <CountdownSection wedding={demoWedding} />
 
       {/* OriginKit Coverflow Gallery with Mood Backgrounds & Grand Palace Footer */}
-      <GallerySection galleryUrls={[]} isDemo={true} />
+      <GallerySection galleryUrls={[]} isDemo={true} wedding={demoWedding} />
 
       {/* Sticky Buy Now Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-4 z-[9000] flex justify-center bg-gradient-to-t from-[#030c22] via-[#030c22cc] to-transparent pointer-events-none pb-6">

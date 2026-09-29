@@ -742,7 +742,7 @@ export default function HomePage() {
           <div style={{ position: 'absolute', inset: 0, borderRadius: '24px', overflow: 'hidden', background: '#000', pointerEvents: 'none' }}>
             <video 
               src="/uploads/bg.mp4" 
-              poster="/uploads/hero_poster.webp"
+              poster="/uploads/videocover.png"
               autoPlay 
               loop 
               muted 
