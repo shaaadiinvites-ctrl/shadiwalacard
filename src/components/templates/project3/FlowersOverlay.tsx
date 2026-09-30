@@ -10,7 +10,7 @@ const flowersData = [
   { src: "/project3-assets/marigold_petals.png", className: "absolute left-[20%] md:left-[18%] top-[12%] w-[clamp(30px,7vw,75px)] opacity-50 md:blur-[3px] z-[-1]", rot: 45, amp: 20, k: 0.15 },
 
   // Top Right Cluster
-  { src: "/project3-assets/marigold_petals.png", className: "absolute right-[8%] md:right-[2%] top-[5%] w-[clamp(60px,13vw,150px)] opacity-85 md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -15, amp: 12, k: 0.5 },
+  { src: "/project3-assets/marigold_petals.png", className: "absolute right-[8%] md:right-[4%] top-[5%] w-[clamp(60px,13vw,150px)] opacity-85 md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -15, amp: 12, k: 0.5 },
   { src: "/project3-assets/burgundy_rose.png", className: "absolute right-[15%] md:right-[12%] top-[1%] w-[clamp(35px,8vw,90px)] opacity-60 md:blur-[2px] z-[-1]", rot: 70, amp: 18, k: 0.25 },
 
   // Top Center
@@ -27,7 +27,7 @@ const flowersData = [
   { src: "/project3-assets/burgundy_rose.png", className: "absolute right-[10%] md:right-[6%] top-[52%] w-[clamp(40px,9vw,95px)] opacity-60 md:blur-[2px] z-[-1]", rot: -15, amp: 10, k: 0.2 },
 
   // Mid-Right
-  { src: "/project3-assets/champagne_lotus.png", className: "absolute right-[10%] md:right-[2%] top-[22%] w-[clamp(85px,20vw,240px)] md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -30, amp: 18, k: 0.7 },
+  { src: "/project3-assets/champagne_lotus.png", className: "absolute right-[10%] md:right-[6%] top-[22%] w-[clamp(85px,20vw,240px)] md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -30, amp: 18, k: 0.7 },
   { src: "/project3-assets/marigold_petals.png", className: "absolute right-[20%] md:right-[16%] top-[26%] w-[clamp(25px,6vw,70px)] opacity-45 md:blur-[4px] z-[-1]", rot: 120, amp: 22, k: 0.15 },
 
   // Bottom Left
@@ -36,7 +36,7 @@ const flowersData = [
   { src: "/project3-assets/marigold_petals.png", className: "absolute left-[12%] md:left-[6%] top-[65%] w-[clamp(50px,12vw,140px)] opacity-75 z-[3]", rot: 85, amp: 10, k: 0.6 },
 
   // Bottom Right
-  { src: "/project3-assets/burgundy_rose.png", className: "absolute right-[10%] md:right-[2%] top-[82%] w-[clamp(75px,18vw,210px)] md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -10, amp: 20, k: 0.75 },
+  { src: "/project3-assets/burgundy_rose.png", className: "absolute right-[10%] md:right-[5%] top-[82%] w-[clamp(75px,18vw,210px)] md:drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)] z-10", rot: -10, amp: 20, k: 0.75 },
   { src: "/project3-assets/champagne_lotus.png", className: "absolute right-[20%] md:right-[16%] top-[86%] w-[clamp(50px,12vw,130px)] opacity-80 z-[3]", rot: 35, amp: 12, k: 0.5 },
   { src: "/project3-assets/marigold_petals.png", className: "absolute right-[28%] md:right-[24%] top-[92%] w-[clamp(30px,7vw,80px)] opacity-50 md:blur-[3px] z-[-1]", rot: -80, amp: 18, k: 0.2 },
 ];

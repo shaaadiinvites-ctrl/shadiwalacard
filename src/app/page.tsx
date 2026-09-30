@@ -241,6 +241,19 @@ export default function HomePage() {
 
         /* ── RESPONSIVE BREAKPOINTS — mobile-first ── */
 
+        /* Hero Section Viewport Lock - Uses svh so height never recalculates when mobile address bar hides/appears */
+        .sf-hero-section {
+          position: relative;
+          display: flex;
+          background: #050505;
+          width: 100%;
+          padding: 8px;
+          height: calc(100vh - 32px);
+          height: calc(100svh - 32px);
+          min-height: 520px;
+          overflow: hidden;
+        }
+
         /* Base: 412px (Pixel 7) */
         .sf-hero-h1     { font-size: clamp(2.3rem, 7.5vw, 4rem); letter-spacing: -0.5px; line-height: 1.05; margin-bottom: clamp(38px, 5.5vw, 54px) !important; }
         .sf-hero-sub    { font-size: 0.875rem; }
@@ -461,6 +474,11 @@ export default function HomePage() {
 
         /* md: 768px+ tablet */
         @media (min-width: 768px) {
+          .sf-hero-section {
+            padding: 12px;
+            height: calc(100vh - 32px);
+            min-height: 620px;
+          }
           .sf-hero-sub   { font-size: 1.125rem; }
           .sf-nav-links  { display: flex !important; }
           .sf-arrow-hint { display: flex !important; }
@@ -472,6 +490,8 @@ export default function HomePage() {
       {/* ─────────────────── TOP BANNER ─────────────────── */}
       <div style={{ 
         width: '100%', 
+        height: '32px',
+        boxSizing: 'border-box',
         background: 'linear-gradient(90deg, #17070a, #4a0e1b)', 
         color: '#FFFFFF', 
         fontSize: '0.688rem', 
@@ -499,7 +519,7 @@ export default function HomePage() {
       </div>
 
       {/* ─────────────────── HERO (Exactly like getdesign.ai) ─────────────────── */}
-      <section style={{ position: 'relative', height: '100dvh', minHeight: '620px', padding: '12px', display: 'flex', background: '#050505' }}>
+      <section className="sf-hero-section">
         
         {/* Floating rounded hero card */}
         <div style={{ position: 'relative', flex: 1, borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
