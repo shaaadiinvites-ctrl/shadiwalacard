@@ -49,13 +49,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
           <span className="flex-1 h-[1px] max-w-[120px] bg-gradient-to-r from-[#C8912A]/50 to-transparent"></span>
         </motion.div>
 
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-montserrat text-[clamp(18px,5vw,28px)] tracking-[5px] text-[#FFF8DC]/85 uppercase mb-4">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-montserrat text-[clamp(18px,5vw,28px)] tracking-[5px] text-[#FFF8DC]/85 uppercase mb-4 md:mb-6">
           {t("youAreInvited", wedding?.language)}
         </motion.div>
-        
-        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="font-lora text-[clamp(15px,3.5vw,18px)] text-white/85 mb-12 tracking-[1.5px] leading-[1.6]">
-          {t("joinUs", wedding?.language)}
-        </motion.p>
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={revealVariants} className="relative w-full max-w-[600px] mt-5 py-10">
           

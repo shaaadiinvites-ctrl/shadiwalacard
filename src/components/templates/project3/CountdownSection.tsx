@@ -75,36 +75,43 @@ function FloralParallaxBackground() {
     restDelta: 0.001
   });
 
-  // Different parallax speeds for different depths using explicit pixels to prevent layout thrashing
-  const ySlow = useTransform(smoothProgress, [0, 1], [-150, 150]);
-  const yFast = useTransform(smoothProgress, [0, 1], [300, -300]);
-  const yMedium = useTransform(smoothProgress, [0, 1], [-300, 100]);
+  // Gentle parallax speeds to keep background elements comfortably within section bounds
+  const ySlow = useTransform(smoothProgress, [0, 1], [-50, 50]);
+  const yFast = useTransform(smoothProgress, [0, 1], [80, -80]);
+  const yMedium = useTransform(smoothProgress, [0, 1], [-60, 60]);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none opacity-40 z-0">
+    <div 
+      ref={containerRef} 
+      className="absolute inset-0 pointer-events-none opacity-40 z-0 overflow-hidden"
+      style={{
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 140px, black calc(100% - 140px), transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 140px, black calc(100% - 140px), transparent 100%)'
+      }}
+    >
       <motion.img 
         style={{ y: ySlow }} 
         src="/project3-assets/champagne_lotus.png" 
         alt="" 
-        className="absolute -top-[5%] -left-[10%] w-[400px] md:w-[600px] -rotate-12 blur-[4px] opacity-70 mix-blend-screen" 
+        className="absolute top-[4%] -left-[8%] w-[380px] md:w-[540px] -rotate-12 blur-[4px] opacity-70 mix-blend-screen" 
       />
       <motion.img 
         style={{ y: yFast }} 
         src="/project3-assets/burgundy_rose.png" 
         alt="" 
-        className="absolute top-[60%] -right-[5%] w-[250px] md:w-[350px] rotate-45 blur-[2px] opacity-80 mix-blend-screen" 
+        className="absolute top-[55%] -right-[5%] w-[240px] md:w-[320px] rotate-45 blur-[2px] opacity-80 mix-blend-screen" 
       />
       <motion.img 
         style={{ y: yMedium }} 
         src="/project3-assets/marigold_petals.png" 
         alt="" 
-        className="absolute top-[20%] right-[10%] w-[120px] md:w-[180px] rotate-[120deg] opacity-60" 
+        className="absolute top-[25%] right-[10%] w-[120px] md:w-[160px] rotate-[120deg] opacity-60" 
       />
       <motion.img 
         style={{ y: ySlow }} 
         src="/project3-assets/marigold_petals.png" 
         alt="" 
-        className="absolute top-[70%] left-[15%] w-[150px] md:w-[220px] -rotate-45 blur-[1px] opacity-70" 
+        className="absolute top-[65%] left-[12%] w-[140px] md:w-[200px] -rotate-45 blur-[1px] opacity-70" 
       />
     </div>
   );

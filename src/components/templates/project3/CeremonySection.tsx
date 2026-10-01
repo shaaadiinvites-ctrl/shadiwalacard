@@ -1,7 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, animate } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { t } from "@/lib/i18n";
 import { WeddingRecord } from "@/types/wedding";
 
@@ -13,12 +12,26 @@ const sparkles = [
   { left: "50%", top: "85%", delay: "2s", duration: "3.5s", char: "✦" },
 ];
 
-const ceremonies = [
+interface CeremonyItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  rawDate: string;
+  timeFormatted: string;
+  venueName: string;
+  venueAddress: string;
+  mapLink: string;
+  theme: string;
+  icon: React.ReactNode;
+}
+
+const mockCeremonies: CeremonyItem[] = [
   {
     id: "mehendi",
     title: "Mehendi & Haldi",
     subtitle: "The Colors of Joy",
-    date: "✦ FRI, 14 FEB 2026 • 10:00 AM ✦",
+    rawDate: "2026-02-14",
+    timeFormatted: "10:00 AM",
     venueName: "The Garden Pavilion",
     venueAddress: "Orchid Greens, Sector 56, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=Orchid+Greens+Sector+56+Gurugram",
@@ -34,9 +47,10 @@ const ceremonies = [
   },
   {
     id: "engagement",
-    title: "Engagement",
+    title: "Engagement & Sangeet",
     subtitle: "When Two Souls Dance",
-    date: "✦ FRI, 14 FEB 2026 • 7:00 PM ✦",
+    rawDate: "2026-02-14",
+    timeFormatted: "7:00 PM",
     venueName: "The Crystal Ballroom",
     venueAddress: "Le Meridien, MG Road, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=Le+Meridien+MG+Road+Gurugram",
@@ -53,9 +67,10 @@ const ceremonies = [
   },
   {
     id: "shaadi",
-    title: "Shaadi",
+    title: "The Royal Shaadi",
     subtitle: "Forever Begins Today",
-    date: "✦ SAT, 15 FEB 2026 • 11:00 AM ✦",
+    rawDate: "2026-02-15",
+    timeFormatted: "11:00 AM",
     venueName: "The Lotus Garden",
     venueAddress: "The Leela Ambience, Ambience Island, Gurugram",
     mapLink: "https://maps.google.com/?q=The+Leela+Ambience+Gurugram",
@@ -71,9 +86,10 @@ const ceremonies = [
   },
   {
     id: "reception",
-    title: "The Reception",
+    title: "The Grand Reception",
     subtitle: "A Grand Celebration",
-    date: "✦ SUN, 16 FEB 2026 • 7:00 PM ✦",
+    rawDate: "2026-02-16",
+    timeFormatted: "7:00 PM",
     venueName: "The Grand Ballroom",
     venueAddress: "The Oberoi, Udyog Vihar, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=The+Oberoi+Gurugram",
@@ -101,32 +117,18 @@ const bgFireflies = [
   { left: "35.28%", animDuration: "19.89s", animDelay: "-8.14s", drift: "-50px", glowDuration: "4.17s" },
   { left: "77.13%", animDuration: "14.31s", animDelay: "-13.21s", drift: "40px", glowDuration: "2.57s" },
   { left: "29.93%", animDuration: "12.49s", animDelay: "-11.74s", drift: "45px", glowDuration: "4.75s" },
-  { left: "51.38%", animDuration: "14.39s", animDelay: "-12.59s", drift: "-37px", glowDuration: "2.77s" },
-  { left: "45.19%", animDuration: "14.23s", animDelay: "-8.74s", drift: "-34px", glowDuration: "2.96s" },
-  { left: "87.68%", animDuration: "11.89s", animDelay: "-11.34s", drift: "12px", glowDuration: "4.96s" },
-  { left: "59.37%", animDuration: "12.68s", animDelay: "-4.06s", drift: "29px", glowDuration: "2.63s" },
-  { left: "16.95%", animDuration: "17.89s", animDelay: "-10.29s", drift: "-22px", glowDuration: "3.59s" },
-  { left: "4.74%", animDuration: "13.89s", animDelay: "-7.54s", drift: "-62px", glowDuration: "2.38s" },
-  { left: "12.19%", animDuration: "23.99s", animDelay: "-4.93s", drift: "36px", glowDuration: "2.35s" },
-  { left: "21.55%", animDuration: "20.97s", animDelay: "-9.22s", drift: "66px", glowDuration: "3.23s" },
-  { left: "4.66%", animDuration: "20.08s", animDelay: "-4.90s", drift: "-37px", glowDuration: "4.56s" },
-  { left: "35.64%", animDuration: "13.98s", animDelay: "-15.21s", drift: "-24px", glowDuration: "3.11s" },
-  { left: "69.30%", animDuration: "23.27s", animDelay: "-8.95s", drift: "-63px", glowDuration: "4.07s" },
-  { left: "6.04%", animDuration: "20.69s", animDelay: "-2.08s", drift: "-65px", glowDuration: "2.37s" },
-  { left: "77.01%", animDuration: "11.73s", animDelay: "-2.09s", drift: "-69px", glowDuration: "3.14s" },
-  { left: "4.75%", animDuration: "13.66s", animDelay: "-18.92s", drift: "65px", glowDuration: "3.02s" },
-  { left: "70.34%", animDuration: "12.42s", animDelay: "-16.75s", drift: "16px", glowDuration: "3.42s" },
-  { left: "40.66%", animDuration: "10.63s", animDelay: "-18.29s", drift: "37px", glowDuration: "2.14s" },
-  { left: "25.22%", animDuration: "18.19s", animDelay: "-8.86s", drift: "50px", glowDuration: "2.55s" },
-  { left: "5.72%", animDuration: "16.34s", animDelay: "-2.08s", drift: "19px", glowDuration: "3.30s" },
-  { left: "28.63%", animDuration: "17.73s", animDelay: "-6.42s", drift: "-33px", glowDuration: "3.68s" },
-  { left: "62.44%", animDuration: "10.90s", animDelay: "-11.51s", drift: "-70px", glowDuration: "2.26s" },
 ];
 
+interface DateGroup {
+  dateKey: string;
+  dayLabel: string;
+  formattedDate: string;
+  events: CeremonyItem[];
+}
+
 export function CeremonySection({ events, language }: { events: WeddingRecord["events"]; language?: "en" | "hi" }) {
-  const [activeTab, setActiveTab] = useState(0);
   // Use DB events if provided, otherwise fallback to hardcoded ceremonies
-  const activeCeremonies = events && events.length > 0 
+  const activeCeremonies: CeremonyItem[] = events && events.length > 0 
     ? [...events]
         .sort((a, b) => {
           const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
@@ -136,223 +138,60 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
         .map((e, idx) => ({
           id: `event-${idx}`,
           title: (e.name === "Other" || e.name === "Others" || !e.name) ? (e.customName || "Special Event") : (e.name || "Wedding Event"),
-          date: `✦ ${new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()} • ${
-            e.time ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : ''
-          } ✦`,
+          rawDate: e.date,
+          timeFormatted: e.time 
+            ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
+            : '',
           venueName: e.venue || "",
           venueAddress: "",
           mapLink: e.mapsLink || "",
           theme: ["card-marigold", "card-sapphire", "card-crimson", "card-emerald"][idx % 4],
-          icon: ceremonies[idx % ceremonies.length].icon
+          icon: mockCeremonies[idx % mockCeremonies.length].icon
         }))
-    : ceremonies;
-  const targetRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [trackWidth, setTrackWidth] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
+    : mockCeremonies;
 
-  // We use "end start" so the internal scroll percentage calculation uses exactly targetRef.offsetHeight.
-  // This completely eliminates the mobile address bar jumping bug which affects window.innerHeight!
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start start", "end start"]
+  // Group ceremonies date-wise in chronological sequence
+  const groupedMap = new Map<string, CeremonyItem[]>();
+  activeCeremonies.forEach((ceremony) => {
+    const key = ceremony.rawDate || "date-unknown";
+    if (!groupedMap.has(key)) {
+      groupedMap.set(key, []);
+    }
+    groupedMap.get(key)!.push(ceremony);
   });
 
-  useEffect(() => {
-    const measure = () => {
-      if (trackRef.current) {
-        setTrackWidth(trackRef.current.scrollWidth - window.innerWidth);
+  const dateGroups: DateGroup[] = Array.from(groupedMap.entries()).map(([dateKey, groupEvents], groupIdx) => {
+    let formattedDate = dateKey;
+    try {
+      const d = new Date(dateKey + "T00:00:00");
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).toUpperCase();
       }
+    } catch (err) {}
+
+    return {
+      dateKey,
+      dayLabel: `DAY ${String(groupIdx + 1).padStart(2, '0')}`,
+      formattedDate,
+      events: groupEvents
     };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  const activeIndexRef = useRef(activeIndex);
-  useEffect(() => {
-    activeIndexRef.current = activeIndex;
-  }, [activeIndex]);
-
-  const isScrollingProgrammatically = useRef(false);
-  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-  const progScrollTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 800,
-    damping: 100,
-    mass: 0.1,
-    restDelta: 0.0001
   });
-
-  // Calculate dynamic progress values that are strictly immune to volatile address bar viewport changes
-  const getStableProgress = (p: number) => {
-    if (!targetRef.current || trackWidth <= 0) return 0;
-    
-    // The sticky container is the first child. Its height is ALWAYS exactly 100svh or 100vh.
-    const stickyContainer = targetRef.current.children[0] as HTMLElement;
-    const viewportHeight = stickyContainer.offsetHeight;
-    const sectionHeight = targetRef.current.offsetHeight;
-    
-    // Unpin happens when the bottom of the scrolling section hits the bottom of the sticky container
-    const unpinProgress = (sectionHeight - viewportHeight) / sectionHeight;
-    
-    // Calculate our 5% start buffer and 15% end buffer relative to the unpin point
-    const startP = unpinProgress * 0.05;
-    const endP = unpinProgress * 0.85;
-    
-    if (p <= startP) return 0;
-    if (p >= endP) return 1;
-    
-    return (p - startP) / (endP - startP);
-  };
-
-  const x = useTransform(smoothProgress, (p) => getStableProgress(p) * -trackWidth);
-  const progressWidth = useTransform(smoothProgress, (p) => `${5 + getStableProgress(p) * 95}%`);
-
-  useMotionValueEvent(x, "change", (latestX) => {
-    if (trackRef.current) {
-      const cards = Array.from(trackRef.current.children) as HTMLElement[];
-      const center = window.innerWidth / 2;
-      let closestIdx = 0;
-      let minDistance = Infinity;
-
-      cards.forEach((card, idx) => {
-        // Exclude the navigation buttons which might be caught if they are in the track? 
-        // No, buttons are outside the track.
-        const cardCenterOnScreen = card.offsetLeft + latestX + (card.offsetWidth / 2);
-        const distance = Math.abs(cardCenterOnScreen - center);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestIdx = idx;
-        }
-      });
-      setActiveIndex(closestIdx);
-    }
-  });
-
-  const scrollToCard = (index: number) => {
-    if (!targetRef.current || !trackRef.current || trackWidth <= 0) return;
-    const cards = Array.from(trackRef.current.children) as HTMLElement[];
-    if (!cards[index]) return;
-    
-    // Calculate the target X translation needed to center this card
-    const center = window.innerWidth / 2;
-    const card = cards[index];
-    const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
-    
-    let targetX = center - cardCenter;
-    // Bound it
-    targetX = Math.max(-trackWidth, Math.min(0, targetX));
-    
-    // Find what internal progress [0, 1] gives this targetX
-    const internalProgress = targetX / -trackWidth;
-    
-    const stickyContainer = targetRef.current.children[0] as HTMLElement;
-    const viewportHeight = stickyContainer.offsetHeight;
-    const sectionHeight = targetRef.current.offsetHeight;
-    const unpinProgress = (sectionHeight - viewportHeight) / sectionHeight;
-    
-    const startP = unpinProgress * 0.05;
-    const endP = unpinProgress * 0.85;
-    
-    // Map the internal progress back to the actual stable scrollYProgress
-    const stableProgress = startP + (internalProgress * (endP - startP));
-    
-    // Calculate absolute scroll position completely immune to window.innerHeight changes!
-    const rect = targetRef.current.getBoundingClientRect();
-    const sectionTop = rect.top + window.scrollY;
-    const targetScrollY = sectionTop + (stableProgress * sectionHeight);
-    
-    isScrollingProgrammatically.current = true;
-    if (progScrollTimeout.current) clearTimeout(progScrollTimeout.current);
-    
-    window.scrollTo({
-      top: targetScrollY,
-      behavior: 'smooth'
-    });
-    
-    progScrollTimeout.current = setTimeout(() => {
-      isScrollingProgrammatically.current = false;
-    }, 1200); // 1.2s to be absolutely safe that the smooth scroll has finished
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isScrollingProgrammatically.current) return;
-      
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      
-      scrollTimeout.current = setTimeout(() => {
-        if (!targetRef.current) return;
-        const rect = targetRef.current.getBoundingClientRect();
-        const sectionHeight = targetRef.current.offsetHeight;
-        
-        // Calculate where we are relative to the entire ceremony scroll section
-        const stickyContainer = targetRef.current.children[0] as HTMLElement;
-        const viewportHeight = stickyContainer.offsetHeight;
-        const unpinProgress = (sectionHeight - viewportHeight) / sectionHeight;
-        
-        const startP = unpinProgress * 0.05;
-        const endP = unpinProgress * 0.85;
-        
-        // current scroll progress in the targetRef
-        const currentP = -rect.top / sectionHeight;
-        
-        // If the user has stopped scrolling WHILE inside the active card track area
-        if (currentP > startP && currentP < endP) {
-          scrollToCard(activeIndexRef.current);
-        }
-      }, 150); // 150ms debounce
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, [trackWidth]); // Dependencies include trackWidth so it updates if layout changes
-
-  // Touch Swipe Handlers
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    const distance = touchStartX.current - touchEndX.current;
-    
-    // 50px threshold for a swipe
-    const isLeftSwipe = distance > 50; 
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe && activeIndex < ceremonies.length - 1) {
-      scrollToCard(activeIndex + 1);
-    } else if (isRightSwipe && activeIndex > 0) {
-      scrollToCard(activeIndex - 1);
-    }
-
-    touchStartX.current = 0;
-    touchEndX.current = 0;
-  };
 
   return (
     <section 
       id="cer" 
-      className="relative z-20 w-full mt-[-200px]"
+      className="relative z-20 w-full mt-[-160px] md:mt-[-200px]"
       style={{
         background: 'linear-gradient(180deg, var(--cer-bg-transparent, rgba(9,32,43,0)) 0%, var(--cer-bg-color, #09202b) var(--cer-bg-stop, 200px), var(--cer-bg-color, #09202b) 100%)'
       }}
     >
-      {/* Background Fireflies Layer (Sticky) */}
-      <div className="hidden md:block sticky top-0 left-0 w-full h-screen mb-[-100vh] pointer-events-none z-0 overflow-hidden">
+      {/* Background Fireflies Layer (Ambient) */}
+      <div className="hidden md:block absolute inset-0 pointer-events-none z-0 overflow-hidden">
         {bgFireflies.map((ff, i) => (
           <div 
             key={i} 
@@ -368,218 +207,185 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
         ))}
       </div>
 
-      <div className="pt-4 pb-20 md:pb-[15vh] px-4 w-full relative z-20">
+      <div className="pt-4 pb-12 md:pb-16 px-4 w-full relative z-20">
         {/* GRAND FLORAL MANDALA TRANSITION */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          viewport={{ once: true, margin: "-100px" }}
-          className="relative w-full h-[220px] flex items-center justify-center mb-6 overflow-visible"
+          viewport={{ once: true, margin: "-80px" }}
+          className="relative w-full h-[200px] md:h-[220px] flex items-center justify-center mb-6 overflow-visible"
         >
           {/* Glowing aura */}
-          <div className="absolute w-[350px] h-[350px] rounded-full bg-[radial-gradient(circle,rgba(200,145,42,0.2)_0%,transparent_60%)] animate-[pulse_4s_ease-in-out_infinite]"></div>
+          <div className="absolute w-[300px] md:w-[350px] h-[300px] md:h-[350px] rounded-full bg-[radial-gradient(circle,rgba(200,145,42,0.2)_0%,transparent_60%)] animate-[pulse_4s_ease-in-out_infinite]"></div>
           
           {/* Rotating rings */}
-          <div className="absolute w-[180px] h-[180px] border-2 border-dashed border-[#C8912A]/40 rounded-full animate-[spin_30s_linear_infinite]"></div>
-          <div className="absolute w-[240px] h-[240px] border border-[#C8912A]/20 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+          <div className="absolute w-[160px] md:w-[180px] h-[160px] md:h-[180px] border-2 border-dashed border-[#C8912A]/40 rounded-full animate-[spin_30s_linear_infinite]"></div>
+          <div className="absolute w-[220px] md:w-[240px] h-[220px] md:h-[240px] border border-[#C8912A]/20 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
           
           {/* Center Lotus */}
-          <img loading="lazy" src="/project3-assets/champagne_lotus.png" alt="Lotus" className="absolute w-[clamp(80px,12vw,110px)] z-[2] md:drop-shadow-[0_0_25px_rgba(200,145,42,0.6)] animate-bob" />
+          <img loading="lazy" src="/project3-assets/champagne_lotus.png" alt="Lotus" className="absolute w-[clamp(75px,12vw,110px)] z-[2] md:drop-shadow-[0_0_25px_rgba(200,145,42,0.6)] animate-bob" />
           
           {/* Orbiting Roses */}
-          <div className="absolute w-[180px] h-[180px] animate-[spin_25s_linear_infinite]">
+          <div className="absolute w-[160px] md:w-[180px] h-[160px] md:h-[180px] animate-[spin_25s_linear_infinite]">
             <img loading="lazy" src="/project3-assets/burgundy_rose.png" className="absolute top-[-15px] left-[calc(50%-15px)] w-[30px] rotate-0 md:drop-shadow-md" />
             <img loading="lazy" src="/project3-assets/burgundy_rose.png" className="absolute bottom-[-15px] left-[calc(50%-15px)] w-[30px] rotate-180 md:drop-shadow-md" />
           </div>
           
           {/* Outer Orbiting Marigolds */}
-          <div className="absolute w-[280px] h-[280px] animate-[spin_35s_linear_infinite_reverse]">
-            <img loading="lazy" src="/project3-assets/marigold_petals.png" className="absolute top-[10%] right-[10%] w-[45px] opacity-80 md:drop-shadow-sm" />
-            <img loading="lazy" src="/project3-assets/marigold_petals.png" className="absolute bottom-[10%] left-[10%] w-[45px] opacity-80 rotate-180 md:drop-shadow-sm" />
+          <div className="absolute w-[250px] md:w-[280px] h-[250px] md:h-[280px] animate-[spin_35s_linear_infinite_reverse]">
+            <img loading="lazy" src="/project3-assets/marigold_petals.png" className="absolute top-[10%] right-[10%] w-[40px] md:w-[45px] opacity-80 md:drop-shadow-sm" />
+            <img loading="lazy" src="/project3-assets/marigold_petals.png" className="absolute bottom-[10%] left-[10%] w-[40px] md:w-[45px] opacity-80 rotate-180 md:drop-shadow-sm" />
           </div>
 
           {/* Elegant single line passing behind the lotus */}
           <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[min(85vw,800px)] h-[1px] bg-gradient-to-r from-transparent via-[#C8912A]/70 to-transparent z-[-1]"></div>
         </motion.div>
-      </div>
 
-      {/* Scroll track for useScroll animation. Taller on mobile to slow down the scroll speed.
-          Using svh (small viewport height) prevents violent layout jumps when mobile address bar hides/shows! */}
-      <div ref={targetRef} className="relative w-full" style={{ height: activeCeremonies.length > 1 ? `${Math.max(120, activeCeremonies.length * 80)}svh` : 'auto' }}>
-        
-        {/* STICKY CONTAINER FOR PINNED HORIZONTAL SCROLL */}
-        <div className={activeCeremonies.length > 1 ? "sticky top-0 h-[100svh] md:h-screen w-full flex flex-col justify-center overflow-hidden z-10" : "relative min-h-[100svh] w-full flex flex-col justify-center overflow-hidden z-10 py-10"}>
-        
-        {/* Fixed Title inside Sticky Container */}
-        <div className="text-center px-6 flex-shrink-0 text-[#f7ede2] mb-4 md:mb-12">
-          <div className="font-montserrat text-sm md:text-base tracking-[5px] text-[#C8912A] uppercase mb-3 drop-shadow-sm">
+        {/* Section Header */}
+        <div className="text-center px-4 max-w-2xl mx-auto mb-12 md:mb-16">
+          <div className="font-montserrat text-xs md:text-sm tracking-[5px] text-[#C8912A] uppercase mb-3 drop-shadow-sm font-semibold">
             {t("festivities", language)}
           </div>
-          <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-4 drop-shadow-md">
+          <h2 className="font-cinzel font-bold text-3xl md:text-5xl text-white tracking-[1px] mb-3 drop-shadow-md">
             {t("daysOfCelebration", language)}
           </h2>
-          {activeCeremonies.length > 1 && (
-            <>
-              <div className="font-playfair italic text-sm md:text-base text-[#FFF8DC]/60 mb-6">
-                Scroll to move through the ceremonies &nbsp;&rarr;
-              </div>
-              <div className="w-[min(280px,60vw)] h-[3px] rounded bg-white/10 mx-auto overflow-hidden">
-                <motion.div 
-                  style={{ width: progressWidth }} 
-                  className="h-full bg-gradient-to-r from-[#C8912A] to-[#FFD98A] rounded"
-                />
-              </div>
-            </>
-          )}
+          <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#C8912A] to-transparent mx-auto mt-4"></div>
         </div>
-        
-        {/* Dedicated Mobile Navigation Bar (Moved above cards) */}
-        {activeCeremonies.length > 1 && (
-          <div className="cer-mobile-nav-bar">
-            <button 
-              className="cer-mobile-nav-btn" 
-              disabled={activeIndex === 0}
-              onClick={() => scrollToCard(activeIndex - 1)}
-              aria-label="Previous Ceremony"
-            >
-              {"<"} PREV
-            </button>
-            <span className="cer-mobile-counter">{activeIndex + 1} / {activeCeremonies.length}</span>
-            <button 
-              className="cer-mobile-nav-btn" 
-              disabled={activeIndex === activeCeremonies.length - 1}
-              onClick={() => scrollToCard(activeIndex + 1)}
-              aria-label="Next Ceremony"
-            >
-              NEXT {">"}
-            </button>
-          </div>
-        )}
 
-        {/* Horizontal Track */}
-        <motion.div 
-          ref={trackRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          style={{ 
-            x: activeCeremonies.length > 1 ? x : 0,
-          }}  
-          className="flex gap-[60px] w-max items-stretch px-[calc(50vw-min(42.5vw,210px))]"
-        >
-          {activeCeremonies.map((ceremony, idx) => {
-            const isActive = idx === activeIndex;
-            return (
-              <div
-                key={ceremony.id}
-                className={`gem-wrapper w-[85vw] max-w-[420px] relative shrink-0 ${isActive ? 'is-active' : ''}`}
+        {/* DATE-WISE CEREMONY CONTAINERS */}
+        <div className="max-w-5xl mx-auto px-2 sm:px-4 pb-20 md:pb-28 flex flex-col gap-16 md:gap-24">
+          {dateGroups.map((group) => (
+            <div key={group.dateKey} className="w-full flex flex-col items-center">
+              
+              {/* Royal Date Banner / Header */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: 0.05 }}
+                className="flex flex-col items-center justify-center mb-8 md:mb-10 text-center w-full"
               >
-                <article
-                  className={`palace-card ${ceremony.theme} w-full h-full p-5 py-6 md:p-10 md:backdrop-blur-xl shadow-2xl relative overflow-hidden`}
-                  style={{
-                    clipPath: "polygon(30px 0, calc(100% - 30px) 0, 100% 30px, 100% calc(100% - 30px), calc(100% - 30px) 100%, 30px 100%, 0 calc(100% - 30px), 0 30px)",
-                  }}
-                >
-                  {/* Border Beam Burst Animation */}
-                  <svg className="border-beam-svg" viewBox="0 0 320 480" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id={`goldGrad-${ceremony.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#FFE8AC" />
-                        <stop offset="50%" stopColor="#C8912A" />
-                        <stop offset="100%" stopColor="#FFD98A" />
-                      </linearGradient>
-                    </defs>
-                    <rect x="1" y="1" width="318" height="478" fill="none" stroke={`url(#goldGrad-${ceremony.id})`} strokeWidth="3.5" className="border-beam-path" />
-                  </svg>
+                {/* Gold Day Badge */}
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#170e04] via-[#2f1f07] to-[#170e04] border border-[#FFE8AC]/40 shadow-[0_2px_15px_rgba(200,145,42,0.25)] mb-3">
+                  <span className="text-[#FFE8AC] text-xs">✦</span>
+                  <span className="font-montserrat font-bold text-[11px] sm:text-xs tracking-[3px] text-[#FFE8AC] uppercase">
+                    {group.dayLabel}
+                  </span>
+                  <span className="text-[#FFE8AC] text-xs">✦</span>
+                </div>
 
-                  {/* Sparkles */}
-                  {sparkles.map((s, i) => (
-                    <span 
-                      key={i} 
-                      className="card-sparkle" 
-                      style={{ left: s.left, top: s.top, animationDelay: s.delay, animationDuration: s.duration }}
+                {/* Big, Legible Date Title */}
+                <h3 className="font-cinzel font-bold text-xl sm:text-2xl md:text-3xl text-white tracking-wide drop-shadow-md">
+                  {group.formattedDate}
+                </h3>
+
+                {/* Ornamental Gold Divider */}
+                <div className="flex items-center justify-center gap-3 w-full max-w-xs sm:max-w-md mt-3 opacity-75">
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#C8912A] to-[#FFD98A]" />
+                  <span className="text-[#FFE8AC] text-xs font-serif">❖</span>
+                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#C8912A] to-[#FFD98A]" />
+                </div>
+              </motion.div>
+
+              {/* Day Events Grid */}
+              <div className={`w-full ${
+                group.events.length === 1 
+                  ? "flex justify-center" 
+                  : "grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 justify-items-center"
+              }`}>
+                {group.events.map((ceremony, idx) => (
+                  <motion.div
+                    key={ceremony.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.6, delay: idx * 0.1 }}
+                    className="gem-wrapper is-active w-full max-w-[440px] relative"
+                  >
+                    <article
+                      className={`palace-card ${ceremony.theme} w-full h-full p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden`}
+                      style={{
+                        clipPath: "polygon(26px 0, calc(100% - 26px) 0, 100% 26px, 100% calc(100% - 26px), calc(100% - 26px) 100%, 26px 100%, 0 calc(100% - 26px), 0 26px)",
+                      }}
                     >
-                      {s.char}
-                    </span>
-                  ))}
+                      {/* Sparkles */}
+                      {sparkles.map((s, i) => (
+                        <span 
+                          key={i} 
+                          className="card-sparkle" 
+                          style={{ left: s.left, top: s.top, animationDelay: s.delay, animationDuration: s.duration }}
+                        >
+                          {s.char}
+                        </span>
+                      ))}
 
-                  <div className="ceremony-emblem flex justify-center mb-4 md:mb-6 opacity-80">
-                    {ceremony.icon}
-                  </div>
+                      <div className="relative z-10">
+                        {/* Emblem */}
+                        <div className="ceremony-emblem flex justify-center mb-4 opacity-90">
+                          {ceremony.icon}
+                        </div>
 
-                  <h3 className="text-center font-cinzel font-bold text-2xl md:text-3xl text-white tracking-wider drop-shadow-md mb-2">
-                    {ceremony.title}
-                  </h3>
+                        {/* Title */}
+                        <h4 className="text-center font-cinzel font-bold text-2xl md:text-3xl text-white tracking-wider drop-shadow-md mb-3">
+                          {ceremony.title}
+                        </h4>
 
-                  <div className="flex justify-center mb-5 md:mb-8">
-                    <div className="text-center px-4 py-2 rounded-full bg-gold-primary/10 border border-gold-primary/30 font-montserrat font-bold text-xs tracking-wider text-[#FFE8AC] shadow-inner relative z-10">
-                      {ceremony.date}
-                    </div>
-                  </div>
+                        {/* Time Badge (Without Ceremony Tags) */}
+                        {ceremony.timeFormatted && (
+                          <div className="flex justify-center mb-5 md:mb-6">
+                            <div className="text-center px-4 py-1.5 rounded-full bg-gold-primary/15 border border-[#FFE8AC]/40 font-montserrat font-bold text-xs md:text-sm tracking-wider text-[#FFE8AC] shadow-inner">
+                              ✦ {ceremony.timeFormatted} ✦
+                            </div>
+                          </div>
+                        )}
 
-                  <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-gold-secondary/70 to-transparent mx-auto mb-4 md:mb-6"></div>
+                        <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-[#C8912A]/70 to-transparent mx-auto mb-5"></div>
 
-                  <div className="text-center flex flex-col gap-1 mb-5 md:mb-8">
-                    <div className="font-montserrat font-bold text-[10px] tracking-widest text-[#FFD98A] uppercase mb-1">
-                      {t("theVenue", language)}
-                    </div>
-                    <div className="font-playfair font-bold text-lg text-white drop-shadow-md relative z-10">
-                      {ceremony.venueName}
-                    </div>
-                    <div className="font-lora text-sm text-white/90 leading-relaxed relative z-10">
-                      {ceremony.venueAddress}
-                    </div>
-                  </div>
+                        {/* Venue Information */}
+                        <div className="text-center flex flex-col gap-1.5 mb-6">
+                          <div className="font-montserrat font-bold text-[11px] tracking-widest text-[#FFD98A] uppercase mb-0.5">
+                            {t("theVenue", language)}
+                          </div>
+                          <div className="font-playfair font-bold text-lg md:text-xl text-white drop-shadow-md">
+                            {ceremony.venueName}
+                          </div>
+                          {ceremony.venueAddress && (
+                            <div className="font-lora text-sm text-white/85 leading-relaxed max-w-xs mx-auto">
+                              {ceremony.venueAddress}
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-                  <div className="flex justify-center relative z-10">
-                    <a
-                      href={ceremony.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ceremony.venueName)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_15px_rgba(200,145,42,0.4)] transition-transform hover:scale-105 active:scale-95"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      {t("getDirections", language)}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2">
-                        <line x1="5" y1="19" x2="19" y2="5"></line>
-                        <polyline points="9 5 19 5 19 15"></polyline>
-                      </svg>
-                    </a>
-                  </div>
-                </article>
+                      {/* Google Maps Directions Action Button */}
+                      <div className="flex justify-center relative z-10 mt-auto pt-2">
+                        <a
+                          href={ceremony.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ceremony.venueName)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center min-h-[46px] w-full max-w-[280px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_18px_rgba(200,145,42,0.4)] transition-all hover:scale-105 active:scale-95 hover:shadow-[0_6px_22px_rgba(200,145,42,0.6)]"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 shrink-0">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                          </svg>
+                          <span>{t("getDirections", language)}</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 shrink-0">
+                            <line x1="5" y1="19" x2="19" y2="5"></line>
+                            <polyline points="9 5 19 5 19 15"></polyline>
+                          </svg>
+                        </a>
+                      </div>
+                    </article>
+                  </motion.div>
+                ))}
               </div>
-            );
-          })}
 
-          {/* Spacer to replace paddingRight. WebKit drops right padding on overflowing flex containers. 
-              marginLeft cancels out the flex gap so it perfectly mirrors paddingLeft. */}
-          <div style={{ paddingRight: "calc(50vw - min(42.5vw, 210px))", marginLeft: "-60px" }} className="shrink-0" />
-        </motion.div>
+            </div>
+          ))}
+        </div>
 
-        {/* Nav Buttons */}
-        <button 
-          className="cer-nav-btn cer-prev-btn" 
-          disabled={activeIndex === 0}
-          onClick={() => scrollToCard(activeIndex - 1)}
-          aria-label="Previous Ceremony"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 2}}><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <button 
-          className="cer-nav-btn cer-next-btn" 
-          disabled={activeIndex === ceremonies.length - 1}
-          onClick={() => scrollToCard(activeIndex + 1)}
-          aria-label="Next Ceremony"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: 2}}><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-
-
-      </div>
       </div>
     </section>
   );
