@@ -25,6 +25,80 @@ interface CeremonyItem {
   icon: React.ReactNode;
 }
 
+const marigoldIcon = (
+  <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
+    <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
+    <path d="M50 20 C60 40 70 50 50 80 C30 50 40 40 50 20 Z" fill="#C8912A" opacity="0.2" strokeWidth="2"/>
+    <path d="M20 50 C40 40 50 30 80 50 C50 70 40 60 20 50 Z" fill="#C8912A" opacity="0.2" strokeWidth="2"/>
+    <circle cx="50" cy="50" r="10" fill="#FFD98A" opacity="0.8"/>
+  </svg>
+);
+
+const sapphireIcon = (
+  <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
+    <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
+    <circle cx="40" cy="55" r="18" strokeWidth="2" />
+    <circle cx="60" cy="55" r="18" strokeWidth="2" />
+    <path d="M40 37 L50 25 L60 37 L50 48 Z" fill="#C8912A" opacity="0.8" strokeWidth="1.5"/>
+    <path d="M35 37 L65 37" strokeWidth="1.5"/>
+  </svg>
+);
+
+const crimsonIcon = (
+  <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
+    <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
+    <path d="M50 20 C65 45 70 65 50 75 C30 65 35 45 50 20 Z" strokeWidth="2" />
+    <path d="M50 35 C58 50 60 65 50 75 C40 65 42 50 50 35 Z" fill="#C8912A" opacity="0.4" strokeWidth="1.5"/>
+    <path d="M50 50 C54 60 55 70 50 75 C45 70 46 60 50 50 Z" fill="#FFD98A" strokeWidth="1"/>
+  </svg>
+);
+
+const emeraldIcon = (
+  <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
+    <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
+    <path d="M35 30 L45 55 L45 75 M40 75 L50 75" strokeWidth="2"/>
+    <path d="M65 30 L55 55 L55 75 M50 75 L60 75" strokeWidth="2"/>
+    <path d="M38 38 L43 38 M57 38 L62 38" strokeWidth="1.5" opacity="0.5"/>
+    <path d="M50 20 L52 25 L57 27 L52 29 L50 34 L48 29 L43 27 L48 25 Z" fill="#FFD98A" strokeWidth="1"/>
+  </svg>
+);
+
+// Intelligent Theme & Emblem Resolver for Standard & Custom Events
+function getEventThemeAndIcon(eventName?: string, customName?: string, fallbackIndex = 0) {
+  const query = `${eventName || ""} ${customName || ""}`.toLowerCase().trim();
+
+  // 1. Crimson: Royal Wedding / Shaadi / Sacred Auspicious Muhurat
+  if (/shaadi|shadi|wedding|phere|anand karaj|nikah|lagna|muhurat|baraat|mandap/.test(query)) {
+    return { theme: "card-crimson", icon: crimsonIcon };
+  }
+
+  // 2. Marigold: Haldi, Mehendi, Daytime Traditional Festivities
+  if (/haldi|mehendi|mehndi|mayra|bhaat|chooda|pithi|brunch|morning/.test(query)) {
+    return { theme: "card-marigold", icon: marigoldIcon };
+  }
+
+  // 3. Sapphire: Sangeet, Engagement, Roka, Evening Parties, Music & Dance
+  if (/sangeet|engagement|roka|cocktail|ring|sagai|dance|sundowner|after party|party|music/.test(query)) {
+    return { theme: "card-sapphire", icon: sapphireIcon };
+  }
+
+  // 4. Emerald: Reception, Walima, Royal Banquets & Galas
+  if (/reception|walima|dinner|gala|banquet|dawat|celebration|feast/.test(query)) {
+    return { theme: "card-emerald", icon: emeraldIcon };
+  }
+
+  // Universal Fallback for any other custom event (e.g. "Pool Party", "Carnival", etc.)
+  // Harmoniously cycles through all 4 royal palettes based on sequence
+  const palettes = [
+    { theme: "card-marigold", icon: marigoldIcon },
+    { theme: "card-sapphire", icon: sapphireIcon },
+    { theme: "card-crimson", icon: crimsonIcon },
+    { theme: "card-emerald", icon: emeraldIcon },
+  ];
+
+  return palettes[fallbackIndex % palettes.length];
+}
+
 const mockCeremonies: CeremonyItem[] = [
   {
     id: "mehendi",
@@ -36,14 +110,7 @@ const mockCeremonies: CeremonyItem[] = [
     venueAddress: "Orchid Greens, Sector 56, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=Orchid+Greens+Sector+56+Gurugram",
     theme: "card-marigold",
-    icon: (
-      <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
-        <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
-        <path d="M50 20 C60 40 70 50 50 80 C30 50 40 40 50 20 Z" fill="#C8912A" opacity="0.2" strokeWidth="2"/>
-        <path d="M20 50 C40 40 50 30 80 50 C50 70 40 60 20 50 Z" fill="#C8912A" opacity="0.2" strokeWidth="2"/>
-        <circle cx="50" cy="50" r="10" fill="#FFD98A" opacity="0.8"/>
-      </svg>
-    )
+    icon: marigoldIcon
   },
   {
     id: "engagement",
@@ -55,15 +122,7 @@ const mockCeremonies: CeremonyItem[] = [
     venueAddress: "Le Meridien, MG Road, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=Le+Meridien+MG+Road+Gurugram",
     theme: "card-sapphire",
-    icon: (
-      <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
-        <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
-        <circle cx="40" cy="55" r="18" strokeWidth="2" />
-        <circle cx="60" cy="55" r="18" strokeWidth="2" />
-        <path d="M40 37 L50 25 L60 37 L50 48 Z" fill="#C8912A" opacity="0.8" strokeWidth="1.5"/>
-        <path d="M35 37 L65 37" strokeWidth="1.5"/>
-      </svg>
-    )
+    icon: sapphireIcon
   },
   {
     id: "shaadi",
@@ -75,14 +134,7 @@ const mockCeremonies: CeremonyItem[] = [
     venueAddress: "The Leela Ambience, Ambience Island, Gurugram",
     mapLink: "https://maps.google.com/?q=The+Leela+Ambience+Gurugram",
     theme: "card-crimson",
-    icon: (
-      <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
-        <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
-        <path d="M50 20 C65 45 70 65 50 75 C30 65 35 45 50 20 Z" strokeWidth="2" />
-        <path d="M50 35 C58 50 60 65 50 75 C40 65 42 50 50 35 Z" fill="#C8912A" opacity="0.4" strokeWidth="1.5"/>
-        <path d="M50 50 C54 60 55 70 50 75 C45 70 46 60 50 50 Z" fill="#FFD98A" strokeWidth="1"/>
-      </svg>
-    )
+    icon: crimsonIcon
   },
   {
     id: "reception",
@@ -94,15 +146,7 @@ const mockCeremonies: CeremonyItem[] = [
     venueAddress: "The Oberoi, Udyog Vihar, Gurugram, Haryana",
     mapLink: "https://maps.google.com/?q=The+Oberoi+Gurugram",
     theme: "card-emerald",
-    icon: (
-      <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="#FFD98A" className="drop-shadow-md">
-        <circle cx="50" cy="50" r="42" strokeWidth="1.5" strokeDasharray="5 3" opacity="0.6"/>
-        <path d="M35 30 L45 55 L45 75 M40 75 L50 75" strokeWidth="2"/>
-        <path d="M65 30 L55 55 L55 75 M50 75 L60 75" strokeWidth="2"/>
-        <path d="M38 38 L43 38 M57 38 L62 38" strokeWidth="1.5" opacity="0.5"/>
-        <path d="M50 20 L52 25 L57 27 L52 29 L50 34 L48 29 L43 27 L48 25 Z" fill="#FFD98A" strokeWidth="1"/>
-      </svg>
-    )
+    icon: emeraldIcon
   },
 ];
 
@@ -135,19 +179,26 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
           const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
           return dateA.getTime() - dateB.getTime();
         })
-        .map((e, idx) => ({
-          id: `event-${idx}`,
-          title: (e.name === "Other" || e.name === "Others" || !e.name) ? (e.customName || "Special Event") : (e.name || "Wedding Event"),
-          rawDate: e.date,
-          timeFormatted: e.time 
-            ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
-            : '',
-          venueName: e.venue || "",
-          venueAddress: "",
-          mapLink: e.mapsLink || "",
-          theme: ["card-marigold", "card-sapphire", "card-crimson", "card-emerald"][idx % 4],
-          icon: mockCeremonies[idx % mockCeremonies.length].icon
-        }))
+        .map((e, idx) => {
+          const { theme, icon } = getEventThemeAndIcon(e.name, e.customName, idx);
+          const title = (e.name === "Other" || e.name === "Others" || !e.name) 
+            ? (e.customName || "Special Event") 
+            : (e.name || "Wedding Event");
+
+          return {
+            id: `event-${idx}`,
+            title,
+            rawDate: e.date,
+            timeFormatted: e.time 
+              ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
+              : '',
+            venueName: e.venue || "",
+            venueAddress: "",
+            mapLink: e.mapsLink || "",
+            theme,
+            icon
+          };
+        })
     : mockCeremonies;
 
   // Group ceremonies date-wise in chronological sequence
