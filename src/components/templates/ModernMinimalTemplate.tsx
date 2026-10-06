@@ -1,3 +1,4 @@
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
 
 import { useState, useEffect } from "react";

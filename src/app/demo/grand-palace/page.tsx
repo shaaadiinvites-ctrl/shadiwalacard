@@ -1,3 +1,4 @@
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 import Link from "next/link";
 import { HeroSection } from "@/components/templates/project3/HeroSection";
 import { InvitationSection } from "@/components/templates/project3/InvitationSection";
@@ -129,6 +130,7 @@ export default function GrandPalaceDemo() {
           Buy Now (₹799)
         </Link>
       </div>
+      <MusicPlayer />
     </main>
   );
 }

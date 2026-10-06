@@ -1,3 +1,4 @@
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
 
 import { WeddingRecord } from "@/types/wedding";
@@ -48,6 +49,7 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
       <GallerySection galleryUrls={wedding.gallery_urls || []} wedding={wedding} />
 
       {/* Action Bar (Edit Link / Payment info can go here later if needed) */}
+      <MusicPlayer />
     </main>
   );
 }

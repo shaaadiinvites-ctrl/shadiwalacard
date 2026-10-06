@@ -1,3 +1,4 @@
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
 
 import { useState, useEffect } from "react";
@@ -540,6 +541,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
           </p>
         )}
       </footer>
+      <MusicPlayer />
     </div>
   );
 }
