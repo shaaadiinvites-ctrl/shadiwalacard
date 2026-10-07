@@ -6,7 +6,7 @@ import { isAllowedImage } from "@/lib/imageValidation";
 import { validateWeddingPayload } from "@/lib/validateWedding";
 
 const MEDIA_BUCKET = "wedding-media";
-const MAX_FILE_SIZE = 8 * 1024 * 1024;
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const MAX_GALLERY_IMAGES = 15;
 
 type UpdateBody = WeddingFormData & { editToken?: string; existingGalleryUrls?: string[] };
@@ -24,7 +24,7 @@ async function uploadImage(
   path: string
 ): Promise<string> {
   if (!file.type?.startsWith("image/")) throw new Error(`"${file.name}" is not an image file.`);
-  if (file.size > MAX_FILE_SIZE) throw new Error(`"${file.name}" is larger than 8MB — please use a smaller image.`);
+  if (file.size > MAX_FILE_SIZE) throw new Error(`"${file.name}" is larger than 4MB — please use a smaller image.`);
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -178,3 +178,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+

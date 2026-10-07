@@ -1,5 +1,3 @@
-"use client";
-
 export default function Watermark() {
   return (
     <div 
@@ -20,3 +18,4 @@ export default function Watermark() {
     </div>
   );
 }
+

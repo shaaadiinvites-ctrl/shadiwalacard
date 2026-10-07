@@ -398,7 +398,7 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
                           <div className="font-montserrat font-bold text-[11px] tracking-widest text-[#FFD98A] uppercase mb-0.5">
                             {t("theVenue", language)}
                           </div>
-                          <div className="font-playfair font-bold text-lg md:text-xl text-white drop-shadow-md">
+                          <div className="font-playfair font-bold text-lg md:text-xl text-white drop-shadow-md break-words hyphens-auto">
                             {ceremony.venueName}
                           </div>
                           {ceremony.venueAddress && (
@@ -441,3 +441,4 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
     </section>
   );
 }
+

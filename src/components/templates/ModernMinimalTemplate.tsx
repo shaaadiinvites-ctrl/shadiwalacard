@@ -1,6 +1,7 @@
-import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, ArrowDown, Instagram, Play, Gift, Video, Users } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
@@ -102,7 +103,7 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
       {/* Hero */}
       <section className="relative flex items-end" style={{ minHeight: "100svh" }}>
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Wedding" className="w-full h-full object-cover" style={{ filter: "grayscale(15%)" }} />
+          <Image src={heroImg} alt="Wedding" fill priority className="object-cover" style={{ filter: "grayscale(15%)" }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.05))" }} />
         </div>
         <div className="relative z-10 w-full px-6 md:px-14 pb-16 pt-32">
@@ -142,7 +143,7 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
           <SectionTitle label="Gallery" title="In pictures" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {galleryUrls.map((url, i) => (
-              <img key={i} src={url} alt={`Gallery ${i + 1}`} className="w-full aspect-square object-cover" style={{ filter: "grayscale(8%)" }} />
+              <div key={i} className="relative w-full aspect-square"><Image src={url} alt={`Gallery ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" style={{ filter: "grayscale(8%)" }} /></div>
             ))}
           </div>
         </section>
@@ -262,3 +263,5 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
     </div>
   );
 }
+
+

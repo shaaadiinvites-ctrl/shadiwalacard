@@ -15,7 +15,7 @@ interface Props {
   onRemoveExistingGalleryUrl?: (url: string) => void;
 }
 
-const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 const MAX_PHOTOS = 6;
 
 interface FilePreview {
@@ -94,7 +94,7 @@ export default function Step3Media({ register, errors, watch, setValue, existing
         .map((f) => `• "${f.name}" (${f.sizeMb} MB)`)
         .join("\n");
       setFileError(
-        `The following photo${oversizedList.length > 1 ? "s" : ""} exceeded the 8MB limit and could not be added:\n${details}\nPlease compress or select photos under 8MB.`
+        `The following photo${oversizedList.length > 1 ? "s" : ""} exceeded the 4MB limit and could not be added:\n${details}\nPlease compress or select photos under 4MB.`
       );
     }
 
@@ -136,7 +136,7 @@ export default function Step3Media({ register, errors, watch, setValue, existing
 
       <FieldWrapper
         label="Gallery Images"
-        hint="Select up to 6 photos (Supported formats: JPG, JPEG, PNG • Maximum 8MB per photo) — these appear in your gallery section"
+        hint="Select up to 6 photos (Supported formats: JPG, JPEG, PNG • Maximum 4MB per photo) — these appear in your gallery section"
         error={undefined}
       >
         <input
@@ -153,12 +153,12 @@ export default function Step3Media({ register, errors, watch, setValue, existing
           className="block w-full text-[14px] font-medium text-[#1A202C] file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[14px] file:font-semibold file:bg-purple-50 file:text-[#4a148c] hover:file:bg-purple-100 cursor-pointer border border-gray-300 rounded-xl bg-white p-1 shadow-sm transition"
         />
 
-        {/* Immediate In-Page 8MB File Size Error Banner */}
+        {/* Immediate In-Page 4MB File Size Error Banner */}
         {fileError && (
           <div className="mt-3 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-sm">
             <span className="text-xl leading-none shrink-0">⚠️</span>
             <div className="flex-1">
-              <p className="font-bold text-red-800 mb-0.5">Photo Too Large (Max 8MB per photo)</p>
+              <p className="font-bold text-red-800 mb-0.5">Photo Too Large (Max 4MB per photo)</p>
               <p className="text-xs text-red-600 whitespace-pre-line leading-relaxed">{fileError}</p>
             </div>
             <button
@@ -233,7 +233,7 @@ export default function Step3Media({ register, errors, watch, setValue, existing
                 </div>
                 {preview.isOversized && (
                   <div className="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow z-10">
-                    &gt;8MB
+                    &gt;4MB
                   </div>
                 )}
                 <button
@@ -266,3 +266,4 @@ export default function Step3Media({ register, errors, watch, setValue, existing
     </div>
   );
 }
+

@@ -1,5 +1,4 @@
 import { MusicPlayer } from '@/components/ui/MusicPlayer';
-"use client";
 
 import { WeddingRecord } from "@/types/wedding";
 import { HeroSection } from "@/components/templates/project3/HeroSection";
@@ -12,8 +11,6 @@ import { FlowersOverlay } from "@/components/templates/project3/FlowersOverlay";
 import { GallerySection } from "@/components/templates/project3/GallerySection";
 import Watermark from "@/components/Watermark";
 import Link from "next/link";
-import { useEffect } from "react";
-
 export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecord }) {
   // Use cover photo as background if provided, else default to palace image
   const bgImage = wedding.cover_photo_url || "/project3-assets/Palace_image2.png";
@@ -53,3 +50,4 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
     </main>
   );
 }
+

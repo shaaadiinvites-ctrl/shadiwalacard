@@ -1,6 +1,7 @@
-import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, Heart, Instagram, Play, Gift, Video, Sparkles } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
@@ -108,7 +109,7 @@ export default function FloralRomanceTemplate({ wedding }: Props) {
       {/* Hero */}
       <section className="relative flex items-center justify-center" style={{ minHeight: "100svh" }}>
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Wedding" className="w-full h-full object-cover" />
+          <Image src={heroImg} alt="Wedding" fill priority className="object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(214,143,161,0.35), rgba(74,59,63,0.55))" }} />
         </div>
         <div className="relative z-10 text-center px-6 pt-20">
@@ -163,7 +164,7 @@ export default function FloralRomanceTemplate({ wedding }: Props) {
             <SectionHeader overline="Sweet Moments" title="Our Gallery" />
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {galleryUrls.map((url, i) => (
-                <img key={i} src={url} alt={`Gallery ${i + 1}`} className="w-full aspect-[4/5] object-cover" style={{ borderRadius: 20 }} />
+                <div key={i} className="relative w-full aspect-[4/5] overflow-hidden" style={{ borderRadius: 20 }}><Image src={url} alt={`Gallery ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" /></div>
               ))}
             </div>
           </div>
@@ -290,3 +291,5 @@ export default function FloralRomanceTemplate({ wedding }: Props) {
     </div>
   );
 }
+
+

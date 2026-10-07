@@ -16,7 +16,7 @@ export function HeroSection({ wedding }: { wedding?: WeddingRecord }) {
         
         {/* Names */}
         <motion.h1 
-          className="font-playfair text-[40px] md:text-[72px] font-medium leading-[1.05] text-[#ffecd2] drop-shadow-[0_4px_20px_rgba(255,236,210,0.4)] tracking-[1px] flex flex-col items-center -translate-y-24 md:translate-y-0"
+          className="font-playfair text-[40px] md:text-[72px] font-medium leading-[1.05] text-[#ffecd2] drop-shadow-[0_4px_20px_rgba(255,236,210,0.4)] tracking-[1px] flex flex-col items-center -translate-y-24 md:translate-y-0 w-full px-4 break-words text-center hyphens-auto"
         >
           <motion.span 
             initial={{ opacity: 0, y: 30 }}
@@ -48,3 +48,4 @@ export function HeroSection({ wedding }: { wedding?: WeddingRecord }) {
     </section>
   );
 }
+

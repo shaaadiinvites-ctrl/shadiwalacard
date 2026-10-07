@@ -11,7 +11,7 @@ import { sendInviteReadyEmail } from "@/lib/sendEmail";
 type SubmitBody = WeddingFormData & { paymentOrderId?: string; templateId?: string; sig?: string };
 
 const MEDIA_BUCKET = "wedding-media";
-const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB per image
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB per image
 const MAX_GALLERY_IMAGES = 15;
 
 // ── Slug generator ────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ async function uploadImage(
     throw new Error(`"${file.name}" is not an image file.`);
   }
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error(`"${file.name}" is larger than 8MB — please use a smaller image.`);
+    throw new Error(`"${file.name}" is larger than 4MB — please use a smaller image.`);
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -161,9 +161,19 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Signature / Ownership Verification ─────────────────────────────────
-    // If a signed setup token (sig) was provided with the submission, verify
-    // that the submitted contact details match the authorized payment.
-    if (body.sig) {
+    // Enforce the signed setup token (sig) to ensure that only the customer
+    // who received the receipt link (via OTP) can use this payment order.
+    if (!isDevMock && !body.sig) {
+      // Roll back payment order status from 'used' back to 'verified'
+      await supabase
+        .from("payment_orders")
+        .update({ status: "verified", used_at: null })
+        .eq("id", paymentOrder.id);
+
+      return NextResponse.json({ error: "Unauthorized. Missing setup signature." }, { status: 403 });
+    }
+
+    if (body.sig || isDevMock) {
       const { verifySetupLink } = await import("@/lib/linkSecurity");
       const poId = body.paymentOrderId;
       const tmpl = body.templateId || paymentOrder.template_id;
@@ -403,3 +413,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

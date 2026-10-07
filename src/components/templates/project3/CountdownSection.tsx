@@ -127,7 +127,7 @@ export function CountdownSection({ wedding }: { wedding?: WeddingRecord }) {
 
   useEffect(() => {
     const mainEvent = wedding?.events?.find(e => e.isMainEvent) || wedding?.events?.[0];
-    const targetDateString = mainEvent?.date ? (mainEvent.time ? `${mainEvent.date}T${mainEvent.time}` : `${mainEvent.date}T00:00:00`) : "2026-10-15T00:00:00";
+    const targetDateString = mainEvent?.date ? (mainEvent.time ? `${mainEvent.date}T${mainEvent.time}+05:30` : `${mainEvent.date}T00:00:00+05:30`) : "2026-10-15T00:00:00+05:30";
     
     const updateCountdown = () => {
       const targetDate = new Date(targetDateString).getTime();
@@ -188,3 +188,4 @@ export function CountdownSection({ wedding }: { wedding?: WeddingRecord }) {
     </section>
   );
 }
+

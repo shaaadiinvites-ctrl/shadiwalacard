@@ -1,6 +1,7 @@
-import { MusicPlayer } from '@/components/ui/MusicPlayer';
 "use client";
+import { MusicPlayer } from '@/components/ui/MusicPlayer';
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import {
   Music, Music2, MapPin, ExternalLink, Heart,
@@ -171,7 +172,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
       ══════════════════════════════════ */}
       <section id="hero" className="relative flex items-center justify-center overflow-hidden" style={{ minHeight: "100svh" }}>
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Wedding" className="w-full h-full object-cover" />
+          <Image src={heroImg} alt="Wedding" fill priority className="object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(26,10,4,0.65) 0%, rgba(26,10,4,0.45) 40%, rgba(26,10,4,0.8) 100%)" }} />
         </div>
         <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: "linear-gradient(to right, transparent, #C9A84C, transparent)" }} />
@@ -272,9 +273,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
                   style={{ background: "#E8D5C4", cursor: "pointer" }}
                   onMouseEnter={() => setHoveredGallery(i)}
                   onMouseLeave={() => setHoveredGallery(null)}>
-                  <img src={url} alt={`Gallery ${i + 1}`}
-                    className="w-full object-cover block transition-transform duration-500"
-                    style={{ transform: hoveredGallery === i ? "scale(1.04)" : "scale(1)" }} />
+                  <Image src={url} alt={`Gallery ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover block transition-transform duration-500" style={{ transform: hoveredGallery === i ? "scale(1.04)" : "scale(1)" }} />
                   <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300"
                     style={{ background: "rgba(44,24,16,0.35)", opacity: hoveredGallery === i ? 1 : 0 }}>
                     <Heart className="w-6 h-6" style={{ color: "#C9A84C" }} />
@@ -545,3 +544,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
     </div>
   );
 }
+
+
+
+

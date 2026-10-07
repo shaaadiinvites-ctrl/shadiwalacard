@@ -1,5 +1,3 @@
-"use client";
-
 import { WeddingRecord } from "@/types/wedding";
 import { clsx } from "clsx";
 import { t } from "@/lib/i18n";
@@ -103,3 +101,4 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
     </div>
   );
 }
+

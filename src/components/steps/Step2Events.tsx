@@ -129,7 +129,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                   rules={{
                     required: "Required",
                     validate: (val) => {
-                      const selected = new Date(val);
+                      const selected = new Date(val + "T00:00:00");
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       return selected >= today || "Date cannot be in the past";
@@ -278,3 +278,4 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
     </div>
   );
 }
+

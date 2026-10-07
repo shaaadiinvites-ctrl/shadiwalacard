@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image";
 import {
     useState,
     useEffect,
@@ -322,15 +323,13 @@ export default function Smooth3DSlideshow(props: Smooth3DSlideshowProps) {
                             aria-hidden={!visible}
                         >
                             {src ? (
-                                <img
+                                <Image
                                     src={src}
                                     alt={slide.image?.alt || slide.title || ""}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                     draggable={false}
                                     style={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        width: "100%",
-                                        height: "100%",
                                         objectFit: "cover",
                                         display: "block",
                                         userSelect: "none",

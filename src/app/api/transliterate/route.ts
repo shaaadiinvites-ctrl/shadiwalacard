@@ -1,7 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const { ok } = await checkRateLimit("transliterate", ip, 50, 60); // 50 requests per minute
+    if (!ok) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const { text } = await req.json();
     if (!text) return NextResponse.json({ result: "" });
 
