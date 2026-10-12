@@ -3,6 +3,7 @@
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { WeddingRecord } from "@/types/wedding";
+import { timeTo24h } from "@/lib/utils";
 
 function AnimatedCounterBox({ value, label, progress }: { value: string; label: string; progress: number }) {
   const radius = 54;
@@ -127,7 +128,8 @@ export function CountdownSection({ wedding }: { wedding?: WeddingRecord }) {
 
   useEffect(() => {
     const mainEvent = wedding?.events?.find(e => e.isMainEvent) || wedding?.events?.[0];
-    const targetDateString = mainEvent?.date ? (mainEvent.time ? `${mainEvent.date}T${mainEvent.time}+05:30` : `${mainEvent.date}T00:00:00+05:30`) : "2026-10-15T00:00:00+05:30";
+    const targetTime = timeTo24h(mainEvent?.time || "00:00");
+    const targetDateString = mainEvent?.date ? `${mainEvent.date}T${targetTime}+05:30` : "2026-10-15T00:00:00+05:30";
     
     const updateCountdown = () => {
       const targetDate = new Date(targetDateString).getTime();

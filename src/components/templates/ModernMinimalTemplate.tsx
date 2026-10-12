@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, ArrowDown, Instagram, Play, Gift, Video, Users } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
+import { formatTime12 } from "@/lib/utils";
 
 /* ── Modern Minimal template ───────────────────────────────────────────────
    Editorial, monochrome, big whitespace, sans-serif everywhere. Deliberately
@@ -44,8 +45,7 @@ function fmtDate(d?: string) {
 }
 function fmtTime(t?: string) {
   if (!t) return "";
-  const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return formatTime12(t);
 }
 
 function Label({ children }: { children: React.ReactNode }) {

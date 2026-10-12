@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, Heart, Instagram, Play, Gift, Video, Sparkles } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
+import { formatTime12 } from "@/lib/utils";
 
 /* ── Floral Romance template ───────────────────────────────────────────────
    Soft blush pastels, rounded cards, script accents for names, botanical
@@ -45,8 +46,7 @@ function fmtDate(d?: string) {
 }
 function fmtTime(t?: string) {
   if (!t) return "";
-  const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return formatTime12(t);
 }
 
 function Petals() {

@@ -8,6 +8,7 @@ import { WheelTimePickerSheet } from "@/components/ui/WheelTimePickerSheet";
 import { Plus, Trash2, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { clsx } from "clsx";
+import { formatTime12 } from "@/lib/utils";
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -176,7 +177,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                         className="w-full px-4 h-[44px] bg-white border border-gray-300 rounded-xl focus-within:border-[#4a148c] outline-none transition-all flex items-center justify-between cursor-pointer"
                       >
                         <span className={clsx("text-[14px] font-medium", field.value ? "text-[#1A202C]" : "text-gray-400")}>
-                          {field.value || "Select time"}
+                          {field.value ? formatTime12(field.value) : "Select time"}
                         </span>
                         <Clock size={18} className="text-gray-400" />
                       </div>

@@ -8,6 +8,7 @@ import {
   ChevronDown, Instagram, Play, Gift, Video, Users
 } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
+import { formatTime12 } from "@/lib/utils";
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 // This component renders the "Royal Heritage" template.
@@ -41,8 +42,7 @@ function fmtDate(d?: string) {
 }
 function fmtTime(t?: string) {
   if (!t) return "";
-  const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return formatTime12(t);
 }
 
 /* ── Shared sub-components ─────────────────────────────────────────────────── */

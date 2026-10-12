@@ -1,68 +1,163 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Check } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import clsx from "clsx";
 
 import { BottomSheet } from "@/components/MobileSheetPickers";
+import { parseTimeTo12h, timeTo24h } from "@/lib/utils";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (time: string) => void;
-  initialTime?: string; // "14:30"
+  initialTime?: string; // e.g. "19:30" or "07:30 PM"
 }
 
+const CEREMONY_PRESETS = [
+  { label: "10:00 AM", h: "10", m: "00", p: "AM" as const },
+  { label: "01:00 PM", h: "01", m: "00", p: "PM" as const },
+  { label: "04:30 PM", h: "04", m: "30", p: "PM" as const },
+  { label: "07:00 PM", h: "07", m: "00", p: "PM" as const },
+  { label: "08:00 PM", h: "08", m: "00", p: "PM" as const },
+];
+
 export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }: Props) {
-  const [hour, setHour] = useState("10");
+  const [hour, setHour] = useState("07");
   const [minute, setMinute] = useState("00");
+  const [period, setPeriod] = useState<"AM" | "PM">("PM");
 
   useEffect(() => {
     if (isOpen) {
-      if (initialTime) {
-        const [h, m] = initialTime.split(":");
-        if (h && m) {
-          setHour(h);
-          setMinute(m);
-        }
-      }
+      const parsed = parseTimeTo12h(initialTime);
+      setHour(parsed.hour);
+      setMinute(parsed.minute);
+      setPeriod(parsed.period);
     }
   }, [isOpen, initialTime]);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
+  const hours = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
 
   const handleSave = () => {
-    onSelect(`${hour}:${minute}`);
+    const formatted24 = timeTo24h(`${hour}:${minute} ${period}`);
+    onSelect(formatted24);
     onClose();
   };
 
+  const handlePresetSelect = (preset: typeof CEREMONY_PRESETS[number]) => {
+    setHour(preset.h);
+    setMinute(preset.m);
+    setPeriod(preset.p);
+  };
+
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} title="Select Time">
-      <div className="relative flex justify-center items-center h-[200px] mt-2 mb-6 px-4">
-        {/* Highlight bar behind */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 h-[48px] bg-[#2e1065]/5 border-y border-[#2e1065]/10 rounded-xl pointer-events-none" />
+    <BottomSheet isOpen={isOpen} onClose={onClose} title="Select Event Time">
+      <div className="flex flex-col items-center w-full max-w-sm mx-auto pt-1 pb-4 px-2">
         
-        <div className="flex gap-6 z-10 w-full max-w-[140px] justify-between items-center">
-          <Wheel column={hours} value={hour} onChange={setHour} />
-          <div className="text-2xl font-bold pb-1 text-[#2e1065]">:</div>
-          <Wheel column={minutes} value={minute} onChange={setMinute} />
+        {/* Real-time formatted time preview */}
+        <div className="flex flex-col items-center justify-center mb-4">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-2xl bg-purple-50 border border-purple-100 shadow-sm">
+            <Clock size={18} className="text-[#2e1065]" />
+            <span className="text-[22px] font-extrabold text-[#2e1065] tracking-wide font-mono">
+              {hour}:{minute} {period}
+            </span>
+          </div>
+          <p className="text-[11px] text-gray-500 mt-1 font-medium">12-hour format with AM / PM</p>
         </div>
 
+        {/* Quick ceremony presets */}
+        <div className="w-full flex items-center justify-center gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
+          {CEREMONY_PRESETS.map((preset) => {
+            const isMatch = hour === preset.h && minute === preset.m && period === preset.p;
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => handlePresetSelect(preset)}
+                className={clsx(
+                  "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer",
+                  isMatch
+                    ? "bg-[#2e1065] text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Interactive Wheels + AM/PM selection container */}
+        <div className="relative flex justify-center items-center h-[200px] w-full my-2 px-2">
+          {/* Highlight bar across the active row */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-2 right-2 h-[48px] bg-[#2e1065]/5 border-y border-[#2e1065]/15 rounded-xl pointer-events-none" />
+
+          <div className="flex items-center justify-center gap-3 sm:gap-4 z-10">
+            {/* Hours Wheel */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Hour</span>
+              <Wheel column={hours} value={hour} onChange={setHour} />
+            </div>
+
+            {/* Colon Separator */}
+            <div className="text-2xl font-bold text-[#2e1065] pt-4 select-none">:</div>
+
+            {/* Minutes Wheel */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Minute</span>
+              <Wheel column={minutes} value={minute} onChange={setMinute} />
+            </div>
+
+            {/* AM / PM Segmented Control */}
+            <div className="flex flex-col items-center ml-1 sm:ml-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Period</span>
+              <div className="flex flex-col gap-1.5 p-1 bg-gray-100/90 rounded-2xl border border-gray-200/80 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => setPeriod("AM")}
+                  className={clsx(
+                    "w-[56px] h-[38px] flex items-center justify-center rounded-xl text-[13px] font-bold tracking-wider transition-all cursor-pointer",
+                    period === "AM"
+                      ? "bg-[#2e1065] text-white shadow-md scale-[1.02]"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                  )}
+                >
+                  AM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPeriod("PM")}
+                  className={clsx(
+                    "w-[56px] h-[38px] flex items-center justify-center rounded-xl text-[13px] font-bold tracking-wider transition-all cursor-pointer",
+                    period === "PM"
+                      ? "bg-[#2e1065] text-white shadow-md scale-[1.02]"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                  )}
+                >
+                  PM
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-width Confirm button */}
         <button
           type="button"
           onClick={handleSave}
-          className="absolute top-1/2 -translate-y-1/2 right-6 z-20 w-[40px] h-[40px] bg-[#2e1065] text-white rounded-[10px] flex items-center justify-center shadow-md active:scale-95 transition-transform"
+          className="w-full mt-5 py-3.5 bg-[#2e1065] hover:bg-[#3b137d] active:scale-[0.99] text-white text-[15px] font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#2e1065]/20 transition-all cursor-pointer"
         >
-          <Check size={22} strokeWidth={2.5} />
+          <Check size={18} strokeWidth={2.5} />
+          <span>Set Time • {hour}:{minute} {period}</span>
         </button>
+
       </div>
     </BottomSheet>
   );
 }
 
-function Wheel({ column, value, onChange }: { column: string[], value: string, onChange: (v: string) => void }) {
+function Wheel({ column, value, onChange }: { column: string[]; value: string; onChange: (v: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const ITEM_HEIGHT = 44;
   const isScrolling = useRef(false);
@@ -72,7 +167,12 @@ function Wheel({ column, value, onChange }: { column: string[], value: string, o
     if (scrollRef.current && !isScrolling.current) {
       const idx = column.indexOf(value);
       if (idx !== -1) {
-        scrollRef.current.scrollTop = idx * ITEM_HEIGHT;
+        const timer = setTimeout(() => {
+          if (scrollRef.current && !isScrolling.current) {
+            scrollRef.current.scrollTop = idx * ITEM_HEIGHT;
+          }
+        }, 50);
+        return () => clearTimeout(timer);
       }
     }
   }, [value, column]);
@@ -80,36 +180,37 @@ function Wheel({ column, value, onChange }: { column: string[], value: string, o
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     isScrolling.current = true;
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    
+
     const top = e.currentTarget.scrollTop;
     const idx = Math.round(top / ITEM_HEIGHT);
-    
+
     scrollTimeout.current = setTimeout(() => {
       isScrolling.current = false;
       if (column[idx] && column[idx] !== value) {
         onChange(column[idx]);
       }
-    }, 150);
+    }, 120);
   };
 
   return (
-    <div 
+    <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="h-[200px] w-[60px] overflow-y-auto snap-y snap-mandatory relative text-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+      className="h-[200px] w-[62px] sm:w-[68px] overflow-y-auto snap-y snap-mandatory relative text-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
     >
       <div style={{ height: (200 - ITEM_HEIGHT) / 2 }} /> {/* Top padding */}
       {column.map((item) => (
-        <div 
-          key={item} 
+        <div
+          key={item}
           className={clsx(
-            "h-[44px] flex items-center justify-center snap-center text-[22px] transition-colors duration-200 cursor-pointer select-none",
-            item === value ? "text-[#2e1065] font-bold" : "text-gray-400 font-medium"
+            "h-[44px] flex items-center justify-center snap-center text-[22px] transition-all duration-150 cursor-pointer select-none",
+            item === value ? "text-[#2e1065] font-extrabold scale-110" : "text-gray-400 font-medium hover:text-gray-600"
           )}
           onClick={() => {
+            onChange(item);
             if (scrollRef.current) {
-               const idx = column.indexOf(item);
-               scrollRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: 'smooth' });
+              const idx = column.indexOf(item);
+              scrollRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: "smooth" });
             }
           }}
         >

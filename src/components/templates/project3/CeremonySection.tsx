@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { t } from "@/lib/i18n";
 import { WeddingRecord } from "@/types/wedding";
+import { formatTime12, timeTo24h } from "@/lib/utils";
 
 const sparkles = [
   { left: "15%", top: "20%", delay: "0s", duration: "2.5s", char: "✦" },
@@ -175,8 +176,10 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
   const activeCeremonies: CeremonyItem[] = events && events.length > 0 
     ? [...events]
         .sort((a, b) => {
-          const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
-          const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
+          const timeA = timeTo24h(a.time);
+          const timeB = timeTo24h(b.time);
+          const dateA = new Date(`${a.date}T${timeA}`);
+          const dateB = new Date(`${b.date}T${timeB}`);
           return dateA.getTime() - dateB.getTime();
         })
         .map((e, idx) => {
@@ -189,9 +192,7 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
             id: `event-${idx}`,
             title,
             rawDate: e.date,
-            timeFormatted: e.time 
-              ? new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) 
-              : '',
+            timeFormatted: formatTime12(e.time),
             venueName: e.venue || "",
             venueAddress: "",
             mapLink: e.mapsLink || "",

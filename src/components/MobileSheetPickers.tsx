@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Calendar as CalendarIcon, Clock, X, Check } from "lucide-react";
 import clsx from "clsx";
+import { formatTime12 } from "@/lib/utils";
 
 // --- Base Bottom Sheet Wrapper ---
 interface BottomSheetProps {
@@ -232,7 +233,7 @@ export function MobileSheetTimePicker({ value, onChange, placeholder = "Select T
   }
 
   // Find display value
-  const selectedDisplay = times.find(t => t.value === value)?.display || value;
+  const selectedDisplay = value ? formatTime12(value) : "";
 
   return (
     <>
