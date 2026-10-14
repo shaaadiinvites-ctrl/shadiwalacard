@@ -117,6 +117,6 @@ export interface WeddingRecord {
 export const STEPS = [
   { id: 1, title: "The Happy Couple", short: "Basics", description: "Tell us about the two of you to personalize your digital invite." },
   { id: 2, title: "Event Schedule", short: "Events", description: "Add each ceremony — Mehendi, Haldi, Sangeet, Wedding, Reception, etc." },
-  { id: 3, title: "Love Story & Media", short: "Media", description: "Share your romantic story and the visuals that tell it." },
+  { id: 3, title: "Photos & Media", short: "Photos", description: "Upload your favorite couple photos for your royal 3D invitation gallery." },
   { id: 4, title: "R.S.V.P Details", short: "RSVP", description: "Provide contact points for guests who have questions or need to RSVP." },
 ] as const;

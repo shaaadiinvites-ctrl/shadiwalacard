@@ -2,7 +2,7 @@
 
 import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { WeddingFormData } from "@/types/wedding";
-import { FieldWrapper, Input, Textarea } from "@/components/FormFields";
+import { FieldWrapper, Input } from "@/components/FormFields";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
@@ -132,8 +132,8 @@ export default function Step3Media({ register, errors, watch, setValue, existing
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">Love Story & Media</h2>
-        <p className="text-[14px] font-normal text-gray-500">Share your romantic story and the visuals that tell it.</p>
+        <h2 className="text-[28px] font-bold text-[#2e1065] mb-2 tracking-tight">Photos & Media</h2>
+        <p className="text-[14px] font-normal text-gray-500">Upload your favorite couple photos for your royal 3D invitation gallery.</p>
       </div>
 
       <div className="space-y-3">
@@ -281,20 +281,6 @@ export default function Step3Media({ register, errors, watch, setValue, existing
           </div>
         )}
       </div>
-
-      {/* Love Story Textarea */}
-      <FieldWrapper
-        label="Our Love Story (Optional)"
-        hint="Share how you first met, your journey together, or a heartfelt message to your guests."
-        error={errors.ourStory?.message}
-      >
-        <Textarea
-          {...register("ourStory")}
-          rows={5}
-          placeholder="It all began on a quiet evening in Delhi... From college best friends to lifelong partners, we cannot wait to celebrate our big day with you!"
-          className="w-full text-[14px]"
-        />
-      </FieldWrapper>
     </div>
   );
 }

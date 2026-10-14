@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
     }
 
-    const { templateId, turnstileToken, couponCode } = await req.json();
+    const { templateId, turnstileToken, couponCode, phone: customerPhone } = await req.json();
 
     if (!(await verifyTurnstile(turnstileToken, ip))) {
       return NextResponse.json({ error: "Verification failed. Please refresh the page and try again." }, { status: 400 });
@@ -103,6 +103,74 @@ export async function POST(req: NextRequest) {
 
     const template = getTemplate(templateId);
 
+    let finalPrice = template.priceInr;
+    const cleanCoupon = (couponCode || "").trim().toUpperCase();
+    if (cleanCoupon === "SAARTHI100") {
+      finalPrice = 0;
+    } else if (cleanCoupon === "SHADI10") {
+      finalPrice = finalPrice - Math.round(finalPrice * 0.1);
+    }
+
+    // 100% OFF Coupon Flow: Zero-cost order created directly in verified status
+    if (finalPrice === 0) {
+      const freeOrderId = `free_order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const freePaymentId = `free_pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+      const supabase = createServerSupabaseClient();
+      const { data: row, error } = await supabase
+        .from("payment_orders")
+        .insert({
+          razorpay_order_id: freeOrderId,
+          razorpay_payment_id: freePaymentId,
+          template_id: template.id,
+          amount_inr: 0,
+          status: "verified",
+          verified_at: new Date().toISOString(),
+          customer_phone: customerPhone || null,
+        })
+        .select("id, template_id")
+        .single();
+
+      if (error || !row) {
+        console.error("Supabase 100% coupon payment_orders insert error:", error);
+        return NextResponse.json({ error: "Could not create order." }, { status: 500 });
+      }
+
+      const { signSetupLink } = await import("@/lib/linkSecurity");
+      const signature = signSetupLink({
+        po: row.id,
+        template: row.template_id,
+        email: "",
+        phone: "",
+      });
+
+      if (customerPhone) {
+        try {
+          const { sendWhatsAppOrderConfirmation } = await import("@/lib/whatsapp");
+          const reqOrigin = req.headers.get("origin") || "";
+          const origin =
+            reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
+              ? reqOrigin
+              : "https://shadiwalacard.com";
+          const setupUrl = `${origin}/form?po=${row.id}&template=${row.template_id}&sig=${signature}`;
+          await sendWhatsAppOrderConfirmation({
+            phone: customerPhone,
+            templateName: template.name,
+            customizeUrl: setupUrl,
+          });
+        } catch (e) {
+          console.error("WhatsApp dispatch error for 100% coupon:", e);
+        }
+      }
+
+      return NextResponse.json({
+        isFree: true,
+        paymentOrderId: row.id,
+        signature,
+        templateName: template.name,
+      });
+    }
+
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -111,11 +179,6 @@ export async function POST(req: NextRequest) {
         { error: "Payments aren't configured yet. RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are missing." },
         { status: 500 }
       );
-    }
-
-    let finalPrice = template.priceInr;
-    if (couponCode && couponCode.toUpperCase() === "SHADI10") {
-      finalPrice = finalPrice - Math.round(finalPrice * 0.1);
     }
 
     const amountPaise = finalPrice * 100;

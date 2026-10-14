@@ -78,7 +78,11 @@ function CheckoutInner() {
   }, []);
 
   const handleApplyCoupon = () => {
-    if (couponCode.toUpperCase() === "SHADI10") {
+    const code = couponCode.trim().toUpperCase();
+    if (code === "SAARTHI100") {
+      setDiscountPercent(100);
+      setError(null);
+    } else if (code === "SHADI10") {
       setDiscountPercent(10);
       setError(null);
     } else {
@@ -98,6 +102,12 @@ function CheckoutInner() {
       });
       const orderJson = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderJson.error || "Could not start payment.");
+
+      if (orderJson.isFree) {
+        const sigParam = orderJson.signature ? `&sig=${encodeURIComponent(orderJson.signature)}` : "";
+        router.push(`/success?po=${orderJson.paymentOrderId}&template=${template.id}${sigParam}`);
+        return;
+      }
 
       const ok = await loadRazorpayScript();
       if (!ok || !window.Razorpay) throw new Error("Could not load payment gateway. Check your connection and try again.");
@@ -167,7 +177,7 @@ function CheckoutInner() {
         <div className="flex gap-2 mt-4 h-[40px]">
           <input
             type="text"
-            placeholder="Enter coupon code (e.g. SHADI10)"
+            placeholder="Coupon Code"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
             className="flex-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 px-3 py-2 text-sm focus:outline-none focus:border-rose-500 transition"

@@ -125,7 +125,11 @@ function CartPageContent() {
   }, []);
 
   const handleApplyCoupon = () => {
-    if (couponCode.toUpperCase() === "SHADI10") {
+    const code = couponCode.trim().toUpperCase();
+    if (code === "SAARTHI100") {
+      setDiscountPercent(100);
+      setError("");
+    } else if (code === "SHADI10") {
       setDiscountPercent(10);
       setError("");
     } else {
@@ -358,11 +362,13 @@ function CartPageContent() {
     posthog?.capture('checkout_started', { template_id: template.id });
 
     try {
+      const checkoutPhone = overridePhone || `${countryCode}${phone.replace(/\D/g, '')}`;
+
       // 1. Create order on server
       const createRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: template.id, couponCode }),
+        body: JSON.stringify({ templateId: template.id, couponCode, phone: checkoutPhone }),
       });
 
       const orderData = await createRes.json();
@@ -371,7 +377,13 @@ function CartPageContent() {
         throw new Error(orderData.error || "Failed to create order");
       }
 
-      const checkoutPhone = overridePhone || `${countryCode}${phone.replace(/\D/g, '')}`;
+      // If 100% discount coupon applied (e.g. SAARTHI100), bypass Razorpay and redirect directly to success
+      if (orderData.isFree) {
+        setIsProcessingPayment(true);
+        const sigParam = orderData.signature ? `&sig=${encodeURIComponent(orderData.signature)}` : "";
+        router.push(`/success?po=${orderData.paymentOrderId}&template=${template.id}&p=${encodeURIComponent(checkoutPhone)}${sigParam}`);
+        return;
+      }
 
       // 2. Open Razorpay Checkout Modal
       const options = {
@@ -689,7 +701,7 @@ function CartPageContent() {
             <div style={{ display: 'flex', gap: 8, marginBottom: 18, height: 46 }}>
               <input
                 type="text"
-                placeholder="Coupon (e.g. SHADI10)"
+                placeholder="Coupon Code"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 className="cart-input"
@@ -971,7 +983,7 @@ function CartPageContent() {
                 </>
               ) : (
                 <>
-                  <span>Proceed to Payment</span>
+                  <span>{total === 0 ? "Unlock Invitation (Free)" : "Proceed to Payment"}</span>
                   <svg style={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14" />
                     <path d="m12 5 7 7-7 7" />
