@@ -126,6 +126,12 @@ export default async function SuccessPage({ searchParams }: Props) {
           background: rgba(255, 255, 255, 0.1) !important;
           border-color: rgba(255, 255, 255, 0.25) !important;
         }
+        @media (min-width: 640px) {
+          .sf-mobile-bottom-bar,
+          .sf-mobile-bottom-spacer {
+            display: none !important;
+          }
+        }
       `}</style>
 
       {/* ── Top Header & Celebration ── */}
@@ -305,8 +311,9 @@ export default async function SuccessPage({ searchParams }: Props) {
         sig={sig || ""}
       />
 
-      {/* ── Fixed Floating Bottom Actions on Mobile ── */}
+      {/* ── Fixed Floating Bottom Actions on Mobile Only ── */}
       <div 
+        className="flex flex-col gap-2 sm:hidden sf-mobile-bottom-bar"
         style={{
           position: 'fixed',
           bottom: 0,
@@ -319,11 +326,7 @@ export default async function SuccessPage({ searchParams }: Props) {
           borderTop: '1px solid rgba(255, 255, 255, 0.12)',
           padding: '12px 16px max(48px, calc(20px + env(safe-area-inset-bottom, 0px))) 16px',
           boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
         }}
-        className="sm:hidden"
       >
         <Link
           href={formUrl}
@@ -372,7 +375,7 @@ export default async function SuccessPage({ searchParams }: Props) {
       </div>
 
       {/* Mobile Bottom Spacing so content is not cut off */}
-      <div className="h-44 sm:hidden" />
+      <div className="h-44 sm:hidden sf-mobile-bottom-spacer" />
     </div>
   );
 }
