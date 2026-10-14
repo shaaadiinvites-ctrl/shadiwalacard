@@ -1,25 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { WeddingRecord } from "@/types/wedding";
 import { t } from "@/lib/i18n";
 
 export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
-  const [copied, setCopied] = useState(false);
   const rawHashtag = wedding?.hashtag?.trim();
   const hasHashtag = Boolean(rawHashtag && rawHashtag.length > 0);
   const formattedHashtag = rawHashtag
     ? (rawHashtag.startsWith("#") ? rawHashtag : `#${rawHashtag}`)
     : "";
-
-  const handleCopy = () => {
-    if (!formattedHashtag || typeof navigator === "undefined" || !navigator.clipboard) return;
-    navigator.clipboard.writeText(formattedHashtag).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {});
-  };
 
   const revealVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -138,11 +128,8 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
               variants={revealVariants}
               className="mt-12 flex flex-col items-center justify-center w-full"
             >
-              <button
-                type="button"
-                onClick={handleCopy}
-                title="Click to copy hashtag"
-                className="group relative inline-flex items-center justify-center gap-3 md:gap-4 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] outline-none"
+              <div
+                className="relative inline-flex items-center justify-center gap-3 md:gap-4 px-6 py-2.5 rounded-full select-text"
                 style={{
                   background: "linear-gradient(135deg, rgba(200, 145, 42, 0.12) 0%, rgba(13, 42, 51, 0.45) 100%)",
                   border: "1px solid rgba(200, 145, 42, 0.4)",
@@ -150,36 +137,15 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                   WebkitBackdropFilter: "blur(12px)",
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
                 }}
-                aria-label={`Copy wedding hashtag ${formattedHashtag}`}
               >
                 <span className="w-6 md:w-10 h-[1px] bg-gradient-to-r from-transparent to-[#FFD98A]/70" />
                 <span className="text-[#FFD98A] text-xs">✦</span>
-                <span className="font-montserrat font-medium text-[clamp(14px,3.8vw,18px)] tracking-[2.5px] sm:tracking-[3.5px] text-[#FFEBB4] group-hover:text-white transition-colors uppercase drop-shadow-[0_2px_8px_rgba(200,145,42,0.4)]">
+                <span className="font-montserrat font-medium text-[clamp(14px,3.8vw,18px)] tracking-[2.5px] sm:tracking-[3.5px] text-[#FFEBB4] uppercase drop-shadow-[0_2px_8px_rgba(200,145,42,0.4)]">
                   {formattedHashtag}
                 </span>
                 <span className="text-[#FFD98A] text-xs">✦</span>
                 <span className="w-6 md:w-10 h-[1px] bg-gradient-to-l from-transparent to-[#FFD98A]/70" />
-
-                {copied ? (
-                  <span className="text-[10px] tracking-wider text-emerald-300 font-semibold uppercase ml-1 animate-pulse">
-                    Copied!
-                  </span>
-                ) : (
-                  <svg
-                    className="w-3.5 h-3.5 text-[#FFD98A]/60 group-hover:text-[#FFD98A] transition-colors ml-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                )}
-              </button>
+              </div>
             </motion.div>
           )}
 
