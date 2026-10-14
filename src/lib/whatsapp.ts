@@ -180,10 +180,10 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    // Dispatch official Meta-approved template
+    // Dispatch official Meta-approved template (Prioritize UTILITY template for guaranteed delivery)
     const templateCandidates = [
-      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
       { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
+      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
     ];
 
     const cleanParam = templateName.replace(/\s+invitation$/i, "").trim();
@@ -225,11 +225,11 @@ export async function sendWhatsAppOrderConfirmation({
         break;
       }
 
-      if (res.data?.error?.code === 132001) {
-        continue;
-      } else {
-        break;
-      }
+      console.warn(
+        `⚠️ WhatsApp template '${cand.name}' (${cand.lang}) delivery failed:`,
+        res.data?.error?.message || `HTTP ${res.status}`,
+        `(Code: ${res.data?.error?.code}). Trying next candidate...`
+      );
     }
 
     // If neither custom template is approved yet, only test sandboxes can use hello_world
@@ -362,11 +362,11 @@ export async function sendWhatsAppInviteReady({
         break;
       }
 
-      if (res.data?.error?.code === 132001) {
-        continue;
-      } else {
-        break;
-      }
+      console.warn(
+        `⚠️ WhatsApp invite-ready template '${cand.name}' (${cand.lang}) delivery failed:`,
+        res.data?.error?.message || `HTTP ${res.status}`,
+        `(Code: ${res.data?.error?.code}). Trying next candidate...`
+      );
     }
 
     if (!res.ok) {
