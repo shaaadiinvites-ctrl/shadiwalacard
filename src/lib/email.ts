@@ -1,19 +1,22 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.zoho.in",
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // User needs to set this in .env
-  },
-});
+function getTransporter() {
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  if (!user || !pass) return null;
+
+  return nodemailer.createTransport({
+    host: "smtp.zoho.in",
+    port: 465,
+    secure: true,
+    auth: { user, pass },
+  });
+}
 
 export async function sendSetupLinkEmail(to: string, setupUrl: string) {
-  // If no password is provided in .env, don't try to send (it will crash)
-  if (!process.env.EMAIL_PASS) {
-    console.warn("EMAIL_PASS not found in .env, skipping email send.");
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.warn("EMAIL_USER / EMAIL_PASS not found in env, skipping email send.");
     return false;
   }
 

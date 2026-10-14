@@ -44,6 +44,31 @@ export function HeroSection({ wedding }: { wedding?: WeddingRecord }) {
           </motion.span>
         </motion.h1>
 
+        {/* Scroll Down Button */}
+        <motion.button
+          type="button"
+          onClick={() => {
+            const nextSection = document.getElementById("invitation") || document.querySelector("section:nth-of-type(2)");
+            if (nextSection) {
+              nextSection.scrollIntoView({ behavior: "smooth" });
+            } else {
+              window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
+            }
+          }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: [0, 8, 0] }}
+          transition={{
+            opacity: { delay: 1.8, duration: 1 },
+            y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+          }}
+          className="absolute bottom-8 z-30 pointer-events-auto flex flex-col items-center gap-1.5 text-white/60 hover:text-white transition-colors cursor-pointer group"
+          aria-label="Scroll down"
+        >
+          <span className="font-montserrat text-[10px] uppercase tracking-[3px] text-[#FFD98A]/80 group-hover:text-[#FFD98A]">Scroll</span>
+          <svg className="w-5 h-5 text-[#FFD98A] drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.button>
       </div>
     </section>
   );

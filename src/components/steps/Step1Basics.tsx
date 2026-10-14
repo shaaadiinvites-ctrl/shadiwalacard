@@ -312,7 +312,7 @@ export default function Step1Basics({ register, errors, watch, control, setValue
         )}
       </div>
 
-      <FieldWrapper label="Wedding Hashtag" error={errors.hashtag?.message}>
+      <FieldWrapper label={<>Wedding Hashtag <span className="text-gray-400 font-normal text-xs">(Optional)</span></>} error={errors.hashtag?.message}>
         <Input
           placeholder="e.g. #SharmaGayi, #Virushka"
           {...register("hashtag")}

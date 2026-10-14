@@ -53,6 +53,7 @@ export default function WeddingForm({
   const [ghostClickLock, setGhostClickLock] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [retainedGalleryUrls, setRetainedGalleryUrls] = useState<string[]>(existingGalleryUrls);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
     if (currentStep === STEPS.length) {
@@ -193,6 +194,10 @@ export default function WeddingForm({
   };
 
   const goBack = () => {
+    if (currentStep === 1) {
+      setShowExitModal(true);
+      return;
+    }
     setCurrentStep((s) => Math.max(s - 1, 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -465,8 +470,7 @@ export default function WeddingForm({
             <button
               type="button"
               onClick={goBack}
-              disabled={currentStep === 1}
-              className="disabled:opacity-30 disabled:cursor-not-allowed w-11 h-11 rounded-full bg-transparent text-gray-700 cursor-pointer transition-colors flex items-center justify-center hover:bg-gray-100 -ml-2"
+              className="w-11 h-11 rounded-full bg-transparent text-gray-700 cursor-pointer transition-colors flex items-center justify-center hover:bg-gray-100 -ml-2"
               aria-label="Go Back"
             >
               <ArrowLeft size={22} />
@@ -590,7 +594,7 @@ export default function WeddingForm({
               </div>
             </div>
 
-            <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-8">
+            <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full min-w-0 pb-16 sm:pb-20">
               <div className="max-w-3xl mx-auto">
                 {currentStep === 1 && (
                   <Step1Basics register={register} errors={errors} watch={watch} control={control} setValue={setValue} getValues={getValues} />
@@ -701,6 +705,38 @@ export default function WeddingForm({
           </div>
         </form>
       </main>
+
+      {/* ── Exit Confirmation Modal ── */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-gray-100">
+            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3.5 text-2xl">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1.5">
+              Exit Customization?
+            </h3>
+            <p className="text-xs text-gray-500 leading-relaxed mb-6">
+              You can come back anytime using your WhatsApp dashboard link. Are you sure you want to exit now?
+            </p>
+            <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowExitModal(false)}
+                className="w-full py-3 rounded-xl bg-[#2e1065] text-white text-sm font-bold shadow-md hover:bg-[#3d1685] transition-colors cursor-pointer"
+              >
+                Continue Customizing
+              </button>
+              <a
+                href="/"
+                className="w-full py-2.5 rounded-xl text-gray-500 hover:text-gray-800 text-xs font-semibold transition-colors"
+              >
+                Yes, Exit to Home
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

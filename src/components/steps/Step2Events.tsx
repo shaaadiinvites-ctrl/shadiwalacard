@@ -5,10 +5,17 @@ import { WeddingFormData, EVENT_NAME_OPTIONS } from "@/types/wedding";
 import { FieldWrapper, Input, Textarea, LocationInput, Select } from "@/components/FormFields";
 import { MobileSheetSelect, MobileSheetDatePicker } from "@/components/MobileSheetPickers";
 import { WheelTimePickerSheet } from "@/components/ui/WheelTimePickerSheet";
-import { Plus, Trash2, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Plus, Trash2, Clock, MapPin } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import { formatTime12 } from "@/lib/utils";
+
+function isShaadiEvent(event?: { name?: string; customName?: string }): boolean {
+  if (!event) return false;
+  const name = (event.name || "").trim().toLowerCase();
+  const custom = (event.customName || "").trim().toLowerCase();
+  return name === "shaadi" || name === "shadi" || custom === "shaadi" || custom === "shadi";
+}
 
 interface Props {
   register: UseFormRegister<WeddingFormData>;
@@ -24,17 +31,34 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
   const watchedEvents = useWatch({ control, name: "events" });
   const [activeTimePicker, setActiveTimePicker] = useState<number | null>(null);
 
-  // Auto-manage main event logic
+  // Auto-manage main event logic (auto-selects "Shaadi" as main event if present)
+  const lastAppliedShaadiIndexRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!watchedEvents || watchedEvents.length === 0) return;
+
+    // 1. If any event is "Shaadi", automatically select it as the main event
+    const shaadiIndex = watchedEvents.findIndex(isShaadiEvent);
+
+    if (shaadiIndex !== -1) {
+      if (lastAppliedShaadiIndexRef.current !== shaadiIndex) {
+        lastAppliedShaadiIndexRef.current = shaadiIndex;
+        watchedEvents.forEach((_, i) => {
+          setValue(`events.${i}.isMainEvent`, i === shaadiIndex, { shouldValidate: true, shouldDirty: true });
+        });
+        return;
+      }
+    } else {
+      lastAppliedShaadiIndexRef.current = null;
+    }
     
-    // If only 1 event, force it to be the main event
+    // 2. If only 1 event, force it to be the main event
     if (watchedEvents.length === 1) {
       if (String(watchedEvents[0]?.isMainEvent) !== "true") {
         setValue('events.0.isMainEvent', true, { shouldValidate: true, shouldDirty: true });
       }
     } 
-    // If multiple events, ensure exactly one is selected. If none is, select the first one.
+    // 3. If multiple events, ensure exactly one is selected. If none is, select the first one.
     else {
       const hasMain = watchedEvents.some(e => String(e?.isMainEvent) === "true");
       if (!hasMain) {
@@ -85,16 +109,16 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                   render={({ field }) => (
                     <>
                       <div className="hidden md:block">
-                        <Select {...field}>
+                        <Select {...field} data-first-field="true">
                           <option value="">Select Event...</option>
                           {EVENT_NAME_OPTIONS.map((opt) => (
                             <option key={opt} value={opt}>
-                              {opt}
+                              {opt === "Custom" ? "Custom (add your own)" : opt}
                             </option>
                           ))}
                         </Select>
                       </div>
-                      <div className="md:hidden">
+                      <div className="md:hidden" data-first-field-container="true">
                         <MobileSheetSelect
                           value={field.value}
                           onChange={field.onChange}
@@ -107,7 +131,7 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
                 />
               </FieldWrapper>
 
-              {watchedEvents?.[index]?.name === "Other" && (
+              {(watchedEvents?.[index]?.name === "Custom" || watchedEvents?.[index]?.name === "Other") && (
                 <FieldWrapper
                   label={<>Custom Event Name <span className="text-red-500">*</span></>}
                   error={errors.events?.[index]?.customName?.message}
@@ -195,34 +219,107 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
               </FieldWrapper>
             </div>
 
-            <FieldWrapper
-              label="Venue Name & Location"
-              error={errors.events?.[index]?.venue?.message}
-            >
-              <LocationInput
-                {...register(`events.${index}.venue`, { required: "Required" })}
-                placeholder="Search venue on Google Maps..."
-                onPlaceSelected={(address, url) => {
-                  setValue(`events.${index}.venue`, address, { shouldValidate: true });
-                  setValue(`events.${index}.mapsLink`, url, { shouldValidate: true });
-                }}
-              />
-            </FieldWrapper>
+            <div className="space-y-3">
+              <label className="text-[14px] font-bold text-[#1A202C] block">
+                Venue & Location <span className="text-red-500">*</span>
+              </label>
 
-            <input type="hidden" {...register(`events.${index}.mapsLink`)} />
-            {watchedEvents?.[index]?.mapsLink && (
-              <div className="flex flex-col gap-1.5 mt-2 max-w-full overflow-hidden">
-                <span className="text-[14px] font-medium text-[#1A202C]">Google Maps Link</span>
-                <a 
-                  href={watchedEvents[index].mapsLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[14px] text-[#4a148c] hover:text-[#2e1065] underline truncate block w-full"
+              {/* Segmented Toggle Bar */}
+              <div className="p-1 bg-gray-100/80 rounded-xl flex items-center gap-1 border border-gray-200/60 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (watchedEvents?.[index]?.venue?.trim() === "At Residence") {
+                      setValue(`events.${index}.venue`, "", { shouldValidate: true, shouldDirty: true });
+                    }
+                  }}
+                  className={clsx(
+                    "flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                    watchedEvents?.[index]?.venue?.trim() !== "At Residence"
+                      ? "bg-white text-[#2e1065] shadow-sm border border-gray-200/50"
+                      : "text-gray-500 hover:text-gray-900"
+                  )}
                 >
-                  {watchedEvents[index].mapsLink}
-                </a>
+                  <MapPin size={14} className={watchedEvents?.[index]?.venue?.trim() !== "At Residence" ? "text-[#9d174d]" : "text-gray-400"} />
+                  <span>Hotel / Banquet Venue</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue(`events.${index}.venue`, "At Residence", { shouldValidate: true, shouldDirty: true });
+                  }}
+                  className={clsx(
+                    "flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                    watchedEvents?.[index]?.venue?.trim() === "At Residence"
+                      ? "bg-gradient-to-r from-[#2e1065] to-[#4a148c] text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-900"
+                  )}
+                >
+                  <span>🏠</span>
+                  <span>At Residence (Home)</span>
+                </button>
               </div>
-            )}
+
+              {watchedEvents?.[index]?.venue?.trim() === "At Residence" ? (
+                <div className="p-4 bg-gradient-to-br from-purple-50/60 to-pink-50/30 border border-purple-200/60 rounded-xl space-y-3 shadow-sm">
+                  <div className="flex items-center gap-2 pb-2.5 border-b border-purple-100">
+                    <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+                    <p className="text-xs text-[#2e1065] font-medium leading-relaxed">
+                      Venue will appear as <strong className="font-bold text-[#9d174d]">"At Residence"</strong> on your digital invite.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-[12px] font-bold text-gray-700 block mb-1">
+                      Home Address <span className="text-gray-400 font-normal">(Optional — shown on card)</span>
+                    </label>
+                    <Input
+                      {...register(`events.${index}.notes`)}
+                      placeholder="e.g. 42, Park Avenue, Opp. City Mall, Jaipur"
+                      className="text-sm bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[12px] font-bold text-gray-700 block mb-1">
+                      Google Maps Link <span className="text-gray-400 font-normal">(Optional — for 1-tap navigation)</span>
+                    </label>
+                    <Input
+                      {...register(`events.${index}.mapsLink`)}
+                      placeholder="https://maps.app.goo.gl/..."
+                      className="text-sm font-mono bg-white"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <FieldWrapper error={errors.events?.[index]?.venue?.message}>
+                  <LocationInput
+                    {...register(`events.${index}.venue`, { required: "Required" })}
+                    placeholder="Search venue or hotel on Google Maps..."
+                    onPlaceSelected={(address, url) => {
+                      setValue(`events.${index}.venue`, address, { shouldValidate: true });
+                      setValue(`events.${index}.mapsLink`, url, { shouldValidate: true });
+                    }}
+                  />
+                </FieldWrapper>
+              )}
+
+              <input type="hidden" {...register(`events.${index}.mapsLink`)} />
+              {watchedEvents?.[index]?.mapsLink && watchedEvents?.[index]?.venue?.trim() !== "At Residence" && (
+                <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-purple-50/60 rounded-lg border border-purple-100 text-xs">
+                  <span className="text-emerald-600 font-bold">✓ Map Attached:</span>
+                  <a 
+                    href={watchedEvents[index].mapsLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#4a148c] hover:underline font-mono truncate flex-1"
+                  >
+                    {watchedEvents[index].mapsLink}
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -230,13 +327,47 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
       <button
         type="button"
         onClick={() => {
-          append({ name: "", customName: "", isMainEvent: fields.length === 0, date: "", time: "", venue: "", mapsLink: "", dressCode: "", notes: "" });
-          setTimeout(() => {
-            const elements = document.querySelectorAll('.event-card');
-            if (elements.length > 0) {
-              elements[elements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }, 100);
+          // 1. Immediately blur any active focused input to dismiss the mobile keyboard
+          if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+
+          // 2. Append new event with shouldFocus: false to prevent react-hook-form from auto-focusing the venue input!
+          append(
+            {
+              name: "",
+              customName: "",
+              isMainEvent: false,
+              date: "",
+              time: "",
+              venue: "",
+              mapsLink: "",
+              dressCode: "",
+              notes: "",
+            },
+            { shouldFocus: false }
+          );
+
+          // 3. Scroll smoothly to the START of the new card with fixed header clearance
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              const elements = document.querySelectorAll('.event-card');
+              if (elements.length > 0) {
+                const newCard = elements[elements.length - 1] as HTMLElement;
+                const headerOffset = 75;
+                const cardTop = newCard.getBoundingClientRect().top + window.pageYOffset;
+                window.scrollTo({
+                  top: Math.max(0, cardTop - headerOffset),
+                  behavior: 'smooth',
+                });
+
+                // Ensure mobile keyboard remains closed
+                if (document.activeElement instanceof HTMLElement && document.activeElement.tagName === "INPUT") {
+                  document.activeElement.blur();
+                }
+              }
+            }, 120);
+          });
         }}
         className="flex items-center gap-2 bg-transparent border border-[#4a148c] text-[#4a148c] font-semibold text-[14px] hover:bg-purple-50 rounded-xl px-5 h-[44px] transition-all w-full justify-center"
       >
@@ -263,8 +394,9 @@ export default function Step2Events({ register, errors, control, setValue }: Pro
               }}
             >
               {fields.map((field, index) => {
-                const eventName = watchedEvents?.[index]?.name === "Other" 
-                  ? (watchedEvents?.[index]?.customName || `Event ${index + 1}`)
+                const isCustom = watchedEvents?.[index]?.name === "Custom" || watchedEvents?.[index]?.name === "Other";
+                const eventName = isCustom
+                  ? (watchedEvents?.[index]?.customName || `Custom (add your own)`)
                   : (watchedEvents?.[index]?.name || `Event ${index + 1}`);
                 return (
                   <option key={`main-event-select-${field.id}`} value={index}>

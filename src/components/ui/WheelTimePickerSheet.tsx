@@ -14,14 +14,6 @@ interface Props {
   initialTime?: string; // e.g. "19:30" or "07:30 PM"
 }
 
-const CEREMONY_PRESETS = [
-  { label: "10:00 AM", h: "10", m: "00", p: "AM" as const },
-  { label: "01:00 PM", h: "01", m: "00", p: "PM" as const },
-  { label: "04:30 PM", h: "04", m: "30", p: "PM" as const },
-  { label: "07:00 PM", h: "07", m: "00", p: "PM" as const },
-  { label: "08:00 PM", h: "08", m: "00", p: "PM" as const },
-];
-
 export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }: Props) {
   const [hour, setHour] = useState("07");
   const [minute, setMinute] = useState("00");
@@ -45,12 +37,6 @@ export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }:
     onClose();
   };
 
-  const handlePresetSelect = (preset: typeof CEREMONY_PRESETS[number]) => {
-    setHour(preset.h);
-    setMinute(preset.m);
-    setPeriod(preset.p);
-  };
-
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Select Event Time">
       <div className="flex flex-col items-center w-full max-w-sm mx-auto pt-1 pb-4 px-2">
@@ -64,28 +50,6 @@ export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }:
             </span>
           </div>
           <p className="text-[11px] text-gray-500 mt-1 font-medium">12-hour format with AM / PM</p>
-        </div>
-
-        {/* Quick ceremony presets */}
-        <div className="w-full flex items-center justify-center gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
-          {CEREMONY_PRESETS.map((preset) => {
-            const isMatch = hour === preset.h && minute === preset.m && period === preset.p;
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => handlePresetSelect(preset)}
-                className={clsx(
-                  "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer",
-                  isMatch
-                    ? "bg-[#2e1065] text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                )}
-              >
-                {preset.label}
-              </button>
-            );
-          })}
         </div>
 
         {/* Interactive Wheels + AM/PM selection container */}

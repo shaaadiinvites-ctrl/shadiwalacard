@@ -1101,7 +1101,7 @@ function CartPageContent() {
                 </button>
 
                 <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', margin: '0 0 8px' }}>
-                  Verify Your Phone Number
+                  Enter OTP
                 </h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', margin: '0 0 6px', lineHeight: 1.5 }}>
                   Enter the 6-digit code sent to <strong style={{ color: '#FFFFFF' }}>{countryCode} {phone}</strong>

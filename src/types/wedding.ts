@@ -16,9 +16,11 @@ export const EVENT_NAME_OPTIONS = [
   "Haldi",
   "Mehendi",
   "Sangeet",
+  "Sehra Bandi",
   "Shaadi",
+  "Doli / Bidaai",
   "Reception",
-  "Other"
+  "Custom"
 ] as const;
 
 export interface WeddingFormData {

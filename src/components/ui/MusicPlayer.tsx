@@ -14,32 +14,42 @@ export function MusicPlayer() {
       audioRef.current.volume = 0.5; // Set volume to 50%
     }
 
-    const handleFirstTouch = () => {
-      // If user already paused manually or it already started, do nothing
+    // Attempt immediate play on mount (works on desktop Chrome/Edge/Firefox with prior user engagement)
+    if (audioRef.current && !hasStartedOnce.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        hasStartedOnce.current = true;
+      }).catch(() => {
+        // Autoplay blocked by browser policy without user gesture; listener will unlock it on first gesture
+      });
+    }
+
+    const handleFirstGesture = () => {
       if (hasStartedOnce.current || !audioRef.current) return;
 
       audioRef.current.play().then(() => {
         setIsPlaying(true);
         hasStartedOnce.current = true;
         
-        // Only remove listeners after successful playback
-        window.removeEventListener("touchstart", handleFirstTouch);
-        window.removeEventListener("click", handleFirstTouch);
-        window.removeEventListener("touchend", handleFirstTouch);
+        window.removeEventListener("touchstart", handleFirstGesture);
+        window.removeEventListener("click", handleFirstGesture);
+        window.removeEventListener("pointerdown", handleFirstGesture);
+        window.removeEventListener("scroll", handleFirstGesture);
       }).catch(() => {
-        // Playback blocked, keep the listeners active to try again on next touch/click
+        // Playback still blocked, wait for next gesture
       });
     };
 
-    // Try to catch the first touch anywhere on the screen
-    window.addEventListener("touchstart", handleFirstTouch, { passive: true });
-    window.addEventListener("touchend", handleFirstTouch, { passive: true });
-    window.addEventListener("click", handleFirstTouch, { passive: true });
+    window.addEventListener("touchstart", handleFirstGesture, { passive: true });
+    window.addEventListener("pointerdown", handleFirstGesture, { passive: true });
+    window.addEventListener("click", handleFirstGesture, { passive: true });
+    window.addEventListener("scroll", handleFirstGesture, { passive: true, once: true });
 
     return () => {
-      window.removeEventListener("touchstart", handleFirstTouch);
-      window.removeEventListener("touchend", handleFirstTouch);
-      window.removeEventListener("click", handleFirstTouch);
+      window.removeEventListener("touchstart", handleFirstGesture);
+      window.removeEventListener("pointerdown", handleFirstGesture);
+      window.removeEventListener("click", handleFirstGesture);
+      window.removeEventListener("scroll", handleFirstGesture);
     };
   }, []);
 

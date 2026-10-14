@@ -404,6 +404,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Dispatch live website link to customer's WhatsApp (best-effort)
+    const customerPhone = body.contactNumber || paymentOrder?.customer_phone;
+    if (customerPhone) {
+      try {
+        const { sendWhatsAppInviteReady } = await import("@/lib/whatsapp");
+        await sendWhatsAppInviteReady({
+          phone: customerPhone,
+          coupleNames: `${body.groomName} & ${body.brideName}`,
+          siteUrl,
+          editUrl,
+          templateName: template.name,
+        });
+      } catch (err) {
+        console.error("WhatsApp live site dispatch threw:", err);
+      }
+    }
+
     return NextResponse.json(
       { success: true, slug: data.slug, id: data.id, editUrl, siteUrl },
       { status: 201 }

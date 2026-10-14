@@ -55,9 +55,15 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
                         {wedding?.rsvp1_name || (!wedding ? "Mr. & Mrs. Sharma" : "Family")}
                       </p>
                       {(wedding?.rsvp1_phone || (!wedding)) && (
-                        <p className="font-lora text-[#FFD98A]/80 text-xs md:text-sm transition-colors duration-300 hover:text-white cursor-pointer">
-                          {wedding?.rsvp1_phone || (!wedding ? "+91 98765 43210" : "")}
-                        </p>
+                        <a 
+                          href={wedding?.rsvp1_phone ? `tel:${wedding.rsvp1_phone.replace(/\s+/g, '')}` : "tel:+919876543210"}
+                          className="font-lora text-[#FFD98A] hover:text-white text-xs md:text-sm transition-colors duration-300 inline-flex items-center gap-1.5 cursor-pointer no-underline group"
+                        >
+                          <svg className="w-3.5 h-3.5 text-[#FFD98A]/80 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <span>{wedding?.rsvp1_phone || (!wedding ? "+91 98765 43210" : "")}</span>
+                        </a>
                       )}
                     </div>
                   )}
@@ -68,9 +74,15 @@ export function FooterSection({ wedding }: { wedding?: WeddingRecord }) {
                         {wedding?.rsvp2_name || (!wedding ? "The Verma Family" : "")}
                       </p>
                       {(wedding?.rsvp2_phone || (!wedding)) && (
-                        <p className="font-lora text-[#FFD98A]/80 text-xs md:text-sm transition-colors duration-300 hover:text-white cursor-pointer">
-                          {wedding?.rsvp2_phone || (!wedding ? "+91 87654 32109" : "")}
-                        </p>
+                        <a 
+                          href={wedding?.rsvp2_phone ? `tel:${wedding.rsvp2_phone.replace(/\s+/g, '')}` : "tel:+918765432109"}
+                          className="font-lora text-[#FFD98A] hover:text-white text-xs md:text-sm transition-colors duration-300 inline-flex items-center gap-1.5 cursor-pointer no-underline group"
+                        >
+                          <svg className="w-3.5 h-3.5 text-[#FFD98A]/80 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <span>{wedding?.rsvp2_phone || (!wedding ? "+91 87654 32109" : "")}</span>
+                        </a>
                       )}
                     </div>
                   )}

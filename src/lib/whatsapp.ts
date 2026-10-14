@@ -180,15 +180,15 @@ export async function sendWhatsAppOrderConfirmation({
   const recipient = formatWhatsAppRecipient(phone);
 
   try {
-    // Primary: Pure UTILITY order confirmation message (free/standard tier approved by Meta)
-    // Fallback: Celebratory message
+    // Dispatch official Meta-approved template
     const templateCandidates = [
-      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
       { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
+      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
     ];
 
-    let res: any = null;
+    const cleanParam = templateName.replace(/\s+invitation$/i, "").trim();
     let templateSent = false;
+    let res: any = null;
 
     for (const cand of templateCandidates) {
       const payload = {
@@ -203,7 +203,7 @@ export async function sendWhatsAppOrderConfirmation({
             {
               type: "body",
               parameters: [
-                { type: "text", text: templateName },
+                { type: "text", text: cleanParam },
                 { type: "text", text: customizeUrl },
               ],
             },
@@ -225,11 +225,9 @@ export async function sendWhatsAppOrderConfirmation({
         break;
       }
 
-      // If template not found or pending approval (code 132001), try next candidate
       if (res.data?.error?.code === 132001) {
         continue;
       } else {
-        // Break early on other non-template errors (e.g. invalid phone number)
         break;
       }
     }
@@ -260,7 +258,7 @@ export async function sendWhatsAppOrderConfirmation({
         );
       } else {
         console.warn(
-          "⏳ WhatsApp templates ('shadiwalacard_order_ready_v1' & 'shadiwalacard_order_confirmed_v1') are currently under Meta review (PENDING). Meta restricts sending unapproved templates from real registered numbers."
+          "⏳ WhatsApp templates ('shadiwalacard_order_confirmed_v1' & 'shadiwalacard_order_ready_v1') are currently under Meta review (PENDING)."
         );
       }
     }
@@ -275,6 +273,112 @@ export async function sendWhatsAppOrderConfirmation({
 
     console.log(
       `✅ WhatsApp order confirmation sent successfully to ${recipient} (Message ID: ${res.data?.messages?.[0]?.id})`
+    );
+    return { success: true, data: res.data };
+  } catch (err: any) {
+    console.error("❌ WhatsApp dispatch exception:", err.message || err);
+    return { success: false, error: err.message || "Network exception during WhatsApp dispatch" };
+  }
+}
+
+export interface SendWhatsAppInviteReadyParams {
+  phone: string;
+  coupleNames?: string;
+  siteUrl: string;
+  editUrl?: string;
+  templateName?: string;
+}
+
+/**
+ * Dispatches the live invitation announcement to the customer when the wedding form is submitted.
+ */
+export async function sendWhatsAppInviteReady({
+  phone,
+  coupleNames,
+  siteUrl,
+  editUrl,
+  templateName = "Your Wedding Invitation",
+}: SendWhatsAppInviteReadyParams): Promise<{ success: boolean; data?: any; error?: string }> {
+  const rawPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1252193697984713";
+  const rawToken = process.env.WHATSAPP_ACCESS_TOKEN;
+
+  const phoneId = rawPhoneId?.replace(/^["']|["']$/g, "").trim();
+  const token = rawToken?.replace(/^["']|["']$/g, "").trim();
+
+  if (!phoneId || !token) {
+    console.warn("⚠️ WhatsApp delivery skipped: WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN missing.");
+    return { success: false, error: "WhatsApp credentials not configured" };
+  }
+
+  const recipient = formatWhatsAppRecipient(phone);
+  const displayName = coupleNames?.trim() || "Couple";
+  // Meta approved template body has: "Hello, your {{1}} invitation order has been confirmed."
+  // We format {{1}} as "Rahul & Priya's Wedding" so it reads "Rahul & Priya's Wedding invitation order..."
+  const rawTitle = coupleNames?.trim() ? `${coupleNames.trim()}'s Wedding` : templateName;
+  const cleanTemplateParam = rawTitle.replace(/\s+invitation$/i, "").trim();
+
+  try {
+    // Dispatch official Meta-approved template
+    const templateCandidates = [
+      { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
+      { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
+    ];
+
+    let templateSent = false;
+    let res: any = null;
+
+    for (const cand of templateCandidates) {
+      const payload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: recipient,
+        type: "template",
+        template: {
+          name: cand.name,
+          language: { code: cand.lang },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: cleanTemplateParam },
+                { type: "text", text: siteUrl },
+              ],
+            },
+          ],
+        },
+      };
+
+      res = await postJson(
+        `https://graph.facebook.com/v20.0/${phoneId}/messages`,
+        {
+          Authorization: `Bearer ${token}`,
+        },
+        payload,
+        8000
+      );
+
+      if (res.ok) {
+        templateSent = true;
+        break;
+      }
+
+      if (res.data?.error?.code === 132001) {
+        continue;
+      } else {
+        break;
+      }
+    }
+
+    if (!res.ok) {
+      console.error("❌ WhatsApp Meta Cloud API Error:", JSON.stringify(res.data, null, 2));
+      return {
+        success: false,
+        error: res.data?.error?.message || "Failed to send WhatsApp message",
+      };
+    }
+
+    console.log(
+      `✅ WhatsApp invite-ready message sent successfully to ${recipient} (Message ID: ${res.data?.messages?.[0]?.id})`
     );
     return { success: true, data: res.data };
   } catch (err: any) {

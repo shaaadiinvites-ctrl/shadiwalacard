@@ -98,34 +98,36 @@ export default function Step3Media({ register, errors, watch, setValue, existing
       );
     }
 
+    const existingCount = existingGalleryUrls?.length || 0;
+    const currentNewFiles = galleryImages ? Array.from(galleryImages).filter(f => f.size <= MAX_FILE_SIZE) : [];
+    const availableSlots = Math.max(0, MAX_PHOTOS - existingCount - currentNewFiles.length);
+
+    if (availableSlots <= 0) {
+      setFileWarning(`You have already selected all ${MAX_PHOTOS} photos. Please delete an existing photo below to upload a different one.`);
+      e.target.value = "";
+      return;
+    }
+
+    if (validIncoming.length > availableSlots) {
+      setFileWarning(`Limit reached: You selected ${validIncoming.length} photos, but only ${availableSlots} slot${availableSlots > 1 ? "s were" : " was"} remaining. The first ${availableSlots} photo${availableSlots > 1 ? "s were" : ""} kept (max ${MAX_PHOTOS} photos total).`);
+    }
+
     const dt = new DataTransfer();
     // Keep already selected valid files
-    if (galleryImages) {
-      Array.from(galleryImages).forEach((file) => {
-        if (file.size <= MAX_FILE_SIZE) {
-          dt.items.add(file);
-        }
-      });
-    }
+    currentNewFiles.forEach((file) => dt.items.add(file));
 
-    // Add new valid files
-    validIncoming.forEach((file) => dt.items.add(file));
+    // Add new files up to available slots
+    const filesToAdd = validIncoming.slice(0, availableSlots);
+    filesToAdd.forEach((file) => dt.items.add(file));
 
-    // Limit to MAX_PHOTOS (6)
-    if (dt.items.length > MAX_PHOTOS) {
-      setFileWarning(`You can upload a maximum of ${MAX_PHOTOS} gallery images. The first ${MAX_PHOTOS} photos were kept.`);
-      const cappedDt = new DataTransfer();
-      for (let i = 0; i < MAX_PHOTOS; i++) {
-        cappedDt.items.add(dt.items[i].getAsFile()!);
-      }
-      setValue("galleryImages", cappedDt.files, { shouldValidate: true, shouldDirty: true });
-    } else {
-      setValue("galleryImages", dt.files, { shouldValidate: true, shouldDirty: true });
-    }
+    setValue("galleryImages", dt.files, { shouldValidate: true, shouldDirty: true });
 
     // Reset input value to allow re-selecting same file if needed
     e.target.value = "";
   };
+
+  const totalPhotos = (existingGalleryUrls?.length || 0) + previews.length;
+  const isLimitReached = totalPhotos >= MAX_PHOTOS;
 
   return (
     <div className="space-y-6">
@@ -134,24 +136,54 @@ export default function Step3Media({ register, errors, watch, setValue, existing
         <p className="text-[14px] font-normal text-gray-500">Share your romantic story and the visuals that tell it.</p>
       </div>
 
-      <FieldWrapper
-        label="Gallery Images"
-        hint="Select up to 6 photos (Supported formats: JPG, JPEG, PNG • Maximum 4MB per photo) — these appear in your gallery section"
-        error={undefined}
-      >
-        <input
-          {...(() => {
-            const { onChange, ...rest } = register("galleryImages");
-            return {
-              ...rest,
-              onChange: handleFileChange,
-            };
-          })()}
-          type="file"
-          accept="image/jpeg, image/png, image/webp"
-          multiple
-          className="block w-full text-[14px] font-medium text-[#1A202C] file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[14px] file:font-semibold file:bg-purple-50 file:text-[#4a148c] hover:file:bg-purple-100 cursor-pointer border border-gray-300 rounded-xl bg-white p-1 shadow-sm transition"
-        />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <label className="text-[15px] font-bold text-[#1A202C] flex items-center gap-2">
+            <span>Gallery Images</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-100 text-[#4a148c]">
+              Max {MAX_PHOTOS} Photos
+            </span>
+          </label>
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full font-mono ${
+            totalPhotos === 0
+              ? "bg-gray-100 text-gray-600"
+              : isLimitReached
+              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+              : "bg-purple-50 text-[#4a148c] border border-purple-200"
+          }`}>
+            {totalPhotos} / {MAX_PHOTOS} Photos Selected
+          </span>
+        </div>
+
+        {/* Prominent beforehand limit card */}
+        <div className="p-3.5 rounded-xl bg-gradient-to-r from-purple-50/70 to-pink-50/50 border border-purple-100 text-xs text-gray-700 space-y-1">
+          <p className="font-bold text-[#2e1065] flex items-center gap-1.5">
+            <span>📸</span> Gallery limit: Maximum 6 photos
+          </p>
+          <p className="text-gray-500 leading-relaxed">
+            Your 3D royal invitation card displays up to 6 photos in the gallery. Supported formats: JPG, JPEG, PNG (max 4MB per photo).
+          </p>
+        </div>
+
+        {isLimitReached ? (
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-sm">
+            <span>✓ All 6 photo slots are full. To change photos, click ✕ on any photo below.</span>
+          </div>
+        ) : (
+          <input
+            {...(() => {
+              const { onChange, ...rest } = register("galleryImages");
+              return {
+                ...rest,
+                onChange: handleFileChange,
+              };
+            })()}
+            type="file"
+            accept="image/jpeg, image/png, image/webp"
+            multiple
+            className="block w-full text-[14px] font-medium text-[#1A202C] file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[14px] file:font-semibold file:bg-purple-50 file:text-[#4a148c] hover:file:bg-purple-100 cursor-pointer border border-gray-300 rounded-xl bg-white p-1 shadow-sm transition"
+          />
+        )}
 
         {/* Immediate In-Page 4MB File Size Error Banner */}
         {fileError && (
@@ -248,7 +280,7 @@ export default function Step3Media({ register, errors, watch, setValue, existing
             ))}
           </div>
         )}
-      </FieldWrapper>
+      </div>
 
       {/* Love Story Textarea */}
       <FieldWrapper

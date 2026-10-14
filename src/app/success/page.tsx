@@ -252,8 +252,8 @@ export default async function SuccessPage({ searchParams }: Props) {
             <SuccessLinkActions formUrl={formUrl} phone={p} />
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+          {/* Action Buttons (Visible only on Desktop; on Mobile they are fixed on screen bottom) */}
+          <div className="hidden sm:flex" style={{ flexDirection: 'column', gap: 10, width: '100%' }}>
             <Link
               href={formUrl}
               className="sf-btn-primary"
@@ -265,7 +265,7 @@ export default async function SuccessPage({ searchParams }: Props) {
                 boxShadow: '0 8px 24px rgba(255, 255, 255, 0.15)'
               }}
             >
-              <span>Start Customizing Now</span>
+              <span>Customize Now</span>
               <svg style={{ width: 18, height: 18 }} viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
@@ -282,7 +282,7 @@ export default async function SuccessPage({ searchParams }: Props) {
                 fontSize: '0.813rem', fontWeight: 600, textDecoration: 'none'
               }}
             >
-              I'll customize later
+              I will do it later
             </Link>
           </div>
 
@@ -305,13 +305,74 @@ export default async function SuccessPage({ searchParams }: Props) {
         sig={sig || ""}
       />
 
-      {/* ── Footer ── */}
-      <div className="sf-success-fade-3" style={{ position: 'relative', zIndex: 1, marginTop: 36, textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)' }}>
-        <span>Questions? Contact us at </span>
-        <a href="mailto:hello@shadiwalacard.com" style={{ color: 'rgba(255, 255, 255, 0.7)', textDecoration: 'underline' }}>
-          hello@shadiwalacard.com
-        </a>
+      {/* ── Fixed Floating Bottom Actions on Mobile ── */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: 'rgba(10, 10, 14, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+          padding: '12px 16px',
+          boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}
+        className="sm:hidden"
+      >
+        <Link
+          href={formUrl}
+          className="sf-btn-primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            width: '100%',
+            height: 48,
+            borderRadius: 14,
+            background: '#FFFFFF',
+            color: '#050505',
+            fontSize: '0.938rem',
+            fontWeight: 700,
+            textDecoration: 'none',
+            boxShadow: '0 4px 20px rgba(255, 255, 255, 0.2)'
+          }}
+        >
+          <span>Customize Now</span>
+          <svg style={{ width: 18, height: 18 }} viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </Link>
+        <Link
+          href="/"
+          className="sf-btn-secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: 38,
+            borderRadius: 12,
+            background: 'rgba(255, 255, 255, 0.06)',
+            color: 'rgba(255, 255, 255, 0.8)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            fontSize: '0.813rem',
+            fontWeight: 600,
+            textDecoration: 'none'
+          }}
+        >
+          I will do it later
+        </Link>
       </div>
+
+      {/* Mobile Bottom Spacing so content is not cut off */}
+      <div className="h-28 sm:hidden" />
     </div>
   );
 }

@@ -108,11 +108,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (email) {
+    let customerEmail = email ? email.trim().toLowerCase() : "";
+
+    // If email was not passed by client, fetch it directly from Razorpay payment details
+    if (!customerEmail && razorpay_payment_id && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+      try {
+        const authHeader = Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
+        const rzpRes = await fetch(`https://api.razorpay.com/v1/payments/${razorpay_payment_id}`, {
+          headers: { Authorization: `Basic ${authHeader}` },
+        });
+        if (rzpRes.ok) {
+          const paymentData = await rzpRes.json();
+          if (paymentData.email) {
+            customerEmail = paymentData.email.trim().toLowerCase();
+          }
+        }
+      } catch (err) {
+        console.error("verify-payment: could not fetch customer email from Razorpay:", err);
+      }
+    }
+
+    if (customerEmail) {
       dispatchTasks.push(
         (async () => {
           const { sendSetupLinkEmail } = await import("@/lib/email");
-          return sendSetupLinkEmail(email, setupUrl);
+          return sendSetupLinkEmail(customerEmail, setupUrl);
         })().catch((err) => console.error("Email dispatch error:", err))
       );
     }

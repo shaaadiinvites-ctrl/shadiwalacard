@@ -194,7 +194,7 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
             rawDate: e.date,
             timeFormatted: formatTime12(e.time),
             venueName: e.venue || "",
-            venueAddress: "",
+            venueAddress: e.notes || "",
             mapLink: e.mapsLink || "",
             theme,
             icon
@@ -411,24 +411,43 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
                       </div>
 
                       {/* Google Maps Directions Action Button */}
-                      <div className="flex justify-center relative z-10 mt-auto pt-2">
-                        <a
-                          href={ceremony.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ceremony.venueName)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center justify-center min-h-[46px] w-full max-w-[280px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_18px_rgba(200,145,42,0.4)] transition-all hover:scale-105 active:scale-95 hover:shadow-[0_6px_22px_rgba(200,145,42,0.6)]"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 shrink-0">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          <span>{t("getDirections", language)}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 shrink-0">
-                            <line x1="5" y1="19" x2="19" y2="5"></line>
-                            <polyline points="9 5 19 5 19 15"></polyline>
-                          </svg>
-                        </a>
-                      </div>
+                      {(() => {
+                        const isAtResidence =
+                          ceremony.venueName?.trim().toLowerCase().startsWith("at residence") ||
+                          ceremony.venueName?.trim().toLowerCase() === "residence";
+                        const effectiveMapLink = ceremony.mapLink?.trim()
+                          ? ceremony.mapLink.trim()
+                          : !isAtResidence && ceremony.venueName?.trim()
+                            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                ceremony.venueAddress
+                                  ? `${ceremony.venueName}, ${ceremony.venueAddress}`
+                                  : ceremony.venueName
+                              )}`
+                            : "";
+
+                        if (!effectiveMapLink) return null;
+
+                        return (
+                          <div className="flex justify-center relative z-10 mt-auto pt-2">
+                            <a
+                              href={effectiveMapLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center min-h-[46px] w-full max-w-[280px] px-6 rounded-full bg-gradient-to-br from-[#FFE8AC] via-[#E7B75F] to-[#C8912A] border border-[#FFF2C6] font-montserrat font-bold text-xs tracking-[1.5px] text-[#061622] shadow-[0_4px_18px_rgba(200,145,42,0.4)] transition-all hover:scale-105 active:scale-95 hover:shadow-[0_6px_22px_rgba(200,145,42,0.6)]"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 shrink-0">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                              </svg>
+                              <span>{t("getDirections", language)}</span>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 shrink-0">
+                                <line x1="5" y1="19" x2="19" y2="5"></line>
+                                <polyline points="9 5 19 5 19 15"></polyline>
+                              </svg>
+                            </a>
+                          </div>
+                        );
+                      })()}
                     </article>
                   </motion.div>
                 ))}

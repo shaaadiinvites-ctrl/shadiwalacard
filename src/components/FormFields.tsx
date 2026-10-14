@@ -81,7 +81,7 @@ Textarea.displayName = "Textarea";
 
 // ── FieldWrapper ─────────────────────────────────────────────────────────────
 interface FieldWrapperProps {
-  label: React.ReactNode;
+  label?: React.ReactNode;
   hint?: string;
   error?: string;
   children: React.ReactNode;
@@ -90,7 +90,7 @@ interface FieldWrapperProps {
 export function FieldWrapper({ label, hint, error, children }: FieldWrapperProps) {
   return (
     <div className="w-full min-w-0">
-      <label className="block text-[14px] font-medium text-[#1A202C] mb-1">{label}</label>
+      {label && <label className="block text-[14px] font-medium text-[#1A202C] mb-1">{label}</label>}
       {hint && <p className="text-[12px] text-gray-500 font-normal mb-1">{hint}</p>}
       <div className="w-full">{children}</div>
       {error && <p className="text-[12px] font-medium text-rose-600 mt-1">{error}</p>}
