@@ -97,7 +97,7 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
         <span style={{ fontSize: "0.8rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>
           {wedding.groom_name.split(" ")[0]} / {wedding.bride_name.split(" ")[0]}
         </span>
-        {wedding.hashtag && <span style={{ color: MUTE, fontSize: "0.75rem" }}>{wedding.hashtag}</span>}
+        {wedding.hashtag?.trim() && <span style={{ color: MUTE, fontSize: "0.75rem" }}>{wedding.hashtag.trim()}</span>}
       </nav>
 
       {/* Hero */}
@@ -254,9 +254,9 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
       <footer className="py-16 px-6 text-center" style={{ background: INK }}>
         <h2 style={{ color: "white", fontSize: "clamp(1.5rem,4vw,2.25rem)", fontWeight: 300 }}>{wedding.groom_name} &amp; {wedding.bride_name}</h2>
         {firstDate && <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", marginTop: "0.75rem" }}>{fmtDate(firstDate)}</p>}
-        {wedding.hashtag && (
+        {wedding.hashtag?.trim() && (
           <p className="inline-flex items-center gap-2 mt-6" style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}>
-            <Instagram className="w-3.5 h-3.5" /> {wedding.hashtag}
+            <Instagram className="w-3.5 h-3.5" /> {wedding.hashtag.trim()}
           </p>
         )}
       </footer>

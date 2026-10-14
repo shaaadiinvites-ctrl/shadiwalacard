@@ -136,10 +136,10 @@ export default function FloralRomanceTemplate({ wedding }: Props) {
               ))}
             </div>
           )}
-          {wedding.hashtag && (
+          {wedding.hashtag?.trim() && (
             <div className="inline-flex items-center gap-2 mt-8 px-5 py-2 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }}>
               <Instagram className="w-3.5 h-3.5" style={{ color: "white" }} />
-              <span style={{ color: "white", fontSize: "0.85rem" }}>{wedding.hashtag}</span>
+              <span style={{ color: "white", fontSize: "0.85rem" }}>{wedding.hashtag.trim()}</span>
             </div>
           )}
         </div>

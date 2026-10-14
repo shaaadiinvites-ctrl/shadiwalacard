@@ -46,6 +46,7 @@ const demoWedding: WeddingRecord = {
   bride_name: "Kanika",
   groom_name: "Abhishek",
   name_order: "groom_first",
+  hashtag: "#AbhiKiKanika",
   bride_mother_name: "Sunita Sharma",
   bride_father_name: "Rajesh Sharma",
   groom_mother_name: "Meenakshi Verma",

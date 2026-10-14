@@ -136,7 +136,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-10 py-3 border-b"
         style={{ background: "rgba(253,248,240,0.88)", backdropFilter: "blur(12px)", borderColor: "rgba(201,168,76,0.2)" }}>
         <span style={{ fontFamily: "var(--font-display)", color: "#C9A84C", letterSpacing: "0.15em", fontSize: "0.95rem" }}>
-          ✦ {wedding.hashtag || `${firstName} & ${secondName}`}
+          ✦ {wedding.hashtag?.trim() || `${firstName} & ${secondName}`}
         </span>
         <div className="hidden md:flex gap-8" style={{ fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase" }}>
           {["Story", "Events", "Family", "Gifts"].map(s => (
@@ -231,11 +231,11 @@ export default function WeddingInvitePage({ wedding }: Props) {
             </div>
           )}
 
-          {wedding.hashtag && (
+          {wedding.hashtag?.trim() && (
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mx-auto"
               style={{ border: "1px solid rgba(201,168,76,0.5)", background: "rgba(0,0,0,0.25)", backdropFilter: "blur(6px)" }}>
               <Instagram className="w-3.5 h-3.5" style={{ color: "#C9A84C" }} />
-              <span style={{ fontFamily: "var(--font-body)", color: "rgba(255,255,255,0.85)", fontSize: "0.82rem", letterSpacing: "0.08em" }}>{wedding.hashtag}</span>
+              <span style={{ fontFamily: "var(--font-body)", color: "rgba(255,255,255,0.85)", fontSize: "0.82rem", letterSpacing: "0.08em" }}>{wedding.hashtag.trim()}</span>
             </div>
           )}
 
@@ -534,9 +534,9 @@ export default function WeddingInvitePage({ wedding }: Props) {
         <p style={{ fontFamily: "var(--font-display)", color: "rgba(255,255,255,0.35)", fontSize: "0.95rem", fontStyle: "italic", maxWidth: "36rem", margin: "0 auto" }}>
           "Two souls, one destiny. With the blessings of our families and the love of our friends."
         </p>
-        {wedding.hashtag && (
+        {wedding.hashtag?.trim() && (
           <p style={{ fontFamily: "var(--font-body)", color: "rgba(201,168,76,0.4)", fontSize: "0.68rem", letterSpacing: "0.45em", marginTop: "2.5rem" }}>
-            {wedding.hashtag}
+            {wedding.hashtag.trim()}
           </p>
         )}
       </footer>
