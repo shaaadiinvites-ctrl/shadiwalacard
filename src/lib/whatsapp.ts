@@ -320,8 +320,7 @@ export async function sendWhatsAppInviteReady({
   try {
     // Dispatch official Meta-approved template
     const templateCandidates = [
-      { name: "shadiwalacard_invite_live_v1", lang: "en_US" },
-      { name: "shadiwalacard_invite_live_v1", lang: "en" },
+      { name: "shadiwalacard_invite_live_v2", lang: "en_US" },
       { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
       { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
     ];
@@ -330,6 +329,18 @@ export async function sendWhatsAppInviteReady({
     let res: any = null;
 
     for (const cand of templateCandidates) {
+      const isLiveV2 = cand.name === "shadiwalacard_invite_live_v2";
+      const bodyParameters = isLiveV2
+        ? [
+            { type: "text", text: displayName },
+            { type: "text", text: siteUrl },
+            { type: "text", text: editUrl || siteUrl },
+          ]
+        : [
+            { type: "text", text: cleanTemplateParam },
+            { type: "text", text: siteUrl },
+          ];
+
       const payload = {
         messaging_product: "whatsapp",
         recipient_type: "individual",
@@ -341,10 +352,7 @@ export async function sendWhatsAppInviteReady({
           components: [
             {
               type: "body",
-              parameters: [
-                { type: "text", text: cleanTemplateParam },
-                { type: "text", text: siteUrl },
-              ],
+              parameters: bodyParameters,
             },
           ],
         },
