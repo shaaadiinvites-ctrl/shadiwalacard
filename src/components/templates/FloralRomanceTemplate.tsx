@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, Heart, Instagram, Play, Gift, Video, Sparkles } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
-import { formatTime12 } from "@/lib/utils";
+import { formatTime12, getEventDisplayName } from "@/lib/utils";
 
 /* ── Floral Romance template ───────────────────────────────────────────────
    Soft blush pastels, rounded cards, script accents for names, botanical
@@ -194,13 +194,15 @@ export default function FloralRomanceTemplate({ wedding }: Props) {
                     fontFamily: "var(--font-body)", fontSize: "0.8rem", cursor: "pointer", border: `1px solid ${PINK}`,
                     background: activeIdx === i ? PINK : "transparent", color: activeIdx === i ? "white" : PINK,
                   }}>
-                  {ev.name}
+                  {getEventDisplayName(ev, ev.name)}
                 </button>
               ))}
             </div>
             {active && (
               <Card>
-                <h3 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", color: INK, fontSize: "1.6rem", marginBottom: "1.25rem" }}>{active.name}</h3>
+                <h3 style={{ fontFamily: "var(--font-display)", fontStyle: "italic", color: INK, fontSize: "1.6rem", marginBottom: "1.25rem" }}>
+                  {getEventDisplayName(active, active.name)}
+                </h3>
                 {active.date && <Row label="Date" value={fmtDate(active.date)} />}
                 {active.time && <Row label="Time" value={fmtTime(active.time)} />}
                 {active.venue && <Row label="Venue" value={active.venue} />}

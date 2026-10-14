@@ -28,6 +28,7 @@ const LIMITS: Record<string, number> = {
 const MAX_EVENTS = 20;
 const EVENT_LIMITS: Record<string, number> = {
   name: 200,
+  customName: 200,
   date: 40,
   time: 40,
   venue: 300,

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { t } from "@/lib/i18n";
 import { WeddingRecord } from "@/types/wedding";
-import { formatTime12, timeTo24h } from "@/lib/utils";
+import { formatTime12, timeTo24h, getEventDisplayName } from "@/lib/utils";
 
 const sparkles = [
   { left: "15%", top: "20%", delay: "0s", duration: "2.5s", char: "✦" },
@@ -184,9 +184,7 @@ export function CeremonySection({ events, language }: { events: WeddingRecord["e
         })
         .map((e, idx) => {
           const { theme, icon } = getEventThemeAndIcon(e.name, e.customName, idx);
-          const title = (e.name === "Other" || e.name === "Others" || !e.name) 
-            ? (e.customName || "Special Event") 
-            : (e.name || "Wedding Event");
+          const title = getEventDisplayName(e, "Wedding Event");
 
           return {
             id: `event-${idx}`,

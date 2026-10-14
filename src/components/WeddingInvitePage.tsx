@@ -8,7 +8,7 @@ import {
   ChevronDown, Instagram, Play, Gift, Video, Users
 } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
-import { formatTime12 } from "@/lib/utils";
+import { formatTime12, getEventDisplayName } from "@/lib/utils";
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 // This component renders the "Royal Heritage" template.
@@ -107,7 +107,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
   const countdown = useCountdown(firstDate);
   
   const active = events[activeIdx] ?? null;
-  const activeDisplayName = active?.name === "Other" && active?.customName ? active.customName : active?.name;
+  const activeDisplayName = getEventDisplayName(active, active?.name || "Event");
 
   const heroImg = wedding.cover_photo_url
     ? wedding.cover_photo_url
@@ -379,7 +379,7 @@ export default function WeddingInvitePage({ wedding }: Props) {
             {events.length > 1 && (
               <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
                 {events.map((ev, i) => {
-                  const evDisplayName = ev.name === "Other" && ev.customName ? ev.customName : ev.name;
+                  const evDisplayName = getEventDisplayName(ev, ev.name);
                   return (
                     <button key={i} onClick={() => setActiveIdx(i)}
                       className="p-3 border text-center transition-all duration-200"

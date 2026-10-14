@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import TemplateRenderer from "@/components/templates/TemplateRenderer";
+import { getEventDisplayName } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -50,7 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   let eventSummary = "";
   if (mainEvent) {
-    if (mainEvent.name) eventSummary += `${mainEvent.name}`;
+    const mainEventTitle = getEventDisplayName(mainEvent, mainEvent.name || "Wedding");
+    if (mainEventTitle) eventSummary += `${mainEventTitle}`;
     if (mainEvent.date) eventSummary += ` on ${mainEvent.date}`;
     if (mainEvent.venue) eventSummary += ` at ${mainEvent.venue}`;
   }

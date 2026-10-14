@@ -104,3 +104,23 @@ export function parseTimeTo12h(timeStr?: string): { hour: string; minute: string
   return { hour: "07", minute: "00", period: "PM" };
 }
 
+/**
+ * Resolves the user-facing display title for any wedding event.
+ * If event name is "Custom", "Other", or empty, it uses the user-specified customName.
+ */
+export function getEventDisplayName(
+  event?: { name?: string; customName?: string } | null,
+  fallback = "Special Event"
+): string {
+  if (!event) return fallback;
+  const rawName = event.name?.trim() || "";
+  const rawCustom = event.customName?.trim() || "";
+  const isCustomType = rawName === "Custom" || rawName === "Other" || rawName === "Others" || !rawName;
+
+  if (isCustomType) {
+    return rawCustom || fallback;
+  }
+
+  return rawName || rawCustom || fallback;
+}
+

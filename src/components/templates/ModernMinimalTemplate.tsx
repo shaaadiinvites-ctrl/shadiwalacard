@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MapPin, ExternalLink, ArrowDown, Instagram, Play, Gift, Video, Users } from "lucide-react";
 import { WeddingRecord } from "@/types/wedding";
-import { formatTime12 } from "@/lib/utils";
+import { formatTime12, getEventDisplayName } from "@/lib/utils";
 
 /* ── Modern Minimal template ───────────────────────────────────────────────
    Editorial, monochrome, big whitespace, sans-serif everywhere. Deliberately
@@ -171,7 +171,7 @@ export default function ModernMinimalTemplate({ wedding }: Props) {
                   color: activeIdx === i ? INK : MUTE, background: "none", border: "none", cursor: "pointer",
                   borderBottom: activeIdx === i ? `2px solid ${INK}` : "2px solid transparent", paddingBottom: 6,
                 }}>
-                {ev.name}
+                {getEventDisplayName(ev, ev.name)}
               </button>
             ))}
           </div>
