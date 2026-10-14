@@ -39,7 +39,7 @@ export function WheelTimePickerSheet({ isOpen, onClose, onSelect, initialTime }:
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Select Event Time">
-      <div className="flex flex-col items-center w-full max-w-sm mx-auto pt-1 pb-4 px-2">
+      <div className="flex flex-col items-center w-full max-w-sm mx-auto pt-1 pb-6 px-2">
         
         {/* Real-time formatted time preview */}
         <div className="flex flex-col items-center justify-center mb-4">

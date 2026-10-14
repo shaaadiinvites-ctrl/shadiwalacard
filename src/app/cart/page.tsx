@@ -932,7 +932,7 @@ function CartPageContent() {
         position: 'fixed', bottom: 0, left: 0, right: 0,
         background: 'rgba(10, 10, 12, 0.95)', backdropFilter: 'blur(24px)',
         borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+        padding: '12px 16px max(48px, calc(16px + env(safe-area-inset-bottom, 0px))) 16px',
         zIndex: 50, boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.8)'
       }}>
         <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1071,7 +1071,7 @@ function CartPageContent() {
                 background: '#0d0d12', borderTop: '1px solid rgba(255,255,255,0.15)',
                 borderRadius: '28px 28px 0 0', zIndex: 9999,
                 boxShadow: '0 -12px 40px rgba(0,0,0,0.8)',
-                paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))'
+                paddingBottom: 'max(48px, calc(24px + env(safe-area-inset-bottom, 0px)))'
               }}
             >
               <div style={{ maxWidth: 460, margin: '0 auto', padding: '24px 20px 10px', position: 'relative' }}>

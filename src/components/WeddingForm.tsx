@@ -663,7 +663,7 @@ export default function WeddingForm({
           )}
 
           {/* ── Sticky Footer Navigation ── */}
-          <div className="p-4 sm:p-5 md:px-8 border-t border-gray-100 bg-[#F9FAFB] flex justify-between items-center shrink-0">
+          <div className="p-4 sm:p-5 md:px-8 pb-[max(24px,calc(16px+env(safe-area-inset-bottom,0px)))] border-t border-gray-100 bg-[#F9FAFB] flex justify-between items-center shrink-0">
             <div className="max-w-3xl w-full mx-auto flex items-center justify-between gap-3 sm:gap-4">
               <button
                 type="button"

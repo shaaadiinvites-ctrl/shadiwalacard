@@ -38,15 +38,16 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            style={{ paddingBottom: "max(48px, calc(20px + env(safe-area-inset-bottom, 0px)))" }}
             className="fixed bottom-0 left-0 right-0 z-[10000] bg-white rounded-t-3xl shadow-2xl flex flex-col max-h-[85vh]"
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
               <h3 className="text-lg font-bold text-[#2e1065]">{title}</h3>
               <button onClick={onClose} className="p-2 bg-gray-100 rounded-full text-gray-500 hover:text-gray-800 transition-colors">
                 <X size={18} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 overscroll-contain">
+            <div className="flex-1 overflow-y-auto p-4 pb-12 overscroll-contain">
               {children}
             </div>
           </motion.div>

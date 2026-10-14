@@ -320,6 +320,8 @@ export async function sendWhatsAppInviteReady({
   try {
     // Dispatch official Meta-approved template
     const templateCandidates = [
+      { name: "shadiwalacard_invite_live_v1", lang: "en_US" },
+      { name: "shadiwalacard_invite_live_v1", lang: "en" },
       { name: "shadiwalacard_order_ready_v1", lang: "en_US" },
       { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
     ];

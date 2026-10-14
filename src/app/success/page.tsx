@@ -317,7 +317,7 @@ export default async function SuccessPage({ searchParams }: Props) {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(255, 255, 255, 0.12)',
-          padding: '12px 16px',
+          padding: '12px 16px max(48px, calc(20px + env(safe-area-inset-bottom, 0px))) 16px',
           boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.8)',
           display: 'flex',
           flexDirection: 'column',
@@ -372,7 +372,7 @@ export default async function SuccessPage({ searchParams }: Props) {
       </div>
 
       {/* Mobile Bottom Spacing so content is not cut off */}
-      <div className="h-28 sm:hidden" />
+      <div className="h-44 sm:hidden" />
     </div>
   );
 }
