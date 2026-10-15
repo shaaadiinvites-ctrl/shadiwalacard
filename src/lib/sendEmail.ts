@@ -26,12 +26,17 @@ export async function sendInviteReadyEmail(opts: {
   siteUrl: string;
   editUrl: string;
 }): Promise<{ sent: boolean; reason?: string }> {
-  const transporter = getTransporter();
-  if (!transporter) {
-    return { sent: false, reason: "GMAIL_USER / GMAIL_APP_PASSWORD not configured" };
+  const { to, coupleNames, siteUrl, editUrl } = opts;
+
+  const clean = (to || "").trim().toLowerCase();
+  if (!clean || clean.endsWith("@razorpay.com") || clean.includes("void@") || clean.includes("dummy@")) {
+    return { sent: false, reason: "Placeholder or missing email" };
   }
 
-  const { to, coupleNames, siteUrl, editUrl } = opts;
+  const transporter = getTransporter();
+  if (!transporter) {
+    return { sent: false, reason: "EMAIL_USER / EMAIL_PASS not configured" };
+  }
 
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #222;">

@@ -127,7 +127,10 @@ export async function POST(req: NextRequest) {
         if (rzpRes.ok) {
           const paymentData = await rzpRes.json();
           if (paymentData.email) {
-            customerEmail = paymentData.email.trim().toLowerCase();
+            const fetched = paymentData.email.trim().toLowerCase();
+            if (!fetched.endsWith("@razorpay.com") && !fetched.includes("void@") && !fetched.includes("dummy@")) {
+              customerEmail = fetched;
+            }
           }
         }
       } catch (err) {
@@ -135,7 +138,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (customerEmail) {
+    if (customerEmail && !customerEmail.endsWith("@razorpay.com") && !customerEmail.includes("void@")) {
       dispatchTasks.push(
         (async () => {
           const { sendSetupLinkEmail } = await import("@/lib/email");

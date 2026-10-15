@@ -13,7 +13,28 @@ function getTransporter() {
   });
 }
 
+export function isValidCustomerEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const clean = email.trim().toLowerCase();
+  if (
+    !clean ||
+    clean.endsWith("@razorpay.com") ||
+    clean.includes("void@") ||
+    clean.includes("dummy@") ||
+    clean.includes("example.com")
+  ) {
+    return false;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(clean);
+}
+
 export async function sendSetupLinkEmail(to: string, setupUrl: string) {
+  if (!isValidCustomerEmail(to)) {
+    console.log(`[sendSetupLinkEmail] Skipping email dispatch to placeholder address: ${to}`);
+    return false;
+  }
+
   const transporter = getTransporter();
   if (!transporter) {
     console.warn("EMAIL_USER / EMAIL_PASS not found in env, skipping email send.");

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const cleanEmail = email.trim().toLowerCase();
-    if (!emailRegex.test(cleanEmail)) {
+    if (!emailRegex.test(cleanEmail) || cleanEmail.endsWith("@razorpay.com") || cleanEmail.includes("void@") || cleanEmail.includes("dummy@")) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
