@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing payment fields." }, { status: 400 });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
     if (!keySecret) {
       return NextResponse.json({ error: "Payments aren't configured yet." }, { status: 500 });
     }
@@ -32,8 +32,15 @@ export async function POST(req: NextRequest) {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ error: "Payment signature verification failed." }, { status: 400 });
+    const expectedBuf = Buffer.from(expectedSignature, "utf-8");
+    const receivedBuf = Buffer.from(razorpay_signature, "utf-8");
+
+    const isMatch =
+      expectedBuf.length === receivedBuf.length &&
+      crypto.timingSafeEqual(expectedBuf, receivedBuf);
+
+    if (!isMatch) {
+      return NextResponse.json({ success: false, error: "Payment signature verification failed." }, { status: 400 });
     }
 
     const supabase = createServerSupabaseClient();
@@ -142,6 +149,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
+      success: true,
       verified: true,
       paymentOrderId: row.id,
       templateId: row.template_id,

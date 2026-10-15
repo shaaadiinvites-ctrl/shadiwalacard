@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+    const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
     if (!keyId || !keySecret) {
       return NextResponse.json(
@@ -182,6 +182,9 @@ export async function POST(req: NextRequest) {
     }
 
     const amountPaise = finalPrice * 100;
+    if (amountPaise < 100) {
+      return NextResponse.json({ error: "Amount must be at least 100 paise (₹1)." }, { status: 400 });
+    }
 
     const authHeader = "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64");
     const payload = JSON.stringify({

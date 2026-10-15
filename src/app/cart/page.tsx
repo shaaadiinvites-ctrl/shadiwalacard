@@ -387,12 +387,19 @@ function CartPageContent() {
 
       // 2. Open Razorpay Checkout Modal
       const options = {
-        key: orderData.keyId,
+        key: orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amountPaise,
         currency: "INR",
         name: "ShadiwalaCard",
         description: `Purchase: ${orderData.templateName}`,
         order_id: orderData.orderId,
+        modal: {
+          ondismiss: function () {
+            setLoadingRazorpay(false);
+            setIsProcessingPayment(false);
+            setError("Payment was cancelled. You can retry whenever you are ready.");
+          },
+        },
         handler: async function (response: any) {
           setIsProcessingPayment(true);
           // 3. Verify Payment on Server
