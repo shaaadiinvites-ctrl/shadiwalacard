@@ -356,6 +356,7 @@ export async function POST(req: NextRequest) {
         edit_token: editToken,
         razorpay_order_id: paymentOrder.razorpay_order_id,
         razorpay_payment_id: paymentOrder.razorpay_payment_id,
+        payment_order_id: paymentOrder.id,
         payment_status: "paid",
       })
       .select("id, slug, edit_token")

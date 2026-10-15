@@ -54,12 +54,24 @@ export async function POST(req: NextRequest) {
       .eq("id", paymentOrderId)
       .eq("razorpay_order_id", razorpay_order_id)
       .eq("status", "created") // can't re-verify an already used/verified order
-      .select("id, template_id")
+      .select("id, template_id, coupon_id")
       .single();
 
     if (error || !row) {
       console.error("verify-payment: could not update payment_orders", error);
       return NextResponse.json({ error: "This payment was already used or could not be verified." }, { status: 400 });
+    }
+
+    // Increment coupon used_count if a coupon was used
+    if (row.coupon_id) {
+      try {
+        const { data: cData } = await supabase.from("coupons").select("used_count").eq("id", row.coupon_id).single();
+        if (cData) {
+          await supabase.from("coupons").update({ used_count: (cData.used_count || 0) + 1 }).eq("id", row.coupon_id);
+        }
+      } catch (cErr) {
+        console.warn("Could not increment coupon used_count:", cErr);
+      }
     }
 
     // Safely record customer_phone on payment_orders if column exists
@@ -117,24 +129,53 @@ export async function POST(req: NextRequest) {
 
     let customerEmail = email ? email.trim().toLowerCase() : "";
 
-    // If email was not passed by client, fetch it directly from Razorpay payment details
-    if (!customerEmail && razorpay_payment_id && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    // Fetch full payment details from Razorpay to capture payment method (UPI vs Card), fee, and metadata
+    if (razorpay_payment_id && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
       try {
-        const authHeader = Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
+        const authHeader = Buffer.from(`${process.env.RAZORPAY_KEY_ID.trim()}:${process.env.RAZORPAY_KEY_SECRET.trim()}`).toString("base64");
         const rzpRes = await fetch(`https://api.razorpay.com/v1/payments/${razorpay_payment_id}`, {
           headers: { Authorization: `Basic ${authHeader}` },
         });
         if (rzpRes.ok) {
           const paymentData = await rzpRes.json();
-          if (paymentData.email) {
+          if (paymentData.email && !customerEmail) {
             const fetched = paymentData.email.trim().toLowerCase();
             if (!fetched.endsWith("@razorpay.com") && !fetched.includes("void@") && !fetched.includes("dummy@")) {
               customerEmail = fetched;
             }
           }
+
+          // Format payment method details (UPI VPA, Card network + last4, Netbanking Bank)
+          let methodDetails = "";
+          if (paymentData.method === "upi") {
+            methodDetails = paymentData.vpa ? `UPI: ${paymentData.vpa}` : "UPI";
+          } else if (paymentData.method === "card" && paymentData.card) {
+            methodDetails = `${paymentData.card.network || "Card"} ${paymentData.card.type || ""} •••• ${paymentData.card.last4 || ""}`.trim();
+          } else if (paymentData.method === "netbanking") {
+            methodDetails = paymentData.bank ? `Netbanking: ${paymentData.bank}` : "Netbanking";
+          } else if (paymentData.method === "wallet") {
+            methodDetails = paymentData.wallet ? `Wallet: ${paymentData.wallet}` : "Wallet";
+          } else {
+            methodDetails = paymentData.method || "Unknown";
+          }
+
+          const feeInr = typeof paymentData.fee === "number" ? paymentData.fee / 100 : 0;
+          const taxInr = typeof paymentData.tax === "number" ? paymentData.tax / 100 : 0;
+
+          // Update payment_orders with enriched payment information
+          await supabase
+            .from("payment_orders")
+            .update({
+              payment_method: paymentData.method || null,
+              payment_method_details: methodDetails || null,
+              gateway_fee_inr: feeInr,
+              gateway_tax_inr: taxInr,
+              razorpay_metadata: paymentData,
+            })
+            .eq("id", row.id);
         }
       } catch (err) {
-        console.error("verify-payment: could not fetch customer email from Razorpay:", err);
+        console.error("verify-payment: error fetching/saving Razorpay payment metadata:", err);
       }
     }
 

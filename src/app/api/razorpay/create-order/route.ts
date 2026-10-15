@@ -103,22 +103,49 @@ export async function POST(req: NextRequest) {
 
     const template = getTemplate(templateId);
 
+    const supabase = createServerSupabaseClient();
+    let couponRow: any = null;
     let finalPrice = template.priceInr;
     const cleanCoupon = (couponCode || "").trim().toUpperCase();
-    if (cleanCoupon === "SAARTHI100") {
-      finalPrice = 0;
-    } else if (cleanCoupon === "SHADI10") {
-      finalPrice = finalPrice - Math.round(finalPrice * 0.1);
-    } else if (cleanCoupon === "SHADI790" || cleanCoupon === "RD790" || cleanCoupon === "RS790" || cleanCoupon === "TEST9") {
-      finalPrice = Math.max(9, finalPrice - 790);
+
+    if (cleanCoupon) {
+      try {
+        const { data } = await supabase
+          .from("coupons")
+          .select("*")
+          .eq("code", cleanCoupon)
+          .eq("is_active", true)
+          .single();
+        if (data) couponRow = data;
+      } catch (err) {
+        console.warn("Could not query coupons table:", err);
+      }
     }
+
+    if (couponRow) {
+      if (couponRow.discount_type === "percentage") {
+        const discountAmt = Math.round((template.priceInr * couponRow.discount_value) / 100);
+        finalPrice = Math.max(0, template.priceInr - discountAmt);
+      } else if (couponRow.discount_type === "flat") {
+        finalPrice = Math.max(9, template.priceInr - couponRow.discount_value);
+      }
+    } else {
+      if (cleanCoupon === "SAARTHI100") {
+        finalPrice = 0;
+      } else if (cleanCoupon === "SHADI10") {
+        finalPrice = finalPrice - Math.round(finalPrice * 0.1);
+      } else if (cleanCoupon === "SHADI790" || cleanCoupon === "RD790" || cleanCoupon === "RS790" || cleanCoupon === "TEST9") {
+        finalPrice = Math.max(9, finalPrice - 790);
+      }
+    }
+
+    const discountAmountInr = template.priceInr - finalPrice;
 
     // 100% OFF Coupon Flow: Zero-cost order created directly in verified status
     if (finalPrice === 0) {
       const freeOrderId = `free_order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const freePaymentId = `free_pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      const supabase = createServerSupabaseClient();
       const { data: row, error } = await supabase
         .from("payment_orders")
         .insert({
@@ -129,6 +156,11 @@ export async function POST(req: NextRequest) {
           status: "verified",
           verified_at: new Date().toISOString(),
           customer_phone: customerPhone || null,
+          coupon_id: couponRow?.id || null,
+          coupon_code: cleanCoupon || null,
+          discount_amount_inr: discountAmountInr,
+          payment_method: "coupon_100",
+          payment_method_details: `Free 100% OFF coupon (${cleanCoupon})`,
         })
         .select("id, template_id")
         .single();
@@ -239,7 +271,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: order?.error?.description || "Could not create payment order." }, { status: 502 });
     }
 
-    const supabase = createServerSupabaseClient();
     const { data: row, error } = await supabase
       .from("payment_orders")
       .insert({
@@ -247,6 +278,10 @@ export async function POST(req: NextRequest) {
         template_id: template.id,
         amount_inr: finalPrice,
         status: "created",
+        customer_phone: customerPhone || null,
+        coupon_id: couponRow?.id || null,
+        coupon_code: cleanCoupon || null,
+        discount_amount_inr: discountAmountInr,
       })
       .select("id")
       .single();
