@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // POST /api/verify-payment
 // Request: { razorpay_order_id, razorpay_payment_id, razorpay_signature }
 // Returns: { success: boolean, message?: string }
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const { ok } = await checkRateLimit("verify-payment", ip, 20, 600); // 20 per 10 min per IP
+    if (!ok) {
+      return NextResponse.json({ error: "Too many verification attempts. Please wait a few minutes." }, { status: 429 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
     // Accept both standard Razorpay callback parameter names and camelCase / aliases

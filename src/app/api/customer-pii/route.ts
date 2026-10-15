@@ -1,9 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import crypto from "crypto";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const { ok } = await checkRateLimit("customer-pii", ip, 20, 600); // 20 per 10 min per IP
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a few minutes and try again." },
+        { status: 429 }
+      );
+    }
+
     const { email, phone } = await req.json();
 
     if (!phone) {

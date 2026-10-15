@@ -1,6 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const { ok } = await checkRateLimit("search-location", ip, 60, 60); // 60 queries per minute per IP
+  if (!ok) {
+    return NextResponse.json({ error: "Too many search requests. Please slow down." }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q");
 

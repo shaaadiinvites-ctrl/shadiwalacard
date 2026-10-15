@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { getTemplate, TEMPLATES } from "@/lib/templates";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // POST /api/create-order
 // Request: { amount (paise), currency, receipt } or { templateId, couponCode, phone }
 // Returns: { order_id, amount, currency, key_id }
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const { ok } = await checkRateLimit("create-order", ip, 15, 600); // 15 per 10 min per IP
+    if (!ok) {
+      return NextResponse.json({ error: "Too many order creation attempts. Please wait a few minutes." }, { status: 429 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
     const keyId = process.env.RAZORPAY_KEY_ID?.trim();
