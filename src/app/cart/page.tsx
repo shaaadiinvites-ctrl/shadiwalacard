@@ -24,6 +24,7 @@ function CartPageContent() {
   const [template, setTemplate] = useState<TemplateMeta | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [flatDiscount, setFlatDiscount] = useState(0);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
   const [loadingRazorpay, setLoadingRazorpay] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -128,12 +129,19 @@ function CartPageContent() {
     const code = couponCode.trim().toUpperCase();
     if (code === "SAARTHI100") {
       setDiscountPercent(100);
+      setFlatDiscount(0);
       setError("");
     } else if (code === "SHADI10") {
       setDiscountPercent(10);
+      setFlatDiscount(0);
+      setError("");
+    } else if (code === "SHADI790" || code === "TEST9" || code === "RD790" || code === "RS790") {
+      setDiscountPercent(0);
+      setFlatDiscount(790);
       setError("");
     } else {
       setDiscountPercent(0);
+      setFlatDiscount(0);
       setError("Invalid coupon code.");
     }
   };
@@ -487,7 +495,9 @@ function CartPageContent() {
   const mrpVal = parseInt(template.mrp.replace(/\D/g, ''));
   
   // Calculate final total inclusive of GST (with coupon if any)
-  const discountAmount = Math.round((template.priceInr * discountPercent) / 100);
+  const discountAmount = flatDiscount > 0
+    ? Math.min(flatDiscount, Math.max(0, template.priceInr - 9))
+    : Math.round((template.priceInr * discountPercent) / 100);
   const total = template.priceInr - discountAmount;
   
   // Final base price and GST
@@ -748,9 +758,11 @@ function CartPageContent() {
                       <span>-₹{specialOfferDiscount.toFixed(2)}</span>
                     </div>
 
-                    {discountPercent > 0 && (
+                    {(discountPercent > 0 || flatDiscount > 0) && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ffbc4b', fontWeight: 600 }}>
-                        <span>Coupon Discount ({discountPercent}%)</span>
+                        <span>
+                          {flatDiscount > 0 ? `Coupon Discount (₹${flatDiscount} OFF)` : `Coupon Discount (${discountPercent}%)`}
+                        </span>
                         <span>-₹{couponDiscountExclGst.toFixed(2)}</span>
                       </div>
                     )}

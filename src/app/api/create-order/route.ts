@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
         finalPrice = 0;
       } else if (cleanCoupon === "SHADI10") {
         finalPrice = finalPrice - Math.round(finalPrice * 0.1);
+      } else if (cleanCoupon === "SHADI790" || cleanCoupon === "RD790" || cleanCoupon === "RS790" || cleanCoupon === "TEST9") {
+        finalPrice = Math.max(9, finalPrice - 790);
       }
       amountPaise = finalPrice * 100;
       receipt = `tmpl_${template.id}_${Date.now()}`;
