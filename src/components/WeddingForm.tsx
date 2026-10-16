@@ -53,6 +53,7 @@ export default function WeddingForm({
   const [ghostClickLock, setGhostClickLock] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [retainedGalleryUrls, setRetainedGalleryUrls] = useState<string[]>(existingGalleryUrls);
+  const [selectedGalleryFiles, setSelectedGalleryFiles] = useState<File[]>([]);
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
@@ -165,17 +166,9 @@ export default function WeddingForm({
       }
     }
 
-    // Custom Validation for Step 3: Media File Sizes (Max 8MB per photo)
+    // Clear any previous submit error on navigating
     if (currentStep === 3 && valid) {
-      const galleryImages = getValues("galleryImages");
-      if (galleryImages && galleryImages.length > 0) {
-        const oversized = Array.from(galleryImages).filter(f => f.size > 8 * 1024 * 1024);
-        if (oversized.length > 0) {
-          const names = oversized.map(f => `"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)} MB)`).join(", ");
-          setSubmitError(`Please remove photo(s) exceeding 8MB before proceeding: ${names}`);
-          return;
-        }
-      }
+      setSubmitError(null);
     }
 
     if (valid) {
@@ -264,7 +257,9 @@ export default function WeddingForm({
       if (coverPhoto && coverPhoto.length > 0) {
         formData.append("coverPhoto", coverPhoto[0]);
       }
-      if (galleryImages && galleryImages.length > 0) {
+      if (selectedGalleryFiles && selectedGalleryFiles.length > 0) {
+        selectedGalleryFiles.forEach((file) => formData.append("galleryImages", file));
+      } else if (galleryImages && galleryImages.length > 0) {
         Array.from(galleryImages).forEach((file) => formData.append("galleryImages", file));
       }
 
@@ -611,6 +606,8 @@ export default function WeddingForm({
                       setValue={setValue} 
                       existingGalleryUrls={retainedGalleryUrls}
                       onRemoveExistingGalleryUrl={(url) => setRetainedGalleryUrls(prev => prev.filter(u => u !== url))}
+                      selectedFiles={selectedGalleryFiles}
+                      onFilesChange={setSelectedGalleryFiles}
                     />
                     {submitError && (
                       <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-sm">
