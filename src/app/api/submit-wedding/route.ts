@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { WeddingFormData } from "@/types/wedding";
 import { getTemplate } from "@/lib/templates";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { getClientGeo } from "@/lib/geo";
 import { isAllowedImage } from "@/lib/imageValidation";
 import { validateWeddingPayload } from "@/lib/validateWedding";
 import { sendInviteReadyEmail } from "@/lib/sendEmail";
@@ -89,6 +90,7 @@ async function uploadImage(
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
+    const geo = getClientGeo(req);
     const { ok } = await checkRateLimit("submit-wedding", ip, 5, 600); // 5 per 10 min per IP
     if (!ok) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
@@ -305,71 +307,93 @@ export async function POST(req: NextRequest) {
     }
 
     // Insert into Supabase
-    const { data, error } = await supabase
+    const weddingPayload: Record<string, any> = {
+      slug,
+
+      // Section 1
+      bride_name: body.brideName,
+      groom_name: body.groomName,
+      name_order: body.nameOrder,
+      hashtag: body.hashtag || null,
+      contact_number: body.contactNumber || null,
+      primary_email: body.primaryEmail || null,
+      language: body.language || 'en',
+
+      // Section 2 — events array stored as JSONB
+      events: body.events ?? [],
+
+      // Section 3
+      our_story: body.ourStory || null,
+      cover_photo_url: coverPhotoUrl,
+      gallery_urls: galleryUrls,
+      video_link: body.videoLink || null,
+      music_link: body.musicLink || null,
+
+      // Section 4
+      bride_mother_name: body.brideMotherName || null,
+      bride_father_name: body.brideFatherName || null,
+      groom_mother_name: body.groomMotherName || null,
+      groom_father_name: body.groomFatherName || null,
+      wedding_party: body.weddingParty || null,
+
+      // Section 5
+      rsvp1_name: body.rsvp1Name || null,
+      rsvp1_phone: body.rsvp1Phone || null,
+      rsvp2_name: body.rsvp2Name || null,
+      rsvp2_phone: body.rsvp2Phone || null,
+
+      // Section 6
+      live_stream_link: body.liveStreamLink || null,
+      live_stream_notes: body.liveStreamNotes || null,
+
+      // Section 7
+      visual_theme: body.visualTheme || null,
+      special_instructions: body.specialInstructions || null,
+
+      // Template + payment (payment verified above via Razorpay signature check)
+      template_id: template.id,
+      price_inr: paymentOrder.amount_inr,
+      edit_token: editToken,
+      razorpay_order_id: paymentOrder.razorpay_order_id,
+      razorpay_payment_id: paymentOrder.razorpay_payment_id,
+      payment_order_id: paymentOrder.id,
+      payment_status: "paid",
+
+      // Client Geolocation tracking
+      client_ip: geo.ip || null,
+      client_city: geo.city || null,
+      client_region: geo.region || null,
+      client_country: geo.country || null,
+    };
+
+    let { data, error } = await supabase
       .from("weddings")
-      .insert({
-        slug,
-
-        // Section 1
-        bride_name: body.brideName,
-        groom_name: body.groomName,
-        name_order: body.nameOrder,
-        hashtag: body.hashtag || null,
-        contact_number: body.contactNumber || null,
-        primary_email: body.primaryEmail || null,
-        language: body.language || 'en',
-
-        // Section 2 — events array stored as JSONB
-        events: body.events ?? [],
-
-        // Section 3
-        our_story: body.ourStory || null,
-        cover_photo_url: coverPhotoUrl,
-        gallery_urls: galleryUrls,
-        video_link: body.videoLink || null,
-        music_link: body.musicLink || null,
-
-        // Section 4
-        bride_mother_name: body.brideMotherName || null,
-        bride_father_name: body.brideFatherName || null,
-        groom_mother_name: body.groomMotherName || null,
-        groom_father_name: body.groomFatherName || null,
-        wedding_party: body.weddingParty || null,
-
-        // Section 5
-        rsvp1_name: body.rsvp1Name || null,
-        rsvp1_phone: body.rsvp1Phone || null,
-        rsvp2_name: body.rsvp2Name || null,
-        rsvp2_phone: body.rsvp2Phone || null,
-
-        // Section 6
-        live_stream_link: body.liveStreamLink || null,
-        live_stream_notes: body.liveStreamNotes || null,
-
-        // Section 7
-        visual_theme: body.visualTheme || null,
-        special_instructions: body.specialInstructions || null,
-
-        // Template + payment (payment verified above via Razorpay signature check)
-        template_id: template.id,
-        price_inr: paymentOrder.amount_inr,
-        edit_token: editToken,
-        razorpay_order_id: paymentOrder.razorpay_order_id,
-        razorpay_payment_id: paymentOrder.razorpay_payment_id,
-        payment_order_id: paymentOrder.id,
-        payment_status: "paid",
-      })
+      .insert(weddingPayload)
       .select("id, slug, edit_token")
       .single();
 
-    if (error) {
+    if (error && error.code === "PGRST204") {
+      delete weddingPayload.client_ip;
+      delete weddingPayload.client_city;
+      delete weddingPayload.client_region;
+      delete weddingPayload.client_country;
+      const retry = await supabase
+        .from("weddings")
+        .insert(weddingPayload)
+        .select("id, slug, edit_token")
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
+
+    if (error || !data) {
       console.error("Supabase insert error:", error);
       // Same rollback as above — the wedding row was never created, so give
       // the payment order back to 'verified' rather than burning it.
       if (!isDevMock) {
         await supabase.from("payment_orders").update({ status: "verified", used_at: null }).eq("id", paymentOrder.id);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: error?.message || "Failed to create wedding record" }, { status: 500 });
     }
 
     // Payment order was already atomically flipped to 'used' when we claimed

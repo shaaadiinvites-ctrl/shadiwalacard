@@ -112,6 +112,10 @@ export interface WeddingRecord {
   template_id?: string;
   edit_token?: string;
   language?: "en" | "hi";
+  client_ip?: string;
+  client_city?: string;
+  client_region?: string;
+  client_country?: string;
 }
 
 export const STEPS = [

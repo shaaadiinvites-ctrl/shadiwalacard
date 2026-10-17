@@ -3,6 +3,7 @@ import https from "https";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getTemplate, TEMPLATES } from "@/lib/templates";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { getClientGeo } from "@/lib/geo";
 
 // Cloudflare Turnstile (free CAPTCHA) verification. If TURNSTILE_SECRET_KEY
 // isn't set, this no-ops and lets requests through — so the site keeps
@@ -86,6 +87,7 @@ function postRazorpayOrderIPv4(
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
+    const geo = getClientGeo(req);
     const { ok } = await checkRateLimit("create-order", ip, 8, 600); // 8 per 10 min per IP
     if (!ok) {
       return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
@@ -146,24 +148,45 @@ export async function POST(req: NextRequest) {
       const freeOrderId = `free_order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const freePaymentId = `free_pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      const { data: row, error } = await supabase
+      const freeOrderPayload: Record<string, any> = {
+        razorpay_order_id: freeOrderId,
+        razorpay_payment_id: freePaymentId,
+        template_id: template.id,
+        amount_inr: 0,
+        status: "verified",
+        verified_at: new Date().toISOString(),
+        customer_phone: customerPhone || null,
+        coupon_id: couponRow?.id || null,
+        coupon_code: cleanCoupon || null,
+        discount_amount_inr: discountAmountInr,
+        payment_method: "coupon_100",
+        payment_method_details: `Free 100% OFF coupon (${cleanCoupon})`,
+        razorpay_metadata: { geo },
+        client_ip: geo.ip || null,
+        client_city: geo.city || null,
+        client_region: geo.region || null,
+        client_country: geo.country || null,
+      };
+
+      let { data: row, error } = await supabase
         .from("payment_orders")
-        .insert({
-          razorpay_order_id: freeOrderId,
-          razorpay_payment_id: freePaymentId,
-          template_id: template.id,
-          amount_inr: 0,
-          status: "verified",
-          verified_at: new Date().toISOString(),
-          customer_phone: customerPhone || null,
-          coupon_id: couponRow?.id || null,
-          coupon_code: cleanCoupon || null,
-          discount_amount_inr: discountAmountInr,
-          payment_method: "coupon_100",
-          payment_method_details: `Free 100% OFF coupon (${cleanCoupon})`,
-        })
+        .insert(freeOrderPayload)
         .select("id, template_id")
         .single();
+
+      if (error && error.code === "PGRST204") {
+        delete freeOrderPayload.client_ip;
+        delete freeOrderPayload.client_city;
+        delete freeOrderPayload.client_region;
+        delete freeOrderPayload.client_country;
+        const retry = await supabase
+          .from("payment_orders")
+          .insert(freeOrderPayload)
+          .select("id, template_id")
+          .single();
+        row = retry.data;
+        error = retry.error;
+      }
 
       if (error || !row) {
         console.error("Supabase 100% coupon payment_orders insert error:", error);
@@ -271,22 +294,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: order?.error?.description || "Could not create payment order." }, { status: 502 });
     }
 
-    const { data: row, error } = await supabase
+    const paidOrderPayload: Record<string, any> = {
+      razorpay_order_id: order.id,
+      template_id: template.id,
+      amount_inr: finalPrice,
+      status: "created",
+      customer_phone: customerPhone || null,
+      coupon_id: couponRow?.id || null,
+      coupon_code: cleanCoupon || null,
+      discount_amount_inr: discountAmountInr,
+      razorpay_metadata: { geo },
+      client_ip: geo.ip || null,
+      client_city: geo.city || null,
+      client_region: geo.region || null,
+      client_country: geo.country || null,
+    };
+
+    let { data: row, error } = await supabase
       .from("payment_orders")
-      .insert({
-        razorpay_order_id: order.id,
-        template_id: template.id,
-        amount_inr: finalPrice,
-        status: "created",
-        customer_phone: customerPhone || null,
-        coupon_id: couponRow?.id || null,
-        coupon_code: cleanCoupon || null,
-        discount_amount_inr: discountAmountInr,
-      })
+      .insert(paidOrderPayload)
       .select("id")
       .single();
 
-    if (error) {
+    if (error && error.code === "PGRST204") {
+      delete paidOrderPayload.client_ip;
+      delete paidOrderPayload.client_city;
+      delete paidOrderPayload.client_region;
+      delete paidOrderPayload.client_country;
+      const retry = await supabase
+        .from("payment_orders")
+        .insert(paidOrderPayload)
+        .select("id")
+        .single();
+      row = retry.data;
+      error = retry.error;
+    }
+
+    if (error || !row) {
       console.error("Supabase payment_orders insert error:", error);
       return NextResponse.json({ error: "Could not save payment order." }, { status: 500 });
     }

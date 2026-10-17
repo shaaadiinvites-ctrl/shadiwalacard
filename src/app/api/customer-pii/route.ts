@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import crypto from "crypto";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { getClientGeo } from "@/lib/geo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,17 +43,34 @@ export async function POST(req: NextRequest) {
 
     const resolvedEmail = (email && typeof email === "string" && email.trim()) || existing?.email || "";
 
-    const { error } = await supabase
+    const geo = getClientGeo(req);
+
+    const piiPayload: Record<string, any> = {
+      customer_id: customerId,
+      phone_number: phone,
+      email: resolvedEmail,
+      updated_at: new Date().toISOString(),
+      client_ip: geo.ip || null,
+      client_city: geo.city || null,
+      client_region: geo.region || null,
+      client_country: geo.country || null,
+    };
+
+    let { error } = await supabase
       .from("customer_pii")
-      .upsert(
-        {
-          customer_id: customerId,
-          phone_number: phone,
-          email: resolvedEmail,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "phone_number" }
-      );
+      .upsert(piiPayload, { onConflict: "phone_number" });
+
+    // Fallback if client_* columns are not added to customer_pii yet (PGRST204)
+    if (error && error.code === "PGRST204") {
+      delete piiPayload.client_ip;
+      delete piiPayload.client_city;
+      delete piiPayload.client_region;
+      delete piiPayload.client_country;
+      const retry = await supabase
+        .from("customer_pii")
+        .upsert(piiPayload, { onConflict: "phone_number" });
+      error = retry.error;
+    }
 
     if (error) {
       console.error("Supabase insert error:", error);
