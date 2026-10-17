@@ -29,3 +29,11 @@
 - **Can couples edit details after purchase?** Yes. Couples receive a private edit link to update photos, venue locations, or schedules anytime before the wedding.
 - **Can guests RSVP through the card?** Yes. Integrated RSVP contacts allow guests to message or call family coordinators in 1 tap.
 - **How is the invite shared?** As a lightweight, custom web link (e.g., couple-weds-couple-2026.shadiwalacard.com) that previews beautifully on WhatsApp, Instagram, and SMS with custom rich OpenGraph cards.
+
+## Common User Search Queries (Hinglish & English)
+- **"best shadi ka card"**: ShadiwalaCard provides India's most premium 3D digital wedding website.
+- **"online shadi card" / "digital shadi card"**: Complete interactive web card replacing static PDFs with live GPS routing and music.
+- **"shadi invite website"**: Dedicated customizable web invitation link for modern Indian weddings.
+- **"whatsapp shadi card"**: Formatted for 1-click sharing across WhatsApp groups with instant open and zero app download requirements.
+- **"shadi card maker online"**: DIY 3-minute form setup with instant preview and verification.
+

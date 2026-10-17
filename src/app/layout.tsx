@@ -40,15 +40,24 @@ export const metadata: Metadata = {
   description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, event timelines, and HD couple galleries.",
   keywords: [
     "digital wedding card",
-    "indian wedding invite",
+    "best shadi ka card",
+    "online shadi card",
+    "digital shadi card",
+    "shadi invite website",
     "shadi card online",
+    "whatsapp shadi card",
+    "shadi card maker online",
+    "shaadi card design",
+    "indian wedding invite",
     "web wedding invitation",
     "the grand palace wedding card",
     "whatsapp wedding card",
     "interactive wedding card with google maps",
     "paperless wedding invite india",
     "best digital shadi card",
-    "wedding invitation website maker"
+    "wedding invitation website maker",
+    "online wedding card maker india",
+    "marriage card online"
   ],
   alternates: {
     canonical: "https://shadiwalacard.com",
