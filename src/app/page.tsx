@@ -55,6 +55,7 @@ export default function HomePage() {
   const [windowWidth, setWindowWidth] = useState(1200);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const posthog = usePostHog();
 
   const jsonLdProduct = {
@@ -156,6 +157,7 @@ export default function HomePage() {
   }, [posthog]);
 
   useEffect(() => {
+    setIsMounted(true);
     setWindowWidth(window.innerWidth);
     let resizeTimer: NodeJS.Timeout;
     const handleResize = () => {
@@ -802,23 +804,41 @@ export default function HomePage() {
           )}
 
           {/* Background Video Wrap */}
-          <div style={{ position: 'absolute', inset: 0, borderRadius: '24px', overflow: 'hidden', background: '#000', pointerEvents: 'none' }}>
-            <video 
-              src="/uploads/bg.mp4" 
-              poster="/uploads/videocover.png"
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              preload="metadata"
-              style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover'
+          <div 
+            suppressHydrationWarning
+            style={{ position: 'absolute', inset: 0, borderRadius: '24px', overflow: 'hidden', background: '#000', pointerEvents: 'none' }}
+          >
+            {/* Seamless poster cover image during SSR and before video loads */}
+            <div 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: 'url(/uploads/videocover.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: isMounted ? 0 : 1,
+                transition: 'opacity 0.6s ease'
               }}
             />
+            {isMounted && (
+              <video 
+                src="/uploads/bg.mp4" 
+                poster="/uploads/videocover.png"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                preload="metadata"
+                suppressHydrationWarning
+                style={{ 
+                  position: 'absolute', 
+                  inset: 0, 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover'
+                }}
+              />
+            )}
             {/* Subtle dark vignette overlay for high contrast text readability */}
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%)' }} />
           </div>
