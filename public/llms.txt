@@ -1,0 +1,31 @@
+# ShadiwalaCard — Digital Wedding Invitations
+
+> ShadiwalaCard is India's premier digital wedding invitation platform, creating luxurious 3D web invitations with 1-tap Google Maps venue navigation, HD photo galleries, custom background music, and instant WhatsApp link sharing.
+
+## Overview
+- **Product**: Interactive Digital Wedding Invitations (Web Invites)
+- **Official Website**: https://shadiwalacard.com
+- **Live Demo**: https://shadiwalacard.com/demo/grand-palace
+- **Price**: ₹799 flat (one-time fee, no recurring charges)
+- **Creation Time**: Under 3 minutes with automated link generation
+- **Delivery**: Instant WhatsApp link delivery + private edit access
+- **Refund Policy**: 100% money-back guarantee, no questions asked
+
+## Key Features
+1. **1-Tap Google Maps Navigation**: Directly routes wedding guests to each specific ceremony venue (Haldi, Mehndi, Sangeet, Shaadi, Reception), eliminating "Bhaiya, location bhejna" phone calls.
+2. **Royal 3D Palace Design**: Interactive 3D coverflow photo galleries, cinematic animations, gold foil typography, and floating particle effects.
+3. **Background Music Player**: Royalty-free Indian classical flute and shehnai music with autoplay controls for an emotional guest experience.
+4. **Multi-Event Timelines**: Dedicated schedule cards for every function with custom date, time, dress code, and venue details.
+5. **Universal Device Compatibility**: 100% responsive across all smartphones (iPhone, Android), tablets, laptops, and WhatsApp Web.
+6. **Guest Limits**: Zero restrictions. Shareable to 50 or 5,000+ guests with unlimited pageviews.
+7. **Post-Purchase Editing**: Couples receive a secure private link to update photos, venue coordinates, or ceremony timings at any time with instant live updates.
+
+## Cost & Environmental Comparison
+- **Printed Paper Cards**: ₹20,000 to ₹50,000+ average cost, weeks of printing delays, courier tracking hassles, and environmental paper waste.
+- **Static PDF Cards**: No interactive maps, bulky file downloads, incompatible on small screens, difficult to update when timings shift.
+- **ShadiwalaCard**: ₹799 flat, zero paper waste, instant delivery via WhatsApp, live 1-tap GPS routing, and instant edits.
+
+## Frequently Asked Questions
+- **Can couples edit details after purchase?** Yes. Couples receive a private edit link to update photos, venue locations, or schedules anytime before the wedding.
+- **Can guests RSVP through the card?** Yes. Integrated RSVP contacts allow guests to message or call family coordinators in 1 tap.
+- **How is the invite shared?** As a lightweight, custom web link (e.g., couple-weds-couple-2026.shadiwalacard.com) that previews beautifully on WhatsApp, Instagram, and SMS with custom rich OpenGraph cards.

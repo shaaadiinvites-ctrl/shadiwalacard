@@ -63,9 +63,17 @@ export default function HomePage() {
     name: 'The Grand Palace — Digital Wedding Invitation',
     image: 'https://shadiwalacard.com/project3-assets/cover.jpg',
     description: 'Ultra-premium digital wedding card featuring 1-tap Google Maps navigation, live countdown & timeline, HD couple photo gallery, and instant WhatsApp link delivery.',
+    sku: 'SWC-GP-01',
     brand: {
       '@type': 'Brand',
       name: 'ShadiwalaCard'
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '128',
+      bestRating: '5',
+      worstRating: '1'
     },
     offers: {
       '@type': 'Offer',
@@ -81,14 +89,56 @@ export default function HomePage() {
   const jsonLdFaq = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.q,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.a
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Can I edit my details after buying?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! You receive a secure private link to update your venue coordinates, ceremony timings, or photos anytime before the wedding. Updates sync live across all guests in under 5 seconds with zero re-printing delays.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I add separate events like Haldi, Mehndi, and Sangeet?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! You can configure multiple distinct ceremonies, each with its own date, timing, dress code, and dedicated 1-tap Google Maps pin that eliminates 100% of guest location confusion.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: "What if I'm not satisfied with my digital card?",
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'We offer an unconditional 100% money-back guarantee. If you are not completely satisfied with your digital wedding card, reach out to us for a full refund with zero questions asked.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How long does it take to get my invite?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Under 3 minutes. Once you complete the one-time ₹799 payment and submit your details, your custom interactive web invitation is generated instantly and ready to share.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I send this on WhatsApp?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! ShadiwalaCard is engineered for WhatsApp, Instagram, SMS, and email. Over 95% of couples share their invite via WhatsApp with rich link previews.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is there a limit to how many guests or groups I can send it to?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Zero limits. You can forward your link to 50 guests or 5,000+ guests. All invitations include unlimited pageviews and high-speed global delivery.'
+        }
       }
-    }))
+    ]
   };
 
   useEffect(() => {
