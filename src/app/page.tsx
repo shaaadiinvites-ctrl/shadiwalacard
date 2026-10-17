@@ -68,13 +68,6 @@ export default function HomePage() {
       '@type': 'Brand',
       name: 'ShadiwalaCard'
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '128',
-      bestRating: '5',
-      worstRating: '1'
-    },
     offers: {
       '@type': 'Offer',
       url: 'https://shadiwalacard.com/cart?template=grand-palace',
