@@ -66,7 +66,7 @@ export default function RefundPolicyPage() {
             <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 600, marginBottom: '12px' }}>3. Eligible Refund Scenarios</h2>
             <p style={{ marginBottom: '8px' }}>You are eligible for a full 100% refund in the following cases:</p>
             <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <li><strong>100% Satisfaction Guarantee:</strong> If you are genuinely not satisfied with your digital invitation after purchase, reach out to our team within 7 days and we will issue a full 100% refund &mdash; no questions asked.</li>
+              <li><strong>100% Satisfaction Guarantee:</strong> If you are genuinely not satisfied with your digital invitation after purchase, email our team at <a href="mailto:hello@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>hello@shadiwalacard.com</a> within 7 days and we will issue a full 100% refund &mdash; no questions asked.</li>
               <li><strong>Duplicate Transaction:</strong> If you were charged twice for the same order due to a payment gateway timeout.</li>
               <li><strong>Technical Non-Delivery:</strong> If the platform fails to generate your live invite link within 24 hours of successful payment.</li>
               <li><strong>Cancellation Prior to Generation:</strong> If you request a cancellation before your invitation link is created.</li>
@@ -75,8 +75,14 @@ export default function RefundPolicyPage() {
 
           <section>
             <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 600, marginBottom: '12px' }}>4. How to Request a Refund</h2>
-            <p>
-              To claim a refund, email <a href="mailto:support@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>support@shadiwalacard.com</a> or message us via WhatsApp with your Order ID and payment receipt. Approved refunds will be processed back to the original payment method within 5–7 business days.
+            <p style={{ marginBottom: '12px' }}>
+              To claim a refund, please send an email directly to <a href="mailto:hello@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>hello@shadiwalacard.com</a> with your Order ID and payment receipt.
+            </p>
+            <p style={{ background: 'rgba(225, 29, 72, 0.08)', border: '1px solid rgba(225, 29, 72, 0.25)', borderRadius: '12px', padding: '12px 16px', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)' }}>
+              <strong style={{ color: '#e11d48' }}>Important Notice:</strong> Refund requests are processed exclusively via email. Refunds cannot be requested or handled via WhatsApp.
+            </p>
+            <p style={{ marginTop: '12px' }}>
+              Approved refunds will be processed back to the original payment method within 5–7 business days.
             </p>
           </section>
         </div>

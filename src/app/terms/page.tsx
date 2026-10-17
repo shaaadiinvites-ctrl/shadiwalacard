@@ -79,7 +79,7 @@ export default function TermsPage() {
           <section>
             <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 600, marginBottom: '12px' }}>5. Contact Information</h2>
             <p>
-              Questions regarding these Terms should be directed to <a href="mailto:support@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>support@shadiwalacard.com</a>.
+              Questions regarding these Terms should be directed to <a href="mailto:hello@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>hello@shadiwalacard.com</a>.
             </p>
           </section>
         </div>

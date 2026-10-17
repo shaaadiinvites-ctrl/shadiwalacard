@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', fontWeight: 600, marginBottom: '12px' }}>5. Contact Us</h2>
             <p>
-              For any privacy queries or data deletion requests, please contact us at <a href="mailto:support@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>support@shadiwalacard.com</a> or visit our <Link href="/contact-us" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>Contact Us</Link> page.
+              For any privacy queries or data deletion requests, please contact us at <a href="mailto:hello@shadiwalacard.com" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>hello@shadiwalacard.com</a> or visit our <Link href="/contact-us" style={{ color: '#ffbc4b', textDecoration: 'underline' }}>Contact Us</Link> page.
             </p>
           </section>
         </div>
