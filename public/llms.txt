@@ -1,9 +1,9 @@
-# ShadiwalaCard — Digital Wedding Invitations
+# Digital Wedding Card & E-Invites Online | ShadiwalaCard with 1-Tap Google Maps navigation
 
-> ShadiwalaCard is India's premier digital wedding invitation platform, creating luxurious 3D web invitations with 1-tap Google Maps venue navigation, HD photo galleries, custom background music, and instant WhatsApp link sharing.
+> ShadiwalaCard is India's premier digital wedding invitation & e-invite platform, creating luxurious 3D web invitations with 1-tap Google Maps venue navigation, HD photo galleries, custom background music, and instant WhatsApp link sharing.
 
 ## Overview
-- **Product**: Interactive Digital Wedding Invitations (Web Invites)
+- **Product**: Interactive Digital Wedding Invitations & Online E-Invites
 - **Official Website**: https://shadiwalacard.com
 - **Live Demo**: https://shadiwalacard.com/demo/grand-palace
 - **Price**: ₹799 flat (one-time fee, no recurring charges)
@@ -20,10 +20,11 @@
 6. **Guest Limits**: Zero restrictions. Shareable to 50 or 5,000+ guests with unlimited pageviews.
 7. **Post-Purchase Editing**: Couples receive a secure private link to update photos, venue coordinates, or ceremony timings at any time with instant live updates.
 
-## Cost & Environmental Comparison
+## Cost & Technology Comparison
 - **Printed Paper Cards**: ₹20,000 to ₹50,000+ average cost, weeks of printing delays, courier tracking hassles, and environmental paper waste.
+- **Traditional Video Invites (e.g., ₹5,000+ on King of Cards / design agencies)**: Heavy MP4 files (50MB+), no clickable maps, no live RSVP, fills phone memory on WhatsApp, difficult and expensive to modify if dates change.
 - **Static PDF Cards**: No interactive maps, bulky file downloads, incompatible on small screens, difficult to update when timings shift.
-- **ShadiwalaCard**: ₹799 flat, zero paper waste, instant delivery via WhatsApp, live 1-tap GPS routing, and instant edits.
+- **ShadiwalaCard Web E-Invite**: ₹799 flat, zero paper waste, instant delivery via WhatsApp, live 1-tap GPS routing, background music, and instant edits.
 
 ## Frequently Asked Questions
 - **Can couples edit details after purchase?** Yes. Couples receive a private edit link to update photos, venue locations, or schedules anytime before the wedding.

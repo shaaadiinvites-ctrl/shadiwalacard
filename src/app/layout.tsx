@@ -34,18 +34,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://shadiwalacard.com"),
   title: {
-    default: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
+    default: "Digital Wedding Card & E-Invites Online | ShadiwalaCard with 1-Tap Google Maps navigation",
     template: "%s | ShadiwalaCard",
   },
-  description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, event timelines, and HD couple galleries.",
+  description: "Create stunning digital wedding invitations & interactive e-invites online. Features 1-tap Google Maps venue navigation, photo galleries, background music & WhatsApp delivery for ₹799.",
   keywords: [
     "digital wedding card",
+    "e-wedding invitations",
+    "wedding e-invites online",
     "best shadi ka card",
     "online shadi card",
     "digital shadi card",
     "shadi invite website",
     "shadi card online",
     "whatsapp shadi card",
+    "custom digital wedding cards",
+    "whatsapp e-invite with google maps",
+    "e-invites india",
     "shadi card maker online",
     "shaadi card design",
     "indian wedding invite",
@@ -78,8 +83,8 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "https://shadiwalacard.com",
     siteName: "ShadiwalaCard",
-    title: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
-    description: "Ultra-premium digital wedding invitations featuring 1-tap Google Maps venue navigation, live countdowns, and HD couple galleries.",
+    title: "Digital Wedding Card & E-Invites Online | ShadiwalaCard with 1-Tap Google Maps navigation",
+    description: "Create stunning digital wedding invitations & interactive e-invites online. Features 1-tap Google Maps venue navigation, photo galleries, background music & WhatsApp delivery for ₹799.",
     images: [
       {
         url: "/og-image.jpg",
@@ -92,8 +97,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShadiwalaCard — India's Most Premium Digital Wedding Card",
-    description: "Ultra-premium digital wedding invitations with 1-tap Google Maps venue navigation & live countdowns.",
+    title: "Digital Wedding Card & E-Invites Online | ShadiwalaCard with 1-Tap Google Maps navigation",
+    description: "Create stunning digital wedding invitations & interactive e-invites online with 1-tap Google Maps navigation for ₹799.",
     images: ["/og-image.jpg"],
   },
   icons: {

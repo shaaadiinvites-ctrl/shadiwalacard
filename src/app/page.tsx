@@ -833,7 +833,7 @@ export default function HomePage() {
             </h1>
 
             <p className="sf-hero-sub sf-fade-2" style={{ lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.85)', margin: '0 auto clamp(32px, 5vw, 44px)', maxWidth: 680 }}>
-              Wow your guests with a stunning digital card featuring 1-tap Google Maps, Live Countdowns, and seamless itineraries for multiple events.
+              Wow your guests with a stunning digital wedding card & interactive e-invite featuring 1-tap Google Maps navigation, live countdowns, background music, and seamless itineraries.
             </p>
 
             <div className="sf-fade-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
