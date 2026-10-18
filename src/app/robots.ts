@@ -10,6 +10,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: [
           "/api/",
+          "/admin",
+          "/admin/",
           "/edit/",
           "/form",
           "/success",
@@ -38,6 +40,8 @@ export default function robots(): MetadataRoute.Robots {
         ],
         disallow: [
           "/api/",
+          "/admin",
+          "/admin/",
           "/edit/",
           "/form",
           "/success",
