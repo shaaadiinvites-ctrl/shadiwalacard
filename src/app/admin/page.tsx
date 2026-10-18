@@ -12,15 +12,26 @@ import {
   Search,
   LogOut,
   RefreshCw,
-  Sparkles,
-  Calendar,
-  Layers,
   Globe,
   CheckCircle2,
   AlertCircle,
   Clock,
-  ChevronRight,
+  BarChart3,
+  X,
+  Share2,
+  Navigation,
+  Smartphone,
+  Eye,
 } from 'lucide-react';
+
+interface CardAnalytics {
+  views: number;
+  uniqueVisitors: number;
+  cities: Record<string, number>;
+  sources: Record<string, number>;
+  mapClicks: number;
+  lastViewedAt: string | null;
+}
 
 interface WeddingItem {
   id: string;
@@ -39,6 +50,7 @@ interface WeddingItem {
   price: number;
   createdAt: string;
   isTest?: boolean;
+  analytics: CardAnalytics;
   liveUrl: string;
 }
 
@@ -46,6 +58,7 @@ interface AnalyticsData {
   user: string;
   kpis: {
     totalRevenue: number;
+    totalDiscountsGiven: number;
     totalOrders: number;
     totalLiveInvites: number;
     averageOrderValue: number;
@@ -57,12 +70,6 @@ interface AnalyticsData {
     revenue: number;
     orders: number;
   }>;
-  templateBreakdown: Array<{
-    id: string;
-    name: string;
-    count: number;
-    percentage: number;
-  }>;
   topCities: Array<{
     city: string;
     count: number;
@@ -70,8 +77,10 @@ interface AnalyticsData {
   }>;
   recentWeddings: WeddingItem[];
   ordersSummary: {
-    totalCaptured: number;
+    totalPaid: number;
     pending: number;
+    totalOrders: number;
+    testOrdersArchived: number;
   };
 }
 
@@ -82,9 +91,10 @@ export default function AdminDashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeHoverIndex, setActiveHoverIndex] = useState<number | null>(null);
+  const [selectedWeddingForAnalytics, setSelectedWeddingForAnalytics] = useState<WeddingItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Check auth and fetch data
+  // Fetch data
   const fetchData = async () => {
     try {
       setError(null);
@@ -134,7 +144,6 @@ export default function AdminDashboardPage() {
         w.names.toLowerCase().includes(q) ||
         w.slug.toLowerCase().includes(q) ||
         w.city.toLowerCase().includes(q) ||
-        w.templateName.toLowerCase().includes(q) ||
         w.email.toLowerCase().includes(q)
     );
   }, [data?.recentWeddings, searchQuery]);
@@ -143,7 +152,7 @@ export default function AdminDashboardPage() {
   const chartMetrics = useMemo(() => {
     if (!data?.revenueTrend || data.revenueTrend.length === 0) return null;
     const list = data.revenueTrend;
-    const maxRev = Math.max(...list.map((d) => d.revenue), 2000);
+    const maxRev = Math.max(...list.map((d) => d.revenue), 1500);
     const width = 800;
     const height = 220;
     const paddingX = 40;
@@ -157,7 +166,6 @@ export default function AdminDashboardPage() {
 
     const pathD = points.reduce((acc, p, i) => {
       if (i === 0) return `M ${p.x} ${p.y}`;
-      // Smooth cubic bezier curves
       const prev = points[i - 1];
       const cx = (prev.x + p.x) / 2;
       return `${acc} C ${cx} ${prev.y}, ${cx} ${p.y}, ${p.x} ${p.y}`;
@@ -195,10 +203,11 @@ export default function AdminDashboardPage() {
 
   const kpis = data?.kpis || {
     totalRevenue: 0,
+    totalDiscountsGiven: 0,
     totalOrders: 0,
     totalLiveInvites: 0,
-    averageOrderValue: 799,
-    topCity: 'Delhi NCR',
+    averageOrderValue: 0,
+    topCity: 'Awaiting live orders',
   };
 
   return (
@@ -353,7 +362,7 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Content */}
       <main style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px 24px' }}>
         {error && (
           <div
@@ -432,7 +441,10 @@ export default function AdminDashboardPage() {
               {kpis.totalOrders > 0 ? (
                 <>
                   <CheckCircle2 size={13} style={{ color: '#10b981' }} />
-                  <span>{kpis.totalOrders} live customer checkout{kpis.totalOrders === 1 ? '' : 's'}</span>
+                  <span>
+                    {kpis.totalOrders} live customer checkout{kpis.totalOrders === 1 ? '' : 's'}
+                    {kpis.totalDiscountsGiven > 0 && ` (₹${kpis.totalDiscountsGiven} coupon saved)`}
+                  </span>
                 </>
               ) : (
                 <>
@@ -469,7 +481,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Average Order Value */}
+          {/* Average Ticket Size */}
           <div
             style={{
               background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
@@ -491,7 +503,7 @@ export default function AdminDashboardPage() {
               ₹{kpis.averageOrderValue.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.55)' }}>
-              100% digital direct delivery
+              Reflects net discounts applied
             </div>
           </div>
 
@@ -517,12 +529,12 @@ export default function AdminDashboardPage() {
               {kpis.topCity}
             </div>
             <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.55)' }}>
-              Leading regional adoption
+              Regional customer concentration
             </div>
           </div>
         </div>
 
-        {/* Charts & Breakdown Grid */}
+        {/* Charts & Breakdown Grid (Template Popularity removed) */}
         <div
           style={{
             display: 'grid',
@@ -531,10 +543,9 @@ export default function AdminDashboardPage() {
             marginBottom: '32px',
           }}
         >
-          {/* Revenue & Growth Curve Chart */}
+          {/* Revenue Curve Chart */}
           <div
             style={{
-              gridColumn: '1 / -1',
               background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
               borderRadius: '24px',
@@ -548,7 +559,7 @@ export default function AdminDashboardPage() {
                   14-Day Sales & Revenue Trend
                 </h2>
                 <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255, 255, 255, 0.55)' }}>
-                  Daily trajectory of new paid wedding invitations
+                  Daily trajectory of new customer checkouts
                 </p>
               </div>
 
@@ -575,7 +586,7 @@ export default function AdminDashboardPage() {
               <div style={{ width: '100%', overflowX: 'auto' }}>
                 <svg
                   viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
-                  style={{ width: '100%', height: 'auto', maxHeight: '240px', overflow: 'visible' }}
+                  style={{ width: '100%', height: 'auto', maxHeight: '220px', overflow: 'visible' }}
                 >
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -600,10 +611,8 @@ export default function AdminDashboardPage() {
                     );
                   })}
 
-                  {/* Area fill */}
                   <path d={chartMetrics.areaD} fill="url(#revGrad)" />
 
-                  {/* Line stroke */}
                   <path
                     d={chartMetrics.pathD}
                     fill="none"
@@ -612,7 +621,6 @@ export default function AdminDashboardPage() {
                     strokeLinecap="round"
                   />
 
-                  {/* Data Points */}
                   {chartMetrics.points.map((pt, idx) => {
                     const isHovered = activeHoverIndex === idx;
                     return (
@@ -628,7 +636,6 @@ export default function AdminDashboardPage() {
                           onMouseEnter={() => setActiveHoverIndex(idx)}
                           onMouseLeave={() => setActiveHoverIndex(null)}
                         />
-                        {/* X-axis labels */}
                         <text
                           x={pt.x}
                           y={chartMetrics.height - 5}
@@ -647,62 +654,7 @@ export default function AdminDashboardPage() {
             )}
           </div>
 
-          {/* Template Popularity Distribution */}
-          <div
-            style={{
-              background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '24px',
-              padding: '28px',
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <Layers size={18} style={{ color: '#ffbc4b' }} />
-              <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: '#FFFFFF' }}>
-                Template Popularity
-              </h2>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {data?.templateBreakdown && data.templateBreakdown.length > 0 ? (
-                data.templateBreakdown.map((t) => (
-                  <div key={t.id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 500, color: '#FFFFFF' }}>{t.name}</span>
-                      <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                        {t.count} ({t.percentage}%)
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        height: '8px',
-                        borderRadius: '999px',
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${Math.max(t.percentage, 5)}%`,
-                          background:
-                            t.id === 'grand-palace'
-                              ? 'linear-gradient(90deg, #ffbc4b, #e11d48)'
-                              : 'linear-gradient(90deg, #3b82f6, #10b981)',
-                          borderRadius: '999px',
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '13px' }}>No template data yet.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Regional Reach & Top Cities */}
+          {/* Regional Market Hubs */}
           <div
             style={{
               background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
@@ -715,34 +667,27 @@ export default function AdminDashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <Globe size={18} style={{ color: '#60a5fa' }} />
               <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: '#FFFFFF' }}>
-                Top Buyer & Guest Cities
+                Customer Location Hubs
               </h2>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {data?.topCities && data.topCities.length > 0 ? (
-                data.topCities.slice(0, 5).map((cityItem, idx) => (
+                data.topCities.map((cityItem, idx) => (
                   <div
                     key={idx}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '10px 14px',
+                      padding: '12px 16px',
                       borderRadius: '12px',
                       background: 'rgba(255, 255, 255, 0.03)',
                       border: '1px solid rgba(255, 255, 255, 0.06)',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          color: '#ffbc4b',
-                          width: '18px',
-                        }}
-                      >
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#ffbc4b', width: '18px' }}>
                         #{idx + 1}
                       </span>
                       <span style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF' }}>
@@ -755,7 +700,9 @@ export default function AdminDashboardPage() {
                   </div>
                 ))
               ) : (
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '13px' }}>No regional records recorded yet.</p>
+                <div style={{ textAlign: 'center', padding: '32px 16px', color: 'rgba(255, 255, 255, 0.45)', fontSize: '13px' }}>
+                  Location hubs will populate as live customer weddings are published.
+                </div>
               )}
             </div>
           </div>
@@ -784,10 +731,10 @@ export default function AdminDashboardPage() {
           >
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 4px 0', color: '#FFFFFF' }}>
-                All Published Weddings ({filteredWeddings.length})
+                Published Wedding Invites ({filteredWeddings.length})
               </h2>
               <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255, 255, 255, 0.55)' }}>
-                Inspect live invitations, customer details, and direct preview links
+                Inspect card-specific guest opens, regional views, and direct preview links
               </p>
             </div>
 
@@ -827,15 +774,15 @@ export default function AdminDashboardPage() {
 
           {/* Table Container */}
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '850px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '880px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px', textTransform: 'uppercase' }}>
                   <th style={{ padding: '12px 14px' }}>Couple Names</th>
-                  <th style={{ padding: '12px 14px' }}>Template</th>
                   <th style={{ padding: '12px 14px' }}>Location</th>
-                  <th style={{ padding: '12px 14px' }}>Events</th>
-                  <th style={{ padding: '12px 14px' }}>Date Published</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Live Preview</th>
+                  <th style={{ padding: '12px 14px' }}>Ceremonies</th>
+                  <th style={{ padding: '12px 14px' }}>Guest Opens</th>
+                  <th style={{ padding: '12px 14px' }}>Published Date</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -848,6 +795,9 @@ export default function AdminDashboardPage() {
                           year: 'numeric',
                         })
                       : 'Recent';
+
+                    const viewsCount = w.analytics?.views || 0;
+                    const mapClicksCount = w.analytics?.mapClicks || 0;
 
                     return (
                       <tr
@@ -884,30 +834,6 @@ export default function AdminDashboardPage() {
                           </div>
                         </td>
 
-                        <td style={{ padding: '14px' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              background:
-                                w.templateId === 'grand-palace'
-                                  ? 'rgba(201, 168, 76, 0.15)'
-                                  : 'rgba(225, 29, 72, 0.15)',
-                              border: `1px solid ${
-                                w.templateId === 'grand-palace'
-                                  ? 'rgba(201, 168, 76, 0.3)'
-                                  : 'rgba(225, 29, 72, 0.3)'
-                              }`,
-                              color: w.templateId === 'grand-palace' ? '#ffbc4b' : '#fda4af',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {w.templateName}
-                          </span>
-                        </td>
-
                         <td style={{ padding: '14px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.75)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <MapPin size={13} style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
@@ -919,41 +845,82 @@ export default function AdminDashboardPage() {
                           {w.eventsCount} {w.eventsCount === 1 ? 'ceremony' : 'ceremonies'}
                         </td>
 
+                        <td style={{ padding: '14px', fontSize: '13px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Eye size={13} style={{ color: '#ffbc4b' }} />
+                            <span style={{ fontWeight: 600, color: '#FFFFFF' }}>{viewsCount}</span>
+                            <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)' }}>
+                              ({mapClicksCount} maps)
+                            </span>
+                          </div>
+                        </td>
+
                         <td style={{ padding: '14px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)' }}>
                           {createdDate}
                         </td>
 
                         <td style={{ padding: '14px', textAlign: 'right' }}>
-                          <a
-                            href={`/${w.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '6px 12px',
-                              borderRadius: '8px',
-                              background: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
-                              color: '#FFFFFF',
-                              textDecoration: 'none',
-                              fontSize: '12px',
-                              fontWeight: 500,
-                              transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#C9A84C';
-                              e.currentTarget.style.color = '#000000';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                              e.currentTarget.style.color = '#FFFFFF';
-                            }}
-                          >
-                            <span>Open Invite</span>
-                            <ExternalLink size={12} />
-                          </a>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            {/* Card Analytics Button */}
+                            <button
+                              onClick={() => setSelectedWeddingForAnalytics(w)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                background: 'rgba(201, 168, 76, 0.12)',
+                                border: '1px solid rgba(201, 168, 76, 0.3)',
+                                color: '#ffbc4b',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#C9A84C';
+                                e.currentTarget.style.color = '#000000';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(201, 168, 76, 0.12)';
+                                e.currentTarget.style.color = '#ffbc4b';
+                              }}
+                            >
+                              <BarChart3 size={13} />
+                              <span>Analytics</span>
+                            </button>
+
+                            {/* Open Invite Link */}
+                            <a
+                              href={`/${w.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                color: '#FFFFFF',
+                                textDecoration: 'none',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                              }}
+                            >
+                              <span>Preview</span>
+                              <ExternalLink size={12} />
+                            </a>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -970,6 +937,269 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Card Analytics Deep Dive Modal */}
+      {selectedWeddingForAnalytics && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setSelectedWeddingForAnalytics(null)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '620px',
+              background: 'linear-gradient(145deg, rgba(22, 22, 22, 0.98) 0%, rgba(10, 10, 10, 1) 100%)',
+              border: '1px solid rgba(201, 168, 76, 0.3)',
+              borderRadius: '24px',
+              padding: '28px',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(201, 168, 76, 0.1)',
+              position: 'relative',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '20px' }}>💍</span>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#FFFFFF' }}>
+                    {selectedWeddingForAnalytics.names}
+                  </h3>
+                </div>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255, 255, 255, 0.55)' }}>
+                  Live URL: shadiwalacard.com/{selectedWeddingForAnalytics.slug}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setSelectedWeddingForAnalytics(null)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Quick Stats Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '12px',
+                marginBottom: '24px',
+              }}
+            >
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '14px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Total Opens
+                </div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#ffbc4b' }}>
+                  {selectedWeddingForAnalytics.analytics?.views || 0}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '14px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Map Clicks
+                </div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#60a5fa' }}>
+                  {selectedWeddingForAnalytics.analytics?.mapClicks || 0}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '14px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Map Tap Rate
+                </div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#10b981' }}>
+                  {selectedWeddingForAnalytics.analytics?.views > 0
+                    ? `${Math.round(
+                        ((selectedWeddingForAnalytics.analytics.mapClicks || 0) /
+                          selectedWeddingForAnalytics.analytics.views) *
+                          100
+                      )}%`
+                    : '0%'}
+                </div>
+              </div>
+            </div>
+
+            {/* Geographic Breakdown by Area/City */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                <MapPin size={15} style={{ color: '#ffbc4b' }} />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Views by City / Area
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {selectedWeddingForAnalytics.analytics?.cities &&
+                Object.keys(selectedWeddingForAnalytics.analytics.cities).length > 0 ? (
+                  Object.entries(selectedWeddingForAnalytics.analytics.cities)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([cityName, count], idx) => {
+                      const totalViews = selectedWeddingForAnalytics.analytics.views || 1;
+                      const pct = Math.round((count / totalViews) * 100);
+                      return (
+                        <div key={idx}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: '#FFFFFF', fontWeight: 500 }}>{cityName}</span>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                              {count} opens ({pct}%)
+                            </span>
+                          </div>
+                          <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255, 255, 255, 0.06)', overflow: 'hidden' }}>
+                            <div style={{ width: `${Math.max(pct, 5)}%`, height: '100%', background: '#ffbc4b', borderRadius: '999px' }} />
+                          </div>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.02)', textAlign: 'center', fontSize: '12px', color: 'rgba(255, 255, 255, 0.45)' }}>
+                    No regional views recorded yet. Opening the invite link from mobile will log the visitor's city automatically.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Traffic Source / In-App Browser */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                <Smartphone size={15} style={{ color: '#60a5fa' }} />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Opening Platform / App
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {selectedWeddingForAnalytics.analytics?.sources &&
+                Object.keys(selectedWeddingForAnalytics.analytics.sources).length > 0 ? (
+                  Object.entries(selectedWeddingForAnalytics.analytics.sources)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([sourceName, count], idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
+                          fontSize: '12px',
+                        }}
+                      >
+                        <span style={{ color: '#FFFFFF', fontWeight: 500 }}>{sourceName}</span>
+                        <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{count} visits</span>
+                      </div>
+                    ))
+                ) : (
+                  <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.02)', textAlign: 'center', fontSize: '12px', color: 'rgba(255, 255, 255, 0.45)' }}>
+                    Traffic sources (WhatsApp, Safari, Chrome) will populate upon guest opens.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Last Viewed Timestamp & Action Footer */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingTop: '16px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}
+            >
+              <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clock size={13} />
+                <span>
+                  Last Viewed:{' '}
+                  {selectedWeddingForAnalytics.analytics?.lastViewedAt
+                    ? new Date(selectedWeddingForAnalytics.analytics.lastViewedAt).toLocaleTimeString('en-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: 'numeric',
+                        month: 'short',
+                      })
+                    : 'Not opened yet'}
+                </span>
+              </div>
+
+              <a
+                href={selectedWeddingForAnalytics.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #ffbc4b 0%, #C9A84C 100%)',
+                  color: '#000000',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  textDecoration: 'none',
+                }}
+              >
+                <span>Visit Live Invite</span>
+                <ExternalLink size={13} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

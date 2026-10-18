@@ -107,12 +107,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import WeddingAnalyticsTracker from "@/components/WeddingAnalyticsTracker";
+
 export default async function SlugPage({ params }: Props) {
   const { slug } = await params;
   const { data, error } = await getWeddingBySlug(slug);
 
   if (error || !data) notFound();
 
-  return <TemplateRenderer wedding={data} />;
+  return (
+    <>
+      <WeddingAnalyticsTracker slug={slug} />
+      <TemplateRenderer wedding={data} />
+    </>
+  );
 }
 

@@ -35,13 +35,13 @@ export async function GET(req: NextRequest) {
     const launchCutoffStr = process.env.ANALYTICS_START_DATE || "2026-10-18T15:42:00.000Z";
     const launchCutoffTime = new Date(launchCutoffStr).getTime();
 
-    // 1. Fetch weddings with existing safe columns only
+    // 1. Fetch weddings including special_instructions for card-level analytics
     const { data: weddings, error: weddingsError } = await supabase
       .from("weddings")
       .select(
         `id, slug, bride_name, groom_name, name_order, hashtag,
          contact_number, primary_email, template_id, price_inr,
-         created_at, events, payment_status, rsvp1_name, rsvp1_phone`
+         created_at, events, payment_status, rsvp1_name, rsvp1_phone, special_instructions`
       )
       .order("created_at", { ascending: false });
 
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       console.error("Error fetching weddings for analytics:", weddingsError);
     }
 
-    // 2. Fetch payment orders with existing safe columns only
+    // 2. Fetch payment orders with coupon discount tracking
     const { data: paymentOrders, error: ordersError } = await supabase
       .from("payment_orders")
       .select(
@@ -82,41 +82,12 @@ export async function GET(req: NextRequest) {
       return weddingTime >= launchCutoffTime;
     });
 
-    // Calculate Gross Revenue from live paid orders:
+    // Calculate Net Revenue from live paid orders:
+    // If someone applies a coupon, amount_inr is the discounted amount paid, so revenue reflects the exact net collected
     const totalRevenue = paidLiveOrders.reduce((sum, o) => sum + (Number(o.amount_inr) || 0), 0);
+    const totalDiscountsGiven = paidLiveOrders.reduce((sum, o) => sum + (Number(o.discount_amount_inr) || 0), 0);
     const totalOrdersCount = paidLiveOrders.length;
     const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
-
-    // Template Name mapping
-    const templateNames: Record<string, string> = {
-      "grand-palace": "The Grand Palace",
-      "royal-heritage": "Royal Heritage",
-      "floral-romance": "Floral Romance",
-      "modern-minimal": "Modern Minimal",
-    };
-
-    // Template Popularity (only from live orders/weddings if available, else general template slots)
-    const templateCounts: Record<string, number> = {
-      "grand-palace": 0,
-      "royal-heritage": 0,
-      "floral-romance": 0,
-      "modern-minimal": 0,
-    };
-
-    paidLiveOrders.forEach((o) => {
-      const tid = o.template_id || "grand-palace";
-      templateCounts[tid] = (templateCounts[tid] || 0) + 1;
-    });
-
-    const totalTemplateCount = Object.values(templateCounts).reduce((a, b) => a + b, 0);
-    const templateBreakdown = Object.entries(templateCounts)
-      .map(([id, count]) => ({
-        id,
-        name: templateNames[id] || id,
-        count,
-        percentage: totalTemplateCount > 0 ? Math.round((count / totalTemplateCount) * 100) : 0,
-      }))
-      .sort((a, b) => b.count - a.count);
 
     // Geographic City Distribution from live weddings
     const cityCounts: Record<string, number> = {};
@@ -161,7 +132,7 @@ export async function GET(req: NextRequest) {
 
     const revenueTrend = Object.values(dailyMap);
 
-    // Format weddings directory
+    // Format all weddings and parse card-level analytics
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
     const recentWeddings = allWeddings.map((w) => {
       const coupleNames =
@@ -173,6 +144,41 @@ export async function GET(req: NextRequest) {
       const city = extractCity(w);
       const isTest = new Date(w.created_at).getTime() < launchCutoffTime;
 
+      // Extract card-specific analytics
+      let cardAnalytics: {
+        views: number;
+        uniqueVisitors: number;
+        cities: Record<string, number>;
+        sources: Record<string, number>;
+        mapClicks: number;
+        lastViewedAt: string | null;
+      } = {
+        views: 0,
+        uniqueVisitors: 0,
+        cities: {},
+        sources: {},
+        mapClicks: 0,
+        lastViewedAt: null,
+      };
+
+      if (w.special_instructions) {
+        try {
+          const parsed = JSON.parse(w.special_instructions);
+          if (typeof parsed === "object" && parsed !== null) {
+            cardAnalytics = {
+              views: Number(parsed.views) || 0,
+              uniqueVisitors: Number(parsed.uniqueVisitors) || 0,
+              cities: parsed.cities || {},
+              sources: parsed.sources || {},
+              mapClicks: Number(parsed.mapClicks) || 0,
+              lastViewedAt: parsed.lastViewedAt || null,
+            };
+          }
+        } catch {
+          // Plain text instructions, keep defaults
+        }
+      }
+
       return {
         id: w.id,
         slug: w.slug,
@@ -183,13 +189,14 @@ export async function GET(req: NextRequest) {
         email: w.primary_email || "N/A",
         phone: w.contact_number || "N/A",
         templateId: w.template_id || "grand-palace",
-        templateName: templateNames[w.template_id || "grand-palace"] || "The Grand Palace",
+        templateName: "The Grand Palace",
         city,
         country: "India",
         eventsCount: eventsList.length,
         price: Number(w.price_inr) || 799,
         createdAt: w.created_at,
         isTest,
+        analytics: cardAnalytics,
         liveUrl: `https://${rootDomain}/${w.slug}`,
       };
     });
@@ -199,13 +206,13 @@ export async function GET(req: NextRequest) {
       user,
       kpis: {
         totalRevenue,
+        totalDiscountsGiven,
         totalOrders: totalOrdersCount,
         totalLiveInvites: liveWeddings.length,
         averageOrderValue: avgOrderValue,
         topCity: topCities[0]?.city || "Awaiting live orders",
       },
       revenueTrend,
-      templateBreakdown,
       topCities,
       recentWeddings,
       ordersSummary: {
