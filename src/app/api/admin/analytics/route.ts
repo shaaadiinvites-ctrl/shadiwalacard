@@ -31,7 +31,11 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerSupabaseClient();
 
-    // 1. Fetch weddings with existing, safe columns only
+    // Launch cutoff timestamp: only count real checkouts from this moment forward
+    const launchCutoffStr = process.env.ANALYTICS_START_DATE || "2026-10-18T15:42:00.000Z";
+    const launchCutoffTime = new Date(launchCutoffStr).getTime();
+
+    // 1. Fetch weddings with existing safe columns only
     const { data: weddings, error: weddingsError } = await supabase
       .from("weddings")
       .select(
@@ -45,7 +49,7 @@ export async function GET(req: NextRequest) {
       console.error("Error fetching weddings for analytics:", weddingsError);
     }
 
-    // 2. Fetch payment orders with existing, safe columns only
+    // 2. Fetch payment orders with existing safe columns only
     const { data: paymentOrders, error: ordersError } = await supabase
       .from("payment_orders")
       .select(
@@ -61,15 +65,27 @@ export async function GET(req: NextRequest) {
     const allWeddings = weddings || [];
     const allOrders = paymentOrders || [];
 
-    // Filter paid orders: 'used', 'verified', 'captured', 'paid'
-    const paidOrders = allOrders.filter(
+    // Filter live orders (created on or after launch cutoff)
+    const liveOrders = allOrders.filter((o) => {
+      const orderTime = new Date(o.created_at || o.verified_at).getTime();
+      return orderTime >= launchCutoffTime;
+    });
+
+    // Filter live paid orders: 'used', 'verified', 'captured', 'paid'
+    const paidLiveOrders = liveOrders.filter(
       (o) => o.status === "verified" || o.status === "used" || o.status === "captured" || o.status === "paid"
     );
 
-    // Calculate Gross Revenue:
-    const totalRevenue = paidOrders.reduce((sum, o) => sum + (Number(o.amount_inr) || 0), 0);
-    const totalOrdersCount = paidOrders.length;
-    const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 799;
+    // Filter live weddings (created on or after launch cutoff)
+    const liveWeddings = allWeddings.filter((w) => {
+      const weddingTime = new Date(w.created_at).getTime();
+      return weddingTime >= launchCutoffTime;
+    });
+
+    // Calculate Gross Revenue from live paid orders:
+    const totalRevenue = paidLiveOrders.reduce((sum, o) => sum + (Number(o.amount_inr) || 0), 0);
+    const totalOrdersCount = paidLiveOrders.length;
+    const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
 
     // Template Name mapping
     const templateNames: Record<string, string> = {
@@ -79,18 +95,18 @@ export async function GET(req: NextRequest) {
       "modern-minimal": "Modern Minimal",
     };
 
-    // Template Popularity (from both weddings and orders)
-    const templateCounts: Record<string, number> = {};
-    paidOrders.forEach((o) => {
+    // Template Popularity (only from live orders/weddings if available, else general template slots)
+    const templateCounts: Record<string, number> = {
+      "grand-palace": 0,
+      "royal-heritage": 0,
+      "floral-romance": 0,
+      "modern-minimal": 0,
+    };
+
+    paidLiveOrders.forEach((o) => {
       const tid = o.template_id || "grand-palace";
       templateCounts[tid] = (templateCounts[tid] || 0) + 1;
     });
-    if (Object.keys(templateCounts).length === 0) {
-      allWeddings.forEach((w) => {
-        const tid = w.template_id || "grand-palace";
-        templateCounts[tid] = (templateCounts[tid] || 0) + 1;
-      });
-    }
 
     const totalTemplateCount = Object.values(templateCounts).reduce((a, b) => a + b, 0);
     const templateBreakdown = Object.entries(templateCounts)
@@ -102,18 +118,12 @@ export async function GET(req: NextRequest) {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Geographic City Distribution extracted from wedding venues & hubs
+    // Geographic City Distribution from live weddings
     const cityCounts: Record<string, number> = {};
-    allWeddings.forEach((w) => {
+    liveWeddings.forEach((w) => {
       const city = extractCity(w);
       cityCounts[city] = (cityCounts[city] || 0) + 1;
     });
-
-    // Provide default distribution if database has initial sample counts
-    if (cityCounts["Delhi NCR"] === undefined) cityCounts["Delhi NCR"] = 14;
-    if (cityCounts["Gurugram"] === undefined) cityCounts["Gurugram"] = 9;
-    if (cityCounts["Jaipur"] === undefined) cityCounts["Jaipur"] = 6;
-    if (cityCounts["Mumbai"] === undefined) cityCounts["Mumbai"] = 5;
 
     const totalCityRecords = Object.values(cityCounts).reduce((a, b) => a + b, 0);
     const topCities = Object.entries(cityCounts)
@@ -125,7 +135,7 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
 
-    // Revenue Trend: Group by past 14 days (or active order dates)
+    // Revenue Trend: 14 days curve starting at 0
     const dailyMap: Record<string, { revenue: number; orders: number; date: string; label: string }> = {};
     const now = new Date();
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -138,8 +148,8 @@ export async function GET(req: NextRequest) {
       dailyMap[isoKey] = { revenue: 0, orders: 0, date: isoKey, label };
     }
 
-    // Populate daily stats from paid orders
-    paidOrders.forEach((o) => {
+    // Populate daily stats from live paid orders only
+    paidLiveOrders.forEach((o) => {
       const dateStr = o.verified_at || o.created_at;
       if (!dateStr) return;
       const dayKey = dateStr.split("T")[0];
@@ -149,10 +159,9 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // If recent 14 days has low activity because older test orders exist, populate recent orders nicely
     const revenueTrend = Object.values(dailyMap);
 
-    // Format all weddings
+    // Format weddings directory
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shadiwalacard.com";
     const recentWeddings = allWeddings.map((w) => {
       const coupleNames =
@@ -162,6 +171,7 @@ export async function GET(req: NextRequest) {
 
       const eventsList = Array.isArray(w.events) ? w.events : [];
       const city = extractCity(w);
+      const isTest = new Date(w.created_at).getTime() < launchCutoffTime;
 
       return {
         id: w.id,
@@ -179,6 +189,7 @@ export async function GET(req: NextRequest) {
         eventsCount: eventsList.length,
         price: Number(w.price_inr) || 799,
         createdAt: w.created_at,
+        isTest,
         liveUrl: `https://${rootDomain}/${w.slug}`,
       };
     });
@@ -189,18 +200,19 @@ export async function GET(req: NextRequest) {
       kpis: {
         totalRevenue,
         totalOrders: totalOrdersCount,
-        totalLiveInvites: allWeddings.length,
+        totalLiveInvites: liveWeddings.length,
         averageOrderValue: avgOrderValue,
-        topCity: topCities[0]?.city || "Delhi NCR",
+        topCity: topCities[0]?.city || "Awaiting live orders",
       },
       revenueTrend,
       templateBreakdown,
       topCities,
       recentWeddings,
       ordersSummary: {
-        totalPaid: paidOrders.length,
-        pending: allOrders.filter((o) => o.status === "created").length,
-        totalOrders: allOrders.length,
+        totalPaid: paidLiveOrders.length,
+        pending: liveOrders.filter((o) => o.status === "created").length,
+        totalOrders: liveOrders.length,
+        testOrdersArchived: allOrders.length - liveOrders.length,
       },
     });
   } catch (error) {

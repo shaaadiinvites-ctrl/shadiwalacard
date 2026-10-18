@@ -38,6 +38,7 @@ interface WeddingItem {
   eventsCount: number;
   price: number;
   createdAt: string;
+  isTest?: boolean;
   liveUrl: string;
 }
 
@@ -428,8 +429,17 @@ export default function AdminDashboardPage() {
               ₹{kpis.totalRevenue.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.55)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CheckCircle2 size={13} style={{ color: '#10b981' }} />
-              <span>{kpis.totalOrders} Successful checkouts</span>
+              {kpis.totalOrders > 0 ? (
+                <>
+                  <CheckCircle2 size={13} style={{ color: '#10b981' }} />
+                  <span>{kpis.totalOrders} live customer checkout{kpis.totalOrders === 1 ? '' : 's'}</span>
+                </>
+              ) : (
+                <>
+                  <Clock size={13} style={{ color: '#ffbc4b' }} />
+                  <span>Counting checkouts from launch onwards</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -455,7 +465,7 @@ export default function AdminDashboardPage() {
               {kpis.totalLiveInvites}
             </div>
             <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.55)' }}>
-              Accessible on unique custom URLs
+              {kpis.totalLiveInvites === 0 ? 'Awaiting first live customer publication' : 'Live customer weddings'}
             </div>
           </div>
 
@@ -850,7 +860,25 @@ export default function AdminDashboardPage() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         <td style={{ padding: '14px' }}>
-                          <div style={{ fontWeight: 600, color: '#FFFFFF', fontSize: '14px' }}>{w.names}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 600, color: '#FFFFFF', fontSize: '14px' }}>{w.names}</span>
+                            {w.isTest && (
+                              <span
+                                style={{
+                                  fontSize: '10px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: 'rgba(255, 255, 255, 0.08)',
+                                  color: 'rgba(255, 255, 255, 0.45)',
+                                  textTransform: 'uppercase',
+                                  fontWeight: 600,
+                                  letterSpacing: '0.5px',
+                                }}
+                              >
+                                Test Run
+                              </span>
+                            )}
+                          </div>
                           <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>
                             /{w.slug} {w.hashtag && `• ${w.hashtag}`}
                           </div>
