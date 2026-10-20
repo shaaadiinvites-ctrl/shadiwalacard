@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy | ShadiwalaCard",
-  description: "Information regarding our 100% satisfaction guarantee, cancellation, and refund policies.",
+  title: "100% Money-Back Guarantee & Refund Policy | ShadiwalaCard",
+  description: "Learn about ShadiwalaCard's 100% money-back guarantee and simple email-only refund process with zero questions asked.",
+  alternates: {
+    canonical: "https://shadiwalacard.com/refund-policy",
+  },
   openGraph: {
-    type: "website",
+    title: "100% Money-Back Guarantee & Refund Policy | ShadiwalaCard",
+    description: "Learn about ShadiwalaCard's 100% money-back guarantee and simple email-only refund process with zero questions asked.",
     url: "https://shadiwalacard.com/refund-policy",
-    title: "Refund & Cancellation Policy | ShadiwalaCard",
-    description: "Learn about ShadiwalaCard's refund and cancellation policies.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }],
+    siteName: "ShadiwalaCard",
   },
 };
 
-export default function RefundLayout({ children }: { children: React.ReactNode }) {
+export default function RefundLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

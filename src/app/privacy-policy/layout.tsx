@@ -2,16 +2,22 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | ShadiwalaCard",
-  description: "Learn how ShadiwalaCard protects customer privacy, payment details, and invitation data.",
+  description: "Read ShadiwalaCard's privacy policy. Learn how your couple photographs, guest details, and payments are protected with bank-grade encryption.",
+  alternates: {
+    canonical: "https://shadiwalacard.com/privacy-policy",
+  },
   openGraph: {
-    type: "website",
-    url: "https://shadiwalacard.com/privacy-policy",
     title: "Privacy Policy | ShadiwalaCard",
-    description: "Learn how ShadiwalaCard protects customer privacy and invitation data.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }],
+    description: "Read ShadiwalaCard's privacy policy. Learn how your couple photographs, guest details, and payments are protected with bank-grade encryption.",
+    url: "https://shadiwalacard.com/privacy-policy",
+    siteName: "ShadiwalaCard",
   },
 };
 
-export default function PrivacyLayout({ children }: { children: React.ReactNode }) {
+export default function PrivacyLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

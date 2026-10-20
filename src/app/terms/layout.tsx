@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | ShadiwalaCard",
-  description: "Terms and conditions for creating and hosting digital wedding invitations on ShadiwalaCard.",
+  title: "Terms & Conditions | ShadiwalaCard",
+  description: "Terms and conditions of service for creating, customizing, and hosting interactive digital wedding invitations on ShadiwalaCard.",
+  alternates: {
+    canonical: "https://shadiwalacard.com/terms",
+  },
   openGraph: {
-    type: "website",
+    title: "Terms & Conditions | ShadiwalaCard",
+    description: "Terms and conditions of service for creating, customizing, and hosting interactive digital wedding invitations on ShadiwalaCard.",
     url: "https://shadiwalacard.com/terms",
-    title: "Terms of Service | ShadiwalaCard",
-    description: "Terms and conditions for creating digital wedding invitations on ShadiwalaCard.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" }],
+    siteName: "ShadiwalaCard",
   },
 };
 
-export default function TermsLayout({ children }: { children: React.ReactNode }) {
+export default function TermsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

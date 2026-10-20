@@ -135,6 +135,34 @@ export default function HomePage() {
     ]
   };
 
+  const jsonLdWebSite = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'ShadiwalaCard',
+    url: 'https://shadiwalacard.com',
+    description: 'Ultra-premium interactive digital wedding cards and e-invitations with 1-tap Google Maps navigation.',
+    inLanguage: ['en-IN', 'hi-IN']
+  };
+
+  const jsonLdBreadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://shadiwalacard.com'
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'The Grand Palace Demo',
+        item: 'https://shadiwalacard.com/demo/grand-palace'
+      }
+    ]
+  };
+
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -200,6 +228,14 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumbs) }}
       />
 
       {/* ─────────────────── PAGE STYLES ─────────────────── */}

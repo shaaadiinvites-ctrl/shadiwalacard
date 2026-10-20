@@ -1,36 +1,20 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us & Royal Support | ShadiwalaCard",
-  description:
-    "Need assistance with your digital wedding invitation or custom concierge design? Connect with our dedicated ShadiwalaCard team.",
-  openGraph: {
-    type: "website",
-    url: "https://shadiwalacard.com/contact-us",
-    title: "Contact Us & Royal Support | ShadiwalaCard",
-    description:
-      "Need assistance with your digital wedding invitation? Connect with our dedicated concierge support team.",
-    siteName: "ShadiwalaCard",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        type: "image/jpeg",
-        alt: "Contact ShadiwalaCard Support",
-      },
-    ],
+  title: "Contact Us & WhatsApp Support | ShadiwalaCard",
+  description: "Get in touch with the ShadiwalaCard team for digital wedding card customization, instant WhatsApp assistance, or design queries.",
+  alternates: {
+    canonical: "https://shadiwalacard.com/contact-us",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact Us & Royal Support | ShadiwalaCard",
-    description:
-      "Need assistance with your digital wedding invitation? Connect with our team.",
-    images: ["/og-image.jpg"],
+  openGraph: {
+    title: "Contact Us & WhatsApp Support | ShadiwalaCard",
+    description: "Get in touch with the ShadiwalaCard team for digital wedding card customization, instant WhatsApp assistance, or design queries.",
+    url: "https://shadiwalacard.com/contact-us",
+    siteName: "ShadiwalaCard",
   },
 };
 
-export default function ContactUsLayout({
+export default function ContactLayout({
   children,
 }: {
   children: React.ReactNode;
