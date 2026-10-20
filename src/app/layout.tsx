@@ -105,6 +105,9 @@ export const metadata: Metadata = {
     icon: "/icon.png",
     apple: "/icon.png",
   },
+  verification: {
+    google: "NIrsAyih8T14ckXYattujAnV74BHcj_eEnaErcMrCYs",
+  },
 };
 
 const jsonLdOrg = {
