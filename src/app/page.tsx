@@ -1457,6 +1457,8 @@ export default function HomePage() {
               <span style={{ color: '#ffbc4b' }}>✦</span>
               <span>Find My Invite</span>
             </button>
+            <Link href="/lagan-patrika-online" style={{ color: '#ffbc4b', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s', fontWeight: 500 }}>Lagan Patrika</Link>
+            <Link href="/destination-wedding-card" style={{ color: '#ffbc4b', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s', fontWeight: 500 }}>Destination Weddings</Link>
             <Link href="/contact-us" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Contact Us</Link>
             <Link href="/privacy-policy" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 12px', margin: '-8px -12px', transition: 'color 0.2s' }}>Terms of Service</Link>

@@ -37,6 +37,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           "/",
           "/demo/",
+          "/lagan-patrika-online",
+          "/destination-wedding-card",
           "/contact-us",
           "/privacy-policy",
           "/terms",
