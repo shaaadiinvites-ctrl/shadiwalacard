@@ -187,8 +187,8 @@ export async function sendWhatsAppOrderConfirmation({
     ];
 
     const cleanParam = templateName.replace(/\s+invitation$/i, "").trim();
-    let templateSent = false;
     let res: any = null;
+    let templateSent = false;
 
     for (const cand of templateCandidates) {
       const payload = {
@@ -325,7 +325,6 @@ export async function sendWhatsAppInviteReady({
       { name: "shadiwalacard_order_confirmed_v1", lang: "en" },
     ];
 
-    let templateSent = false;
     let res: any = null;
 
     for (const cand of templateCandidates) {
@@ -368,7 +367,6 @@ export async function sendWhatsAppInviteReady({
       );
 
       if (res.ok) {
-        templateSent = true;
         break;
       }
 

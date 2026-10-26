@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { usePostHog } from 'posthog-js/react';
 
-const Smooth3DSlideshow = dynamic(() => import('@/components/originkit/coverflowgallery'), {
+const Smooth3DSlideshow = dynamic(() => import('@/components/templates/project3/originkit/ui/coverflowgallery'), {
   ssr: false,
   loading: () => <div style={{ height: 420, width: '100%', borderRadius: 16, background: 'rgba(255,255,255,0.02)' }} />
 });

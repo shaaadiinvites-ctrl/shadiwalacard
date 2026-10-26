@@ -115,14 +115,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
     React.useEffect(() => {
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-      const originalConsoleError = console.error;
-      console.error = (...args) => {
-        if (typeof args[0] === "string" && (args[0].includes("Google Maps") || args[0].includes("ApiNotActivated") || args[0].includes("BillingNotEnabled") || args[0].includes("RefererNotAllowed"))) {
-          fetch("/api/log", { method: "POST", body: JSON.stringify({ error: args[0] }) }).catch(() => {});
-        }
-        originalConsoleError.apply(console, args);
-      };
-      
+
       const initAutocomplete = () => {
         const el = document.getElementById(inputId) as HTMLInputElement;
         if (!el || !(window as any).google?.maps?.places) return;
@@ -186,7 +179,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
           setTimeout(initAutocomplete, 100);
         };
         script.onerror = () => {
-          fetch("/api/log", { method: "POST", body: JSON.stringify({ error: "Script failed to load. Possibly blocked by Adblocker or Network." }) }).catch(() => {});
+          console.warn("Google Maps script failed to load. Possibly blocked by Adblocker or Network.");
         };
         document.head.appendChild(script);
       } else if (googleMapsScriptLoading) {
@@ -198,12 +191,10 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
         }, 500);
         return () => {
           clearInterval(interval);
-          console.error = originalConsoleError;
         }
       }
       
       return () => {
-        console.error = originalConsoleError;
         if (autocompleteRef.current) {
           if ((window as any).google?.maps?.event) {
             (window as any).google.maps.event.clearInstanceListeners(autocompleteRef.current);

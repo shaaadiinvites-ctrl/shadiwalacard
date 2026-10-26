@@ -7,7 +7,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { getClientGeo } from "@/lib/geo";
 import { isAllowedImage } from "@/lib/imageValidation";
 import { validateWeddingPayload } from "@/lib/validateWedding";
-import { sendInviteReadyEmail } from "@/lib/sendEmail";
+import { sendInviteReadyEmail } from "@/lib/email";
 
 type SubmitBody = WeddingFormData & { paymentOrderId?: string; templateId?: string; sig?: string };
 
