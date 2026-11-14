@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function TermsPage() {
   return (
-    <main style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif", minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <main style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif", minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       {/* HEADER */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 100,
@@ -13,7 +13,7 @@ export default function TermsPage() {
       }}>
         <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <img src="/uploads/logo.png" alt="ShadiwalaCard Logo" style={{ height: '28px', width: 'auto' }} />
+            <img src="/uploads/logo.png" alt="ShadiwalaCard Logo" width={140} height={28} decoding="async" fetchPriority="high" style={{ height: '28px', width: 'auto' }} />
             <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.2rem', color: '#FFFFFF', fontWeight: 600 }}>
               ShadiwalaCard
             </span>

@@ -61,9 +61,21 @@ function CartPageContent() {
         const firstBox = document.querySelector<HTMLInputElement>(".otp-digit-box");
         firstBox?.focus();
       }, 200);
-      return () => clearTimeout(timer);
+
+      // Modern Web Guidance: Dismiss modal with Escape key
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape" && !verifying) {
+          handleCloseOtpModal();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("keydown", handleKeyDown);
+      };
     }
-  }, [showOtpModal]);
+  }, [showOtpModal, verifying]);
 
   const validatePhone = (code: string, number: string) => {
     const digitsOnly = number.replace(/\D/g, '');
@@ -515,7 +527,7 @@ function CartPageContent() {
   const isButtonDisabled = loadingRazorpay || verifying;
 
   return (
-    <div style={{ background: '#050505', color: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "var(--font-body), 'Inter', sans-serif", overflowX: 'hidden', width: '100%' }}>
+    <div style={{ background: '#050505', color: '#FFFFFF', minHeight: '100dvh', display: 'flex', flexDirection: 'column', fontFamily: "var(--font-body), 'Inter', sans-serif", overflowX: 'hidden', width: '100%' }}>
       {isProcessingPayment && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(16px)' }}>
           <div style={{ width: 48, height: 48, border: '4px solid rgba(225, 29, 72, 0.2)', borderTopColor: '#e11d48', borderRadius: '50%', animation: 'cartSpin 0.8s linear infinite', marginBottom: 16 }} />
@@ -823,6 +835,8 @@ function CartPageContent() {
 
             {error && (
               <div 
+                role="alert"
+                aria-live="polite"
                 style={{ 
                   marginBottom: 16, 
                   background: 'rgba(225, 29, 72, 0.14)', 
@@ -848,12 +862,13 @@ function CartPageContent() {
             )}
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>
+              <label htmlFor="cart-phone-input" style={{ display: 'block', fontSize: '0.813rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>
                 WhatsApp Number (for instant delivery) <span style={{ color: '#e11d48' }}>*</span>
               </label>
                 <div style={{ display: 'flex', gap: 8, height: 46 }}>
                   <select
                     value={countryCode}
+                    aria-label="Country calling code"
                     onChange={(e) => {
                       setCountryCode(e.target.value);
                       setIsVerified(false);
@@ -874,6 +889,11 @@ function CartPageContent() {
                     <input
                       ref={phoneInputRef}
                       type="tel"
+                      id="cart-phone-input"
+                      name="phone"
+                      aria-label="10-digit WhatsApp number"
+                      autoComplete="tel-national"
+                      inputMode="numeric"
                       value={phone}
                       onChange={(e) => {
                         setPhone(e.target.value.replace(/\D/g, ''));
@@ -882,7 +902,9 @@ function CartPageContent() {
                         cleanupRecaptcha();
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                        // Modern Web Guidance: IME-safe enter submit check (nativeEvent.isComposing for React)
+                        if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                          e.preventDefault();
                           handleCheckout();
                         }
                       }}
@@ -1093,6 +1115,9 @@ function CartPageContent() {
 
             {/* Bottom Sheet */}
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="otp-modal-title"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -1109,15 +1134,15 @@ function CartPageContent() {
                 {/* Top drag handle indicator */}
                 <div style={{ width: 44, height: 5, background: 'rgba(255,255,255,0.2)', borderRadius: 999, margin: '0 auto 24px' }} />
                 
-                {/* Close Button Top-Right */}
+                {/* Close Button Top-Right (Modern Web Guidance: Accessible 44x44px touch target) */}
                 <button
                   type="button"
                   onClick={handleCloseOtpModal}
-                  aria-label="Close"
+                  aria-label="Close OTP verification dialog"
                   disabled={verifying}
                   style={{
-                    position: 'absolute', top: 20, right: 20,
-                    width: 36, height: 36, borderRadius: '50%',
+                    position: 'absolute', top: 16, right: 16,
+                    width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: '50%',
                     background: 'rgba(255,255,255,0.06)', border: 'none',
                     color: 'rgba(255,255,255,0.6)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',
@@ -1131,7 +1156,7 @@ function CartPageContent() {
                   </svg>
                 </button>
 
-                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', margin: '0 0 8px' }}>
+                <h3 id="otp-modal-title" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', margin: '0 0 8px' }}>
                   Enter OTP
                 </h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', margin: '0 0 6px', lineHeight: 1.5 }}>
@@ -1156,6 +1181,7 @@ function CartPageContent() {
                       maxLength={1}
                       inputMode="numeric"
                       autoComplete="one-time-code"
+                      aria-label={`Verification code digit ${index + 1} of 6`}
                       value={digit}
                       disabled={otpSuccess || verifying}
                       onChange={(e) => handleOtpChange(e.target, index)}
@@ -1182,7 +1208,7 @@ function CartPageContent() {
 
                 {/* Auto-verify feedback, Success, & Error messages */}
                 {otpError ? (
-                  <p style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>
+                  <p role="alert" aria-live="polite" style={{ color: '#ff4d6d', fontSize: '0.813rem', fontWeight: 600, textAlign: 'center', margin: '0 0 16px' }}>{otpError}</p>
                 ) : otpSuccess ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#10b981', fontSize: '0.813rem', fontWeight: 600, margin: '0 0 16px' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

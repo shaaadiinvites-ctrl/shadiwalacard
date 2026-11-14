@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       cities: Record<string, number>;
       sources: Record<string, number>;
       mapClicks: number;
+      blessings: number;
       lastViewedAt: string | null;
     } = {
       views: 0,
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
       cities: {},
       sources: {},
       mapClicks: 0,
+      blessings: 0,
       lastViewedAt: null,
     };
 
@@ -63,6 +65,7 @@ export async function POST(req: NextRequest) {
             cities: parsed.cities || {},
             sources: parsed.sources || {},
             mapClicks: Number(parsed.mapClicks) || 0,
+            blessings: Number(parsed.blessings) || 0,
             lastViewedAt: parsed.lastViewedAt || null,
           };
         }
@@ -86,6 +89,8 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     if (event === "map_click") {
       stats.mapClicks += 1;
+    } else if (event === "blessing") {
+      stats.blessings = (stats.blessings || 0) + 1;
     } else {
       // Default: 'view'
       stats.views += 1;

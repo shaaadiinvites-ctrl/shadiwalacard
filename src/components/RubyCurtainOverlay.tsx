@@ -225,6 +225,13 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
       setState("scattering");
       startTimeRef.current = performance.now();
     }, 240);
+
+    // Auto-Launch Sky Rockets in Hero Background right as curtain reveal ends (~65% parted)
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("shadi:auto-palace-fireworks"));
+      }
+    }, 2300);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -738,6 +745,14 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
           50% {
             transform: translateY(5px);
             opacity: 1;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes pendulumSway {
+            0%, 100% { transform: rotate(0deg); }
+          }
+          @keyframes chevronBob {
+            0%, 100% { transform: translateY(0); opacity: 0.85; }
           }
         }
       `}</style>

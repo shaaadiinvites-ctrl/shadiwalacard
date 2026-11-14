@@ -25,6 +25,27 @@ body {
   font-family: var(--font-body), 'Inter', system-ui, sans-serif;
 }
 
+/* Modern Web Guidance: Balanced headlines to prevent typographic orphans */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/* Modern Web Guidance: Accessible motion respecting system preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dynamic viewport height utility adapting to mobile browser URL bars */
+.min-h-screen-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* Google Maps Autocomplete Dropdown Styling Fixes */
 .pac-container {
   z-index: 99999 !important;

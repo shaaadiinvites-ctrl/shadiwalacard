@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function ContactUsPage() {
   return (
-    <main style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif", minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <main style={{ background: '#050505', color: '#FFFFFF', fontFamily: "var(--font-body), 'Inter', sans-serif", minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       {/* GLOBAL STYLES */}
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,6 +48,10 @@ export default function ContactUsPage() {
             <img 
               src="/uploads/logo.png" 
               alt="ShadiwalaCard Logo" 
+              width={140}
+              height={28}
+              decoding="async"
+              fetchPriority="high"
               style={{ height: '28px', width: 'auto' }} 
             />
             <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.2rem', color: '#FFFFFF', fontWeight: 600 }}>
@@ -150,7 +154,7 @@ export default function ContactUsPage() {
       <footer style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '40px 0', textAlign: 'center', background: '#050505' }}>
         <div className="sf-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <img src="/uploads/logo.png" alt="ShadiwalaCard Logo" style={{ height: '24px', width: 'auto' }} />
+            <img src="/uploads/logo.png" alt="ShadiwalaCard Logo" width={120} height={24} loading="lazy" decoding="async" style={{ height: '24px', width: 'auto' }} />
             <span style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: '1.1rem', color: '#FFFFFF', fontWeight: 600 }}>
               ShadiwalaCard
             </span>

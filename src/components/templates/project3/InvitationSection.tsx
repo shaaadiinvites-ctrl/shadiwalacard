@@ -64,9 +64,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
           {wedding?.name_order === "bride_first" ? (
             <>
               <div className="relative z-10 w-full flex flex-col items-center text-center">
-                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
+                <h2 className="font-playfair font-normal text-[clamp(28px,7.5vw,64px)] leading-[1.15] text-white tracking-[1px] md:tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
                 {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
-                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                  <p className="font-lora text-[clamp(12px,3.2vw,16px)] leading-[1.5] text-white/65 mt-2.5 md:mt-3 tracking-[2px] md:tracking-[2.5px] uppercase">
                     {t("daughterOf", wedding?.language)} {wedding.bride_mother_name ? `${t("mrs", wedding?.language)} ${wedding.bride_mother_name}` : ""}
                     {wedding.bride_mother_name && wedding.bride_father_name ? ` ${t("and", wedding?.language)} ` : ""}
                     {wedding.bride_father_name ? `${t("mr", wedding?.language)} ${wedding.bride_father_name}` : ""}
@@ -74,14 +74,14 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 )}
               </div>
               
-              <div className="relative z-10 flex items-center justify-center w-full my-9">
-                 <span className="font-playfair italic font-normal text-[clamp(34px,8vw,50px)] text-[#C8912A]/90 leading-none">&amp;</span>
+              <div className="relative z-10 flex items-center justify-center w-full my-6 md:my-9">
+                 <span className="font-playfair italic font-normal text-[clamp(24px,5.5vw,42px)] text-[#C8912A]/90 leading-none">&amp;</span>
               </div>
               
               <div className="relative z-10 w-full flex flex-col items-center text-center">
-                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
+                <h2 className="font-playfair font-normal text-[clamp(28px,7.5vw,64px)] leading-[1.15] text-white tracking-[1px] md:tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
                 {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
-                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                  <p className="font-lora text-[clamp(12px,3.2vw,16px)] leading-[1.5] text-white/65 mt-2.5 md:mt-3 tracking-[2px] md:tracking-[2.5px] uppercase">
                     {t("sonOf", wedding?.language)} {wedding.groom_mother_name ? `${t("mrs", wedding?.language)} ${wedding.groom_mother_name}` : ""}
                     {wedding.groom_mother_name && wedding.groom_father_name ? ` ${t("and", wedding?.language)} ` : ""}
                     {wedding.groom_father_name ? `${t("mr", wedding?.language)} ${wedding.groom_father_name}` : ""}
@@ -92,9 +92,9 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
           ) : (
             <>
               <div className="relative z-10 w-full flex flex-col items-center text-center">
-                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
+                <h2 className="font-playfair font-normal text-[clamp(28px,7.5vw,64px)] leading-[1.15] text-white tracking-[1px] md:tracking-[1.5px] drop-shadow-lg m-0">{wedding?.groom_name || "Groom"}</h2>
                 {(wedding?.groom_father_name || wedding?.groom_mother_name) && (
-                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                  <p className="font-lora text-[clamp(12px,3.2vw,16px)] leading-[1.5] text-white/65 mt-2.5 md:mt-3 tracking-[2px] md:tracking-[2.5px] uppercase">
                     {t("sonOf", wedding?.language)} {wedding.groom_mother_name ? `${t("mrs", wedding?.language)} ${wedding.groom_mother_name}` : ""}
                     {wedding.groom_mother_name && wedding.groom_father_name ? ` ${t("and", wedding?.language)} ` : ""}
                     {wedding.groom_father_name ? `${t("mr", wedding?.language)} ${wedding.groom_father_name}` : ""}
@@ -102,14 +102,14 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
                 )}
               </div>
               
-              <div className="relative z-10 flex items-center justify-center w-full my-9">
-                 <span className="font-playfair italic font-normal text-[clamp(34px,8vw,50px)] text-[#C8912A]/90 leading-none">&amp;</span>
+              <div className="relative z-10 flex items-center justify-center w-full my-6 md:my-9">
+                 <span className="font-playfair italic font-normal text-[clamp(24px,5.5vw,42px)] text-[#C8912A]/90 leading-none">&amp;</span>
               </div>
               
               <div className="relative z-10 w-full flex flex-col items-center text-center">
-                <h2 className="font-playfair font-normal text-[clamp(44px,12vw,76px)] leading-[1.1] text-white tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
+                <h2 className="font-playfair font-normal text-[clamp(28px,7.5vw,64px)] leading-[1.15] text-white tracking-[1px] md:tracking-[1.5px] drop-shadow-lg m-0">{wedding?.bride_name || "Bride"}</h2>
                 {(wedding?.bride_father_name || wedding?.bride_mother_name) && (
-                  <p className="font-lora text-[clamp(13px,3.5vw,16px)] leading-[1.5] text-white/65 mt-3 tracking-[2.5px] uppercase">
+                  <p className="font-lora text-[clamp(12px,3.2vw,16px)] leading-[1.5] text-white/65 mt-2.5 md:mt-3 tracking-[2px] md:tracking-[2.5px] uppercase">
                     {t("daughterOf", wedding?.language)} {wedding.bride_mother_name ? `${t("mrs", wedding?.language)} ${wedding.bride_mother_name}` : ""}
                     {wedding.bride_mother_name && wedding.bride_father_name ? ` ${t("and", wedding?.language)} ` : ""}
                     {wedding.bride_father_name ? `${t("mr", wedding?.language)} ${wedding.bride_father_name}` : ""}

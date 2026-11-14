@@ -59,6 +59,20 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
     }
   }, [isOpen]);
 
+  // Modern Web Guidance: Dismiss modal with Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !loading) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, loading, onClose]);
+
   useEffect(() => {
     let interval: any;
     if (step === "otp" && resendTimer > 0) {
@@ -255,6 +269,9 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
       </div>
 
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="find-modal-title"
         style={{
           width: "100%",
           maxWidth: 460,
@@ -268,19 +285,22 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
           position: "relative",
         }}
       >
-        {/* Close Button */}
+        {/* Close Button (Modern Web Guidance: Accessible 44x44px touch target) */}
         <button
           type="button"
           onClick={onClose}
+          aria-label="Close Find My Invitation dialog"
           style={{
             position: "absolute",
-            top: 18,
-            right: 18,
+            top: 14,
+            right: 14,
             background: "rgba(255, 255, 255, 0.06)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "50%",
-            width: 32,
-            height: 32,
+            width: 44,
+            height: 44,
+            minWidth: 44,
+            minHeight: 44,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -300,7 +320,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
               <span>SELF-SERVE RECOVERY</span>
             </div>
 
-            <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
+            <h3 id="find-modal-title" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
               Find My Invitation
             </h3>
             <p style={{ fontSize: "0.813rem", color: "rgba(255, 255, 255, 0.65)", margin: "0 0 20px", lineHeight: 1.5 }}>
@@ -308,7 +328,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
             </p>
 
             {error && (
-              <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(225, 29, 72, 0.15)", border: "1px solid rgba(225, 29, 72, 0.4)", color: "#fb7185", fontSize: "0.75rem", fontWeight: 600 }}>
+              <div role="alert" aria-live="polite" style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(225, 29, 72, 0.15)", border: "1px solid rgba(225, 29, 72, 0.4)", color: "#fb7185", fontSize: "0.75rem", fontWeight: 600 }}>
                 {error}
               </div>
             )}
@@ -317,6 +337,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
               <div style={{ display: "flex", gap: 8, height: 46, marginBottom: 16 }}>
                 <select
                   value={countryCode}
+                  aria-label="Country calling code"
                   onChange={(e) => setCountryCode(e.target.value)}
                   style={{
                     width: 76,
@@ -338,6 +359,11 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                 <input
                   ref={phoneInputRef}
                   type="tel"
+                  id="find-phone-input"
+                  name="phone"
+                  aria-label="10-digit mobile number"
+                  autoComplete="tel-national"
+                  inputMode="numeric"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
                   placeholder="10-digit mobile number"
@@ -387,7 +413,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
               <span>CODE SENT TO {countryCode} {phone}</span>
             </div>
 
-            <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
+            <h3 id="find-modal-title" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
               Enter 6-Digit Code
             </h3>
             <p style={{ fontSize: "0.813rem", color: "rgba(255, 255, 255, 0.65)", margin: "0 0 20px", lineHeight: 1.5 }}>
@@ -395,7 +421,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
             </p>
 
             {otpError && (
-              <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(225, 29, 72, 0.15)", border: "1px solid rgba(225, 29, 72, 0.4)", color: "#fb7185", fontSize: "0.75rem", fontWeight: 600 }}>
+              <div role="alert" aria-live="polite" style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(225, 29, 72, 0.15)", border: "1px solid rgba(225, 29, 72, 0.4)", color: "#fb7185", fontSize: "0.75rem", fontWeight: 600 }}>
                 {otpError}
               </div>
             )}
@@ -407,6 +433,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
+                  aria-label={`Verification code digit ${idx + 1} of 6`}
                   maxLength={1}
                   value={digit}
                   disabled={otpSuccess || loading}
@@ -501,7 +528,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                   <span>INVITATION FOUND!</span>
                 </div>
 
-                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
+                <h3 id="find-modal-title" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
                   {lookupResult.type === "wedding" ? lookupResult.primaryCoupleNames : "Your Invitation Workspace"}
                 </h3>
                 <p style={{ fontSize: "0.813rem", color: "rgba(255, 255, 255, 0.65)", margin: "0 0 20px", lineHeight: 1.5 }}>
@@ -607,7 +634,7 @@ export default function FindMyInviteModal({ isOpen, onClose }: FindMyInviteModal
                   <span>NO INVITATION FOUND</span>
                 </div>
 
-                <h3 style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
+                <h3 id="find-modal-title" style={{ fontFamily: "var(--font-display), 'Montserrat', sans-serif", fontSize: "1.35rem", fontWeight: 700, margin: "0 0 6px", color: "#FFFFFF" }}>
                   Order Not Found
                 </h3>
                 <p style={{ fontSize: "0.813rem", color: "rgba(255, 255, 255, 0.65)", margin: "0 0 20px", lineHeight: 1.5 }}>

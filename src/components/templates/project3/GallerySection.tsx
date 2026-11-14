@@ -6,6 +6,7 @@ import Smooth3DSlideshow from "@/components/templates/project3/originkit/ui/cove
 import { FooterSection } from "@/components/templates/project3/FooterSection";
 import { Starfield } from "@/components/templates/project3/Starfield";
 import { Fireflies } from "@/components/templates/project3/Fireflies";
+import FirecrackerCelebration from "@/components/FirecrackerCelebration";
 
 const gallerySlides = [
   {
@@ -119,7 +120,18 @@ export function GallerySection({
               onSlideChange={setActiveIndex}
             />
           </div>
+
+          {/* Shower Blessings Button & Pushpavarsha Flower Burst Engine */}
+          <div className="mt-8 mb-4 flex flex-col items-center justify-center relative z-20">
+            <FirecrackerCelebration weddingSlug={wedding?.slug} />
+          </div>
         </>
+      )}
+
+      {!showGallery && (
+        <div className="mt-8 mb-8 flex flex-col items-center justify-center relative z-20">
+          <FirecrackerCelebration weddingSlug={wedding?.slug} />
+        </div>
       )}
 
       {/* Sky and Fireflies covering footer and bottom half of gallery */}
