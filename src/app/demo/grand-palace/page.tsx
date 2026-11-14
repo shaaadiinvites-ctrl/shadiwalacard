@@ -1,4 +1,5 @@
 import { MusicPlayer } from '@/components/ui/MusicPlayer';
+import RubyCurtainOverlay from '@/components/RubyCurtainOverlay';
 import Link from "next/link";
 import { HeroSection } from "@/components/templates/project3/HeroSection";
 import { InvitationSection } from "@/components/templates/project3/InvitationSection";
@@ -73,6 +74,9 @@ const demoWedding: WeddingRecord = {
 export default function GrandPalaceDemo() {
   return (
     <main className="relative flex min-h-screen flex-col w-full">
+      {/* Self-contained, physics-simulated 3D Crimson Velvet Curtain & Fluid Ruby Glitter Reveal Overlay */}
+      <RubyCurtainOverlay />
+
       {/* Floating Back Navigation for seamless return from mobile WebViews & desktop */}
       <div className="fixed top-4 left-4 z-[9000]">
         <Link

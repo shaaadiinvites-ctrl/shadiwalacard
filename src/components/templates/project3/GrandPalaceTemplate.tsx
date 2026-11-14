@@ -1,4 +1,5 @@
 import { MusicPlayer } from '@/components/ui/MusicPlayer';
+import RubyCurtainOverlay from '@/components/RubyCurtainOverlay';
 
 import { WeddingRecord } from "@/types/wedding";
 import { HeroSection } from "@/components/templates/project3/HeroSection";
@@ -17,6 +18,9 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
 
   return (
     <main className="relative flex min-h-screen flex-col w-full">
+      {/* Self-contained, physics-simulated 3D Crimson Velvet Curtain & Fluid Ruby Glitter Reveal Overlay */}
+      <RubyCurtainOverlay />
+
       {/* Background container */}
       <div className="fixed inset-0 z-[-3] bg-gradient-to-b from-[#030c22] via-[#081e28] to-[#0d2a33]" />
       
