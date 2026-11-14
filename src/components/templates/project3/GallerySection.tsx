@@ -123,14 +123,20 @@ export function GallerySection({
 
           {/* Shower Blessings Button & Pushpavarsha Flower Burst Engine */}
           <div className="mt-8 mb-4 flex flex-col items-center justify-center relative z-20">
-            <FirecrackerCelebration weddingSlug={wedding?.slug} />
+            <FirecrackerCelebration 
+              weddingSlug={wedding?.slug} 
+              initialCount={wedding?.blessings_count} 
+            />
           </div>
         </>
       )}
 
       {!showGallery && (
         <div className="mt-8 mb-8 flex flex-col items-center justify-center relative z-20">
-          <FirecrackerCelebration weddingSlug={wedding?.slug} />
+          <FirecrackerCelebration 
+            weddingSlug={wedding?.slug} 
+            initialCount={wedding?.blessings_count} 
+          />
         </div>
       )}
 

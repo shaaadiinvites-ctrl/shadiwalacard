@@ -115,10 +115,28 @@ export default async function SlugPage({ params }: Props) {
 
   if (error || !data) notFound();
 
+  // Extract server-side blessings count
+  let serverBlessings = 0;
+  if (data.special_instructions) {
+    try {
+      const parsed = JSON.parse(data.special_instructions);
+      if (parsed && typeof parsed.blessings === "number") {
+        serverBlessings = parsed.blessings;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  const weddingWithBlessings = {
+    ...data,
+    blessings_count: serverBlessings,
+  };
+
   return (
     <>
       <WeddingAnalyticsTracker slug={slug} />
-      <TemplateRenderer wedding={data} />
+      <TemplateRenderer wedding={weddingWithBlessings} />
     </>
   );
 }

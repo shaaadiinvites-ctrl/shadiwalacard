@@ -112,6 +112,7 @@ export interface WeddingRecord {
   template_id?: string;
   edit_token?: string;
   language?: "en" | "hi";
+  blessings_count?: number;
   client_ip?: string;
   client_city?: string;
   client_region?: string;

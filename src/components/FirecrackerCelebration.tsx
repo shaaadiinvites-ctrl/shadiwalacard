@@ -174,10 +174,9 @@ export default function FirecrackerCelebration({
   const [mounted, setMounted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Every newly created template starts with 0. The legacy prototype invite ("vishal-yadav-weds-pooja-2026") retains 1284.
-  const initialBaseCount = typeof initialCount === "number"
-    ? initialCount
-    : (weddingSlug === LEGACY_PROTOTYPE_SLUG ? LEGACY_PROTOTYPE_COUNT : 0);
+  // Every newly created template starts at 0. The legacy prototype invite ("vishal-yadav-weds-pooja-2026") retains 1284.
+  const baseOffset = weddingSlug === LEGACY_PROTOTYPE_SLUG ? LEGACY_PROTOTYPE_COUNT : 0;
+  const initialBaseCount = baseOffset + (typeof initialCount === "number" ? initialCount : 0);
 
   const storageKey = weddingSlug
     ? `shadi_blessings_${weddingSlug}`
@@ -203,34 +202,81 @@ export default function FirecrackerCelebration({
   // Timeouts for staggered salvos
   const salvoTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  // Load persisted blessings on client mount
+  // 1. Load persisted blessings on client mount & fetch latest global count from server
   useEffect(() => {
+    let localCount = initialBaseCount;
+
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
         const val = parseInt(stored, 10);
-        if (!isNaN(val) && val >= 0) {
+        if (!isNaN(val) && val >= initialBaseCount) {
+          localCount = val;
           setBlessings(val);
-          return;
         }
-      }
-      // Check legacy global key for the prototype invite if not yet migrated
-      if (weddingSlug === LEGACY_PROTOTYPE_SLUG) {
+      } else if (weddingSlug === LEGACY_PROTOTYPE_SLUG) {
+        // Check legacy global key for prototype invite
         const legacy = localStorage.getItem("shadi_blessings_count");
         if (legacy !== null) {
           const val = parseInt(legacy, 10);
           if (!isNaN(val) && val >= LEGACY_PROTOTYPE_COUNT) {
+            localCount = val;
             setBlessings(val);
-            return;
           }
         }
       }
-      setBlessings(initialBaseCount);
     } catch {
       // LocalStorage fallback
-      setBlessings(initialBaseCount);
     }
-  }, [storageKey, initialBaseCount, weddingSlug]);
+
+    // Fetch latest shared count from database so all guests see synchronized count
+    if (weddingSlug && weddingSlug !== "demo") {
+      fetch(`/api/wedding-analytics/track?slug=${encodeURIComponent(weddingSlug)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && typeof data.blessings === "number") {
+            const serverTotal = baseOffset + data.blessings;
+            setBlessings((prev) => {
+              const fresh = Math.max(prev, serverTotal);
+              try {
+                localStorage.setItem(storageKey, fresh.toString());
+              } catch {}
+              return fresh;
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [storageKey, initialBaseCount, weddingSlug, baseOffset]);
+
+  // 2. Periodic background sync (every 12s when tab is active) to catch blessings from other guests
+  useEffect(() => {
+    if (!weddingSlug || weddingSlug === "demo") return;
+
+    const intervalId = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+
+      fetch(`/api/wedding-analytics/track?slug=${encodeURIComponent(weddingSlug)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && typeof data.blessings === "number") {
+            const serverTotal = baseOffset + data.blessings;
+            setBlessings((prev) => {
+              if (serverTotal > prev) {
+                try {
+                  localStorage.setItem(storageKey, serverTotal.toString());
+                } catch {}
+                return serverTotal;
+              }
+              return prev;
+            });
+          }
+        })
+        .catch(() => {});
+    }, 12000);
+
+    return () => clearInterval(intervalId);
+  }, [weddingSlug, baseOffset, storageKey]);
 
   // Initialize pools, sprite atlas, and botanical offscreen canvases once on mount
   useEffect(() => {
@@ -963,13 +1009,27 @@ export default function FirecrackerCelebration({
       // Ignore storage errors
     }
 
-    // 3. Analytics tracking event (if slug is provided and not demo)
+    // 3. Sync to Supabase so EVERYONE across the globe receives the increment
     if (weddingSlug && weddingSlug !== "demo") {
       fetch("/api/wedding-analytics/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug: weddingSlug, event: "blessing" }),
-      }).catch(() => {});
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && typeof data.blessings === "number") {
+            const serverTotal = baseOffset + data.blessings;
+            setBlessings((prev) => {
+              const fresh = Math.max(prev, serverTotal);
+              try {
+                localStorage.setItem(storageKey, fresh.toString());
+              } catch {}
+              return fresh;
+            });
+          }
+        })
+        .catch(() => {});
     }
 
     // 4. Ensure canvas is in foreground (z-60) for gallery viewport

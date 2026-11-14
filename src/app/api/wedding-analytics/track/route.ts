@@ -15,6 +15,47 @@ function detectSource(userAgent: string, referrer: string): string {
   return "Direct / Browser";
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const slug = searchParams.get("slug");
+    if (!slug) {
+      return NextResponse.json({ error: "Missing slug." }, { status: 400 });
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { data: wedding, error } = await supabase
+      .from("weddings")
+      .select("id, slug, special_instructions")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error || !wedding) {
+      return NextResponse.json({ error: "Wedding not found." }, { status: 404 });
+    }
+
+    let blessings = 0;
+    if (wedding.special_instructions) {
+      try {
+        const parsed = JSON.parse(wedding.special_instructions);
+        if (parsed && typeof parsed.blessings === "number") {
+          blessings = parsed.blessings;
+        }
+      } catch {
+        // Fallback default
+      }
+    }
+
+    return NextResponse.json(
+      { success: true, blessings },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
+    );
+  } catch (err: any) {
+    console.error("Fetch blessings error:", err);
+    return NextResponse.json({ error: "Failed to fetch blessings." }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null);
@@ -105,7 +146,7 @@ export async function POST(req: NextRequest) {
       .update({ special_instructions: JSON.stringify(stats) })
       .eq("slug", slug);
 
-    return NextResponse.json({ success: true, stats });
+    return NextResponse.json({ success: true, stats, blessings: stats.blessings });
   } catch (err: any) {
     console.error("Wedding tracking error:", err);
     return NextResponse.json({ error: "Failed to record event." }, { status: 500 });
