@@ -21,7 +21,7 @@ export function InvitationSection({ wedding }: { wedding?: WeddingRecord }) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-transparent pb-[200px] mt-[20vh] lg:mt-[calc(143vw-100vh-100px)] z-10">
+    <section id="invitation" className="relative overflow-hidden bg-transparent pb-[200px] mt-[20vh] lg:mt-[calc(143vw-100vh-100px)] z-10">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1e5064]/35 to-transparent pointer-events-none"></div>
 
       {/* Floating Petals (can be animated later) */}

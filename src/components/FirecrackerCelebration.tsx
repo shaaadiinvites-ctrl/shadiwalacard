@@ -165,11 +165,13 @@ function createFlashSprite(): HTMLCanvasElement {
 export interface FirecrackerCelebrationProps {
   weddingSlug?: string;
   initialCount?: number;
+  language?: string;
 }
 
 export default function FirecrackerCelebration({
   weddingSlug,
   initialCount,
+  language,
 }: FirecrackerCelebrationProps = {}) {
   const [mounted, setMounted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -185,6 +187,12 @@ export default function FirecrackerCelebration({
   // Blessing counter state & persistence
   const [blessings, setBlessings] = useState(initialBaseCount);
   const [isCounterPopped, setIsCounterPopped] = useState(false);
+
+  // Floating blessing badges (+1 🌸, etc.) & tap shockwave state
+  const [floatingBlessings, setFloatingBlessings] = useState<
+    Array<{ id: number; x: number; text: string }>
+  >([]);
+  const [shockwaveKey, setShockwaveKey] = useState(0);
 
   // Animation and pool references (stable across renders)
   const isSleepingRef = useRef(true);
@@ -978,6 +986,14 @@ export default function FirecrackerCelebration({
         }, delay);
         salvoTimeoutsRef.current.push(timeoutId);
       });
+
+      // Salvo finishes after the final rocket's sparks have drifted and settled (~5.6s)
+      const salvoEndTimeout = setTimeout(() => {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("shadi:firecrackers-completed"));
+        }
+      }, 5600);
+      salvoTimeoutsRef.current.push(salvoEndTimeout);
     };
 
     window.addEventListener("shadi:auto-palace-fireworks", handleAutoPalaceFireworks);
@@ -1002,6 +1018,19 @@ export default function FirecrackerCelebration({
     setBlessings(nextCount);
     setIsCounterPopped(true);
     setTimeout(() => setIsCounterPopped(false), 240);
+
+    // 3. Trigger tap shockwave ring
+    setShockwaveKey((prev) => prev + 1);
+
+    // 4. Spawn floating +1 blessing feedback tag drifting into the air
+    const newId = Date.now() + Math.random();
+    const blessingIcons = ["+1 🌸", "+1 🌹", "+1 🌺", "+1 💐", "+1 ✨"];
+    const randomText = blessingIcons[Math.floor(Math.random() * blessingIcons.length)];
+    const randomX = (Math.random() - 0.5) * 44;
+    setFloatingBlessings((prev) => [...prev.slice(-5), { id: newId, x: randomX, text: randomText }]);
+    setTimeout(() => {
+      setFloatingBlessings((prev) => prev.filter((item) => item.id !== newId));
+    }, 1100);
 
     try {
       localStorage.setItem(storageKey, nextCount.toString());
@@ -1048,57 +1077,282 @@ export default function FirecrackerCelebration({
 
   return (
     <>
-      {/* Ultra-Simple, Minimalist Single Pill Button under Photo Gallery */}
-      <div className="relative flex justify-center items-center select-none">
+      {/* Scoped CSS Keyframes for Sacred Pushpavarsha Affordance */}
+      <style>{`
+        /* 1. Divine Ambient Halo Pulse behind Button */
+        @keyframes blessingHaloPulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.35;
+          }
+          50% {
+            transform: scale(1.14);
+            opacity: 0.65;
+          }
+        }
+
+        /* 2. Sacred Heartbeat Breathing Affordance on Pill */
+        @keyframes blessingHeartbeatPulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 25px rgba(253, 230, 138, 0.25), 0 8px 32px rgba(0, 0, 0, 0.6);
+          }
+          16% {
+            transform: scale(1.035);
+            box-shadow: 0 0 35px rgba(253, 230, 138, 0.45), 0 0 15px rgba(225, 29, 72, 0.25), 0 10px 36px rgba(0, 0, 0, 0.7);
+          }
+          26% {
+            transform: scale(0.99);
+            box-shadow: 0 0 22px rgba(253, 230, 138, 0.2), 0 8px 30px rgba(0, 0, 0, 0.6);
+          }
+          36% {
+            transform: scale(1.018);
+            box-shadow: 0 0 30px rgba(253, 230, 138, 0.35), 0 0 10px rgba(225, 29, 72, 0.2);
+          }
+          46% {
+            transform: scale(1);
+            box-shadow: 0 0 25px rgba(253, 230, 138, 0.25), 0 8px 32px rgba(0, 0, 0, 0.6);
+          }
+        }
+
+        /* 3. Golden Touchpoint Ripple (Fingertip tap affordance) */
+        @keyframes blessingTouchRipple {
+          0% {
+            transform: scale(0.65);
+            opacity: 0.95;
+          }
+          65% {
+            transform: scale(1.6);
+            opacity: 0.25;
+          }
+          100% {
+            transform: scale(2.0);
+            opacity: 0;
+          }
+        }
+
+        /* 4. Sacred Blooming Flower Sway & 3D Tilt */
+        @keyframes sacredFlowerSway {
+          0%, 100% {
+            transform: rotate(-6deg) translateY(-1px) scale(1);
+          }
+          50% {
+            transform: rotate(6deg) translateY(1.5px) scale(1.15);
+          }
+        }
+
+        /* 5. Floating +1 Blessing Tag Eruption */
+        @keyframes floatBlessingUp {
+          0% {
+            transform: translateY(0) scale(0.85);
+            opacity: 0;
+          }
+          20% {
+            transform: translateY(-14px) scale(1.15);
+            opacity: 1;
+          }
+          80% {
+            transform: translateY(-46px) scale(1.05);
+            opacity: 0.9;
+          }
+          100% {
+            transform: translateY(-70px) scale(0.9);
+            opacity: 0;
+          }
+        }
+
+        /* 6. Tap Shockwave Ring on Button Click */
+        @keyframes tapShockwaveRing {
+          0% {
+            transform: scale(0.95);
+            opacity: 0.9;
+            border-color: rgba(253, 230, 138, 0.95);
+          }
+          100% {
+            transform: scale(1.35);
+            opacity: 0;
+            border-color: rgba(225, 29, 72, 0);
+          }
+        }
+
+        /* 7. Ambient Drifting Petals around Pill */
+        @keyframes floatPetalLeft {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+            opacity: 0.45;
+          }
+          50% {
+            transform: translate(-8px, -14px) rotate(-22deg);
+            opacity: 0.85;
+          }
+        }
+
+        @keyframes floatPetalRight {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+            opacity: 0.4;
+          }
+          50% {
+            transform: translate(8px, -16px) rotate(26deg);
+            opacity: 0.8;
+          }
+        }
+
+        @keyframes floatPetalSparkle {
+          0%, 100% {
+            transform: translateY(0) scale(0.9);
+            opacity: 0.3;
+          }
+          50% {
+            transform: translateY(-10px) scale(1.2);
+            opacity: 0.9;
+          }
+        }
+
+        /* 8. Metallic Gold Sheen Sweep */
+        @keyframes goldSheenSweep {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
+          }
+        }
+
+        @keyframes sheenSweep {
+          0% {
+            transform: translateX(-160%) skewX(-25deg);
+          }
+          25%, 100% {
+            transform: translateX(260%) skewX(-25deg);
+          }
+        }
+      `}</style>
+
+      {/* Sacred Pushpavarsha Interactive Pill Button */}
+      <div className="relative flex flex-col items-center justify-center select-none py-2 my-2">
+        {/* Floating Blessing Badges (+1 🌸, +1 🌹, etc.) drifting up when clicked */}
+        <div className="absolute inset-0 pointer-events-none overflow-visible flex justify-center items-center">
+          {floatingBlessings.map((b) => (
+            <div
+              key={b.id}
+              className="absolute pointer-events-none z-50 font-serif font-bold text-sm tracking-wide text-[#fde68a] select-none whitespace-nowrap drop-shadow-[0_0_12px_rgba(253,230,138,0.9)]"
+              style={{
+                left: `calc(50% + ${b.x}px)`,
+                top: "10px",
+                animation: "floatBlessingUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              }}
+            >
+              {b.text}
+            </div>
+          ))}
+        </div>
+
+        {/* Ambient Drifting Rose & Lotus Petals around the Pill */}
+        <div
+          className="absolute pointer-events-none -left-4 sm:-left-8 top-1 text-sm select-none"
+          style={{ animation: "floatPetalLeft 4.5s ease-in-out infinite" }}
+        >
+          🌸
+        </div>
+        <div
+          className="absolute pointer-events-none -right-4 sm:-right-8 top-2 text-sm select-none"
+          style={{ animation: "floatPetalRight 4s ease-in-out infinite 0.8s" }}
+        >
+          🌹
+        </div>
+        <div
+          className="absolute pointer-events-none right-6 -top-2 text-[10px] text-[#fde68a] select-none"
+          style={{ animation: "floatPetalSparkle 3.2s ease-in-out infinite 1.5s" }}
+        >
+          ✦
+        </div>
+        <div
+          className="absolute pointer-events-none left-8 -top-1 text-[10px] text-[#fde68a] select-none"
+          style={{ animation: "floatPetalSparkle 3.6s ease-in-out infinite 0.5s" }}
+        >
+          ✦
+        </div>
+
+        {/* Divine Ambient Halo behind Pill */}
+        <div
+          className="absolute -inset-2.5 rounded-full pointer-events-none blur-xl"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(253, 230, 138, 0.35) 0%, rgba(225, 29, 72, 0.25) 50%, transparent 75%)",
+            animation: "blessingHaloPulse 3.4s ease-in-out infinite",
+          }}
+        />
+
+        {/* Click Shockwave Ring */}
+        {shockwaveKey > 0 && (
+          <div
+            key={shockwaveKey}
+            className="absolute inset-0 rounded-full border-2 border-[#fde68a] pointer-events-none"
+            style={{ animation: "tapShockwaveRing 0.75s ease-out forwards" }}
+          />
+        )}
+
+        {/* Primary Interactive Pill Button */}
         <button
           type="button"
           onClick={handleBlessingTap}
           aria-label={`Tap to shower blessings on the couple. Current count: ${blessings.toLocaleString("en-US")}`}
-          className="relative group overflow-hidden px-6 py-3 rounded-full bg-[#0d152e]/80 backdrop-blur-md border border-[#fde68a]/45 text-[#fff8dc] font-serif text-xs md:text-sm tracking-[0.16em] uppercase shadow-[0_0_25px_rgba(253,230,138,0.2)] hover:border-[#fde68a]/80 active:scale-95 transition-all duration-300 cursor-pointer select-none flex items-center gap-2.5"
+          className="relative group overflow-hidden px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-gradient-to-r from-[#14182e]/90 via-[#0d1224]/90 to-[#14182e]/90 backdrop-blur-xl border border-[#fde68a]/50 hover:border-[#fde68a]/90 text-[#fff8dc] font-serif text-xs md:text-sm tracking-[0.16em] uppercase transition-all duration-300 cursor-pointer select-none flex items-center gap-2.5 hover:scale-[1.03] active:scale-95 shadow-[0_0_25px_rgba(253,230,138,0.25),0_8px_32px_rgba(0,0,0,0.6)]"
+          style={{
+            animation: "blessingHeartbeatPulse 3.4s ease-in-out infinite",
+          }}
         >
-          {/* Subtle 3.5s diagonal metallic gold sheen sweep */}
+          {/* Subtle diagonal metallic gold sheen sweep across button surface */}
           <span
-            className="absolute inset-0 pointer-events-none -translate-x-[150%] skew-x-[-25deg] bg-gradient-to-r from-transparent via-[#fde68a]/30 to-transparent animate-[sheenSweep_3.5s_infinite_ease-in-out]"
+            className="absolute inset-0 pointer-events-none -translate-x-[150%] skew-x-[-25deg] bg-gradient-to-r from-transparent via-[#fde68a]/35 to-transparent animate-[sheenSweep_3.5s_infinite_ease-in-out]"
             aria-hidden="true"
           />
 
-          {/* Delicate flower icon */}
-          <span className="text-base select-none drop-shadow-[0_0_6px_rgba(253,230,138,0.5)]">
-            🌸
-          </span>
+          {/* Golden Touchpoint / Tap Affordance Cue (Ripple + Contact Dot) */}
+          <div className="relative flex items-center justify-center -ml-1">
+            <div
+              className="absolute w-6 h-6 rounded-full border border-[#fde68a]/80 pointer-events-none"
+              style={{ animation: "blessingTouchRipple 2.2s ease-out infinite" }}
+            />
+            {/* Blooming Flower Motif with 3D Sway */}
+            <span
+              className="text-base sm:text-lg select-none drop-shadow-[0_0_8px_rgba(253,230,138,0.7)] flex items-center justify-center"
+              style={{ animation: "sacredFlowerSway 3s ease-in-out infinite" }}
+            >
+              🌸
+            </span>
+          </div>
 
-          {/* Short elegant label */}
-          <span className="font-semibold tracking-[0.16em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-            Tap to Shower Blessings
+          {/* Shimmering Golden Typography */}
+          <span
+            className="font-semibold tracking-[0.16em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] whitespace-nowrap"
+            style={{
+              background:
+                "linear-gradient(90deg, #fff8dc 0%, #fde68a 35%, #ffffff 55%, #fde68a 75%, #fff8dc 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              animation: "goldSheenSweep 4s linear infinite",
+            }}
+          >
+            {language === "hi" ? "पुष्प वर्षा करें" : "Tap to Shower Blessings"}
           </span>
 
           {/* Elegant dot separator */}
-          <span className="text-[#fde68a]/50 select-none text-xs">
+          <span className="text-[#fde68a]/60 select-none text-xs">
             •
           </span>
 
           {/* Compact live counter badge with scale pop */}
           <span
-            className={`text-[#fde68a] font-semibold tabular-nums tracking-wider drop-shadow-[0_0_8px_rgba(253,230,138,0.5)] transition-transform duration-200 ${
-              isCounterPopped ? "scale-115 text-[#ffffff]" : "scale-100"
+            className={`text-[#fde68a] font-semibold tabular-nums tracking-wider drop-shadow-[0_0_10px_rgba(253,230,138,0.6)] transition-all duration-200 ${
+              isCounterPopped ? "scale-125 text-[#ffffff] drop-shadow-[0_0_15px_#ffffff]" : "scale-100"
             }`}
           >
             {blessings.toLocaleString("en-US")}
           </span>
         </button>
-
-        {/* Scoped CSS animation for sheen sweep */}
-        <style jsx>{`
-          @keyframes sheenSweep {
-            0% {
-              transform: translateX(-160%) skewX(-25deg);
-            }
-            25%,
-            100% {
-              transform: translateX(260%) skewX(-25deg);
-            }
-          }
-        `}</style>
       </div>
 
       {/* Full-viewport Hardware-Accelerated Fireworks Canvas via React Portal (0% idle cost) */}

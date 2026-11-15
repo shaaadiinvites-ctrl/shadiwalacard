@@ -19,7 +19,7 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
   return (
     <main className="relative flex min-h-screen flex-col w-full">
       {/* Self-contained, physics-simulated 3D Crimson Velvet Curtain & Fluid Ruby Glitter Reveal Overlay */}
-      <RubyCurtainOverlay />
+      <RubyCurtainOverlay wedding={wedding} />
 
       {/* Background container */}
       <div className="fixed inset-0 z-[-3] bg-gradient-to-b from-[#030c22] via-[#081e28] to-[#0d2a33]" />
@@ -50,7 +50,7 @@ export default function GrandPalaceTemplate({ wedding }: { wedding: WeddingRecor
       <GallerySection galleryUrls={wedding.gallery_urls || []} wedding={wedding} />
 
       {/* Action Bar (Edit Link / Payment info can go here later if needed) */}
-      <MusicPlayer />
+      <MusicPlayer url={wedding.music_link} />
     </main>
   );
 }

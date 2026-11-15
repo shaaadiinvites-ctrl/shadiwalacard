@@ -4,52 +4,68 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 
-export function MusicPlayer() {
+export function MusicPlayer({ url }: { url?: string } = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasStartedOnce = useRef(false);
+  const musicSrc = url || "/background-music.mp3";
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.5; // Set volume to 50%
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.5; // Set volume to 50%
+
+    // Synchronize React state with actual HTML5 Audio playback state
+    const handlePlayState = () => {
+      setIsPlaying(true);
+      hasStartedOnce.current = true;
+    };
+
+    const handlePauseState = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener("play", handlePlayState);
+    audio.addEventListener("playing", handlePlayState);
+    audio.addEventListener("pause", handlePauseState);
+    audio.addEventListener("ended", handlePauseState);
+
+    // If audio is already playing (e.g. unlocked before hydration or by earlier trigger)
+    if (!audio.paused && audio.currentTime > 0) {
+      handlePlayState();
     }
 
-    // Attempt immediate play on mount (works on desktop Chrome/Edge/Firefox with prior user engagement)
-    if (audioRef.current && !hasStartedOnce.current) {
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-        hasStartedOnce.current = true;
-      }).catch(() => {
-        // Autoplay blocked by browser policy without user gesture; listener will unlock it on first gesture
+    // Direct event listener for curtain reveal / rope pull triggers
+    const handleStartMusic = () => {
+      audio.play().then(handlePlayState).catch((err) => {
+        console.warn("Audio play prevented:", err);
       });
-    }
+    };
 
+    window.addEventListener("shadi:play-music", handleStartMusic);
+    window.addEventListener("shadi:curtain-revealed", handleStartMusic);
+
+    // Fallback gesture listeners
     const handleFirstGesture = () => {
-      if (hasStartedOnce.current || !audioRef.current) return;
-
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-        hasStartedOnce.current = true;
-        
-        window.removeEventListener("touchstart", handleFirstGesture);
-        window.removeEventListener("click", handleFirstGesture);
-        window.removeEventListener("pointerdown", handleFirstGesture);
-        window.removeEventListener("scroll", handleFirstGesture);
-      }).catch(() => {
-        // Playback still blocked, wait for next gesture
-      });
+      if (hasStartedOnce.current) return;
+      audio.play().then(handlePlayState).catch(() => {});
     };
 
     window.addEventListener("touchstart", handleFirstGesture, { passive: true });
     window.addEventListener("pointerdown", handleFirstGesture, { passive: true });
     window.addEventListener("click", handleFirstGesture, { passive: true });
-    window.addEventListener("scroll", handleFirstGesture, { passive: true, once: true });
 
     return () => {
+      audio.removeEventListener("play", handlePlayState);
+      audio.removeEventListener("playing", handlePlayState);
+      audio.removeEventListener("pause", handlePauseState);
+      audio.removeEventListener("ended", handlePauseState);
+      window.removeEventListener("shadi:play-music", handleStartMusic);
+      window.removeEventListener("shadi:curtain-revealed", handleStartMusic);
       window.removeEventListener("touchstart", handleFirstGesture);
       window.removeEventListener("pointerdown", handleFirstGesture);
       window.removeEventListener("click", handleFirstGesture);
-      window.removeEventListener("scroll", handleFirstGesture);
     };
   }, []);
 
@@ -78,7 +94,7 @@ export function MusicPlayer() {
     <>
       <audio 
         ref={audioRef} 
-        src="/background-music.mp3" 
+        src={musicSrc} 
         loop 
         preload="auto"
         className="hidden"

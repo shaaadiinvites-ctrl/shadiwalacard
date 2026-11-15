@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { WeddingRecord } from "@/types/wedding";
+import { t } from "@/lib/i18n";
 
 export interface RubyCurtainOverlayProps {
+  wedding?: WeddingRecord;
   coupleInitials?: string;
   hashtag?: string;
+  onOpened?: () => void;
 }
 
 interface Particle {
@@ -170,9 +174,17 @@ void main() {
 }
 `;
 
-export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
+export default function RubyCurtainOverlay({ wedding, onOpened }: RubyCurtainOverlayProps) {
+  const isBrideFirst = wedding?.name_order === "bride_first";
+  const firstName = isBrideFirst ? wedding?.bride_name : wedding?.groom_name;
+  const secondName = isBrideFirst ? wedding?.groom_name : wedding?.bride_name;
+  const displayedFirstName = firstName || (isBrideFirst ? "Bride" : "Groom");
+  const displayedSecondName = secondName || (isBrideFirst ? "Groom" : "Bride");
+  const wedsText = t("weds", wedding?.language) || "weds";
+
   const [state, setState] = useState<"idle" | "scattering" | "opening" | "fading" | "done">("idle");
   const [tapPhase, setTapPhase] = useState<"idle" | "tug" | "release">("idle");
+  const [dragDistance, setDragDistance] = useState(0);
   const stateRef = useRef<"idle" | "scattering" | "opening" | "fading" | "done">("idle");
   const startTimeRef = useRef<number>(0);
   const scrollUnlockedRef = useRef<boolean>(false);
@@ -187,8 +199,14 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
   // Keep stateRef synchronously aligned
   stateRef.current = state;
 
-  // 1. Lock vertical scroll only during idle, unlock cleanly on reveal
+  // 1. Lock vertical scroll only during idle, unlock cleanly on reveal, enforce scroll position 0
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
     if (typeof document !== "undefined") {
       document.body.style.overflow = "hidden";
     }
@@ -197,6 +215,9 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
       if (typeof document !== "undefined") {
         document.body.style.overflow = "";
       }
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }
     };
   }, []);
 
@@ -204,6 +225,12 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
   const handleTrigger = () => {
     if (triggeredRef.current || stateRef.current !== "idle") return;
     triggeredRef.current = true;
+
+    // Enforce scroll position 0 and trigger music playback
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.dispatchEvent(new CustomEvent("shadi:play-music"));
+    }
 
     // Direct synchronous audio play to unlock mobile iOS Safari & Android Chrome autoplay
     try {
@@ -229,42 +256,59 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
     // Auto-Launch Sky Rockets in Hero Background right as curtain reveal ends (~65% parted)
     setTimeout(() => {
       if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
         window.dispatchEvent(new CustomEvent("shadi:auto-palace-fireworks"));
+        window.dispatchEvent(new CustomEvent("shadi:curtain-revealed"));
+        window.dispatchEvent(new CustomEvent("shadi:play-music"));
       }
     }, 2300);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (triggeredRef.current || stateRef.current !== "idle") return;
     touchStartYRef.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartYRef.current === null) return;
+    if (touchStartYRef.current === null || triggeredRef.current || stateRef.current !== "idle") return;
     const currentY = e.touches[0].clientY;
-    if (currentY - touchStartYRef.current > 16) {
+    const diffY = Math.max(0, currentY - touchStartYRef.current);
+    // Real-time tactile stretch with spring resistance
+    setDragDistance(Math.min(diffY * 0.75, 48));
+    if (diffY > 22) {
       touchStartYRef.current = null;
+      setDragDistance(0);
       handleTrigger();
     }
   };
 
   const handleTouchEnd = () => {
     touchStartYRef.current = null;
+    setDragDistance(0);
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (triggeredRef.current || stateRef.current !== "idle") return;
     pointerStartYRef.current = e.clientY;
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (pointerStartYRef.current === null) return;
-    if (e.buttons > 0 && e.clientY - pointerStartYRef.current > 16) {
-      pointerStartYRef.current = null;
-      handleTrigger();
+    if (pointerStartYRef.current === null || triggeredRef.current || stateRef.current !== "idle") return;
+    if (e.buttons > 0) {
+      const diffY = Math.max(0, e.clientY - pointerStartYRef.current);
+      // Real-time tactile stretch with spring resistance
+      setDragDistance(Math.min(diffY * 0.75, 48));
+      if (diffY > 22) {
+        pointerStartYRef.current = null;
+        setDragDistance(0);
+        handleTrigger();
+      }
     }
   };
 
   const handlePointerUp = () => {
     pointerStartYRef.current = null;
+    setDragDistance(0);
   };
 
   // 3. WebGL Curtain Shader & 2D "Ruby Hour" Micro-Glitter Wall Engine (Overlay Canvases Only)
@@ -486,10 +530,13 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
         setState("opening");
       }
 
-      // t = 2.0s: Unlock scrolling when curtains have parted sufficiently
+      // t = 2.0s: Unlock scrolling when curtains have parted sufficiently and ensure scroll position 0
       if (currentState === "opening" && elapsed >= 2.0 && !scrollUnlockedRef.current) {
         scrollUnlockedRef.current = true;
         document.body.style.overflow = "";
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        }
       }
 
       // t = 3.4s: Gentle 0.8s dissolve fade-out begins
@@ -498,10 +545,13 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
         setState("fading");
       }
 
-      // t = 4.2s: Animation complete, unmount completely
+      // t = 4.2s: Animation complete, unmount completely and ensure scroll position 0
       if ((currentState === "opening" || currentState === "fading") && elapsed >= 4.2) {
         stateRef.current = "done";
         setState("done");
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        }
         return;
       }
 
@@ -727,32 +777,141 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
       }}
       aria-label="Interactive Wedding Curtain Reveal"
     >
-      {/* Scoped CSS Keyframes for Pendulum Sway and Chevron Bob */}
+      {/* Scoped CSS Keyframes for Royal Tassel Affordance Motion */}
       <style>{`
-        @keyframes pendulumSway {
-          0%, 100% {
-            transform: rotate(-2.2deg);
+        @keyframes royalTugCycle {
+          0% {
+            transform: translateY(0) rotate(-1.8deg) scale(1);
           }
-          50% {
-            transform: rotate(2.2deg);
+          24% {
+            transform: translateY(0) rotate(1.8deg) scale(1);
+          }
+          44% {
+            transform: translateY(0) rotate(-1.2deg) scale(1);
+          }
+          54% {
+            transform: translateY(0) rotate(0deg) scale(1);
+          }
+          /* The visible, inviting elastic pull downward */
+          63% {
+            transform: translateY(16px) rotate(0deg) scaleY(1.09) scaleX(0.96);
+          }
+          /* Elastic snapback & spring overshoot */
+          71% {
+            transform: translateY(-4px) rotate(0deg) scaleY(0.97) scaleX(1.02);
+          }
+          77% {
+            transform: translateY(2px) rotate(0deg) scaleY(1.01) scaleX(0.99);
+          }
+          84% {
+            transform: translateY(0) rotate(0deg) scale(1);
+          }
+          100% {
+            transform: translateY(0) rotate(-1.8deg) scale(1);
           }
         }
-        @keyframes chevronBob {
-          0%, 100% {
-            transform: translateY(0);
+
+        @keyframes ropeLightBeam {
+          0% {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+          20% {
+            opacity: 0.95;
+          }
+          65% {
+            opacity: 0.95;
+          }
+          100% {
+            transform: translateY(220%);
+            opacity: 0;
+          }
+        }
+
+        @keyframes haloPulseGlow {
+          0%, 50%, 100% {
+            transform: scale(1);
+            opacity: 0.28;
+          }
+          63% {
+            transform: scale(1.4);
             opacity: 0.65;
           }
-          50% {
-            transform: translateY(5px);
-            opacity: 1;
+          75% {
+            transform: scale(1.1);
+            opacity: 0.4;
           }
         }
-        @media (prefers-reduced-motion: reduce) {
-          @keyframes pendulumSway {
-            0%, 100% { transform: rotate(0deg); }
+
+        @keyframes gestureSlideDown {
+          0%, 48% {
+            transform: translateY(-6px);
+            opacity: 0;
           }
-          @keyframes chevronBob {
-            0%, 100% { transform: translateY(0); opacity: 0.85; }
+          56% {
+            transform: translateY(0px);
+            opacity: 0.95;
+          }
+          72% {
+            transform: translateY(24px);
+            opacity: 0.9;
+          }
+          84% {
+            transform: translateY(32px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(32px);
+            opacity: 0;
+          }
+        }
+
+        @keyframes gestureRipple {
+          0% {
+            transform: scale(0.6);
+            opacity: 0.9;
+          }
+          60% {
+            transform: scale(1.6);
+            opacity: 0.3;
+          }
+          100% {
+            transform: scale(2.4);
+            opacity: 0;
+          }
+        }
+
+        @keyframes goldSheen {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+
+        @keyframes chevronCascade1 {
+          0%, 100% { opacity: 0.35; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(2px); }
+        }
+        @keyframes chevronCascade2 {
+          0%, 100% { opacity: 0.25; transform: translateY(0); }
+          50% { opacity: 0.85; transform: translateY(3px); }
+        }
+        @keyframes chevronCascade3 {
+          0%, 100% { opacity: 0.15; transform: translateY(0); }
+          50% { opacity: 0.65; transform: translateY(4px); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes royalTugCycle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+          }
+          @keyframes ropeLightBeam {
+            0%, 100% { opacity: 0.4; }
+          }
+          @keyframes gestureSlideDown {
+            0%, 100% { opacity: 0.6; transform: translateY(0); }
           }
         }
       `}</style>
@@ -782,231 +941,308 @@ export default function RubyCurtainOverlay({}: RubyCurtainOverlayProps) {
 
       {/* Center Auspicious Blessing & Theatre Tassel Pull-Cord Group (z-30) */}
       <div
-        className="fixed inset-0 z-30 flex items-center justify-center pointer-events-none p-4"
+        className="fixed inset-0 z-30 flex flex-col items-center justify-center pointer-events-none p-6"
         style={{
           opacity: state === "idle" || tapPhase === "tug" ? 1 : 0,
           transform: state === "idle" ? "scale(1)" : "scale(1.02)",
           transition: "opacity 0.45s ease-out, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
           background:
-            "radial-gradient(ellipse 620px 520px at 50% 50%, rgba(12, 1, 3, 0.65) 0%, rgba(12, 1, 3, 0.30) 45%, transparent 75%)",
+            "radial-gradient(ellipse 680px 620px at 50% 46%, rgba(12, 1, 3, 0.65) 0%, rgba(12, 1, 3, 0.30) 45%, transparent 75%)",
         }}
       >
-        <div className="relative flex flex-col items-center justify-center p-4 sm:p-8 text-center max-w-[460px] w-full">
-          {/* Sacred Shree Ganesha Motif */}
+        {/* Exact Shared-Element Wrapper matching HeroSection coordinates */}
+        <div className="relative flex flex-col items-center -translate-y-24 md:translate-y-0 w-full px-4 text-center">
+          
+          {/* Sacred Shree Ganesha Motif (Anchored above First Name) */}
           <div
-            className="flex flex-col items-center"
+            className="absolute bottom-full mb-3 sm:mb-4 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none whitespace-nowrap"
             style={{
               opacity: tapPhase === "idle" ? 1 : 0,
-              transform: tapPhase === "idle" ? "translateY(0)" : "translateY(-6px)",
+              transform: tapPhase === "idle" ? "translateY(0)" : "translateY(-8px)",
               transition: "opacity 0.25s ease-out, transform 0.25s ease-out",
             }}
           >
             <img
               src="/project3-assets/ganesh-opt.png"
               alt="Shree Ganesha"
-              className="w-14 h-14 md:w-16 md:h-16 object-contain opacity-95 drop-shadow-[0_2px_16px_rgba(255,30,86,0.65)]"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain opacity-95 drop-shadow-[0_2px_16px_rgba(255,30,86,0.65)]"
             />
-            {/* Devanagari Blessing (Fixed letter-spacing for connected shirorekha & matras) */}
+            {/* Devanagari Blessing */}
             <div
-              className="font-serif text-xl md:text-2xl font-medium text-[#fde68a] mt-3.5 drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)] tracking-normal"
+              className="font-serif text-sm sm:text-base md:text-xl font-medium text-[#fde68a] mt-1.5 sm:mt-2 drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)] tracking-normal whitespace-nowrap"
               style={{ letterSpacing: "0px" }}
             >
-              || श्री गणेशाय नमः ||
+              ॥ श्री गणेशाय नमः ॥
+            </div>
+            {/* Minimal Gold Diamond Divider */}
+            <div className="flex items-center justify-center gap-2 mt-1.5 opacity-75">
+              <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent via-[#fde68a]/60 to-[#fde68a]" />
+              <span className="text-[10px] sm:text-xs text-[#fde68a] drop-shadow-[0_0_6px_rgba(253,230,138,0.6)]">✦</span>
+              <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent via-[#fde68a]/60 to-[#fde68a]" />
             </div>
           </div>
 
-          {/* Minimal Ornamental Gold Diamond Divider */}
-          <div
-            className="flex items-center justify-center gap-3 my-4 opacity-75"
-            style={{
-              opacity: tapPhase === "idle" ? 0.75 : 0,
-              transition: "opacity 0.2s ease-out",
-            }}
-          >
-            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#fde68a]/60" />
-            <span className="text-[10px] text-[#fde68a]">✦</span>
-            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#fde68a]/60" />
-          </div>
+          {/* 1:1 Shared Element Replica of HeroSection Names */}
+          <h1 className="font-playfair text-[40px] md:text-[72px] font-medium leading-[1.05] text-[#ffecd2] drop-shadow-[0_4px_20px_rgba(255,236,210,0.4)] tracking-[1px] flex flex-col items-center w-full break-words text-center hyphens-auto m-0 pointer-events-none">
+            <span className="my-2 font-semibold">
+              {displayedFirstName}
+            </span>
+            <span className="font-cinzel font-normal text-xl md:text-3xl tracking-[3px] my-4 text-[#C8912A]">
+              {wedsText}
+            </span>
+            <span className="font-semibold">
+              {displayedSecondName}
+            </span>
+          </h1>
 
-          {/* Pendulum Wrapper: Gently sways back and forth in idle state (transform-origin: top center) */}
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              handleTrigger();
-            }}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              touchStartYRef.current = e.touches[0].clientY;
-            }}
-            onTouchMove={(e) => {
-              e.stopPropagation();
-              if (touchStartYRef.current === null) return;
-              if (e.touches[0].clientY - touchStartYRef.current > 16) {
-                touchStartYRef.current = null;
-                handleTrigger();
-              }
-            }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              pointerStartYRef.current = e.clientY;
-            }}
-            onPointerMove={(e) => {
-              e.stopPropagation();
-              if (pointerStartYRef.current === null) return;
-              if (e.buttons > 0 && e.clientY - pointerStartYRef.current > 16) {
-                pointerStartYRef.current = null;
-                handleTrigger();
-              }
-            }}
-            className="relative flex flex-col items-center cursor-pointer pointer-events-auto select-none group touch-none"
-            style={{
-              transformOrigin: "top center",
-              animation: tapPhase === "idle" ? "pendulumSway 3.2s ease-in-out infinite" : "none",
-              transform:
-                tapPhase === "tug"
-                  ? "translateY(36px) scaleY(1.06)"
-                  : tapPhase === "release"
-                  ? "translateY(-140px) scale(0.92)"
-                  : "translateY(0) scale(1)",
-              opacity: tapPhase === "release" ? 0 : 1,
-              transition:
-                tapPhase === "tug"
-                  ? "transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1)"
-                  : tapPhase === "release"
-                  ? "transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1)"
-                  : "none",
-            }}
-            aria-label="Pull to Unveil the Invite"
-            role="button"
-            tabIndex={0}
-          >
-            {/* Braided Metallic Gold Rope (h-20 w-[3px]) */}
+          {/* Rope & Tassel Interactive Affordance (Anchored below Second Name) */}
+          <div className="absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            {/* Interactive Rope + Tassel Tug Wrapper */}
             <div
-              className="w-[3px] h-20 relative mx-auto"
-              style={{
-                background:
-                  "repeating-linear-gradient(45deg, #7a5205 0px, #d4af37 2px, #fff6d6 4px, #b8860b 6px)",
-                boxShadow: "0 0 12px rgba(212, 175, 55, 0.45)",
-                borderRadius: "1.5px",
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTrigger();
               }}
-            />
-
-            {/* Soft Warm Gold Halo Aura behind Tassel Head */}
-            <div className="absolute top-[72px] w-14 h-14 rounded-full bg-[#fde68a]/30 blur-md pointer-events-none animate-pulse" />
-
-            {/* Ornate 3D SVG Gold Theatre Tassel (w-10 h-16) */}
-            <svg
-              className="w-10 h-16 relative z-10 transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] drop-shadow-[0_0_20px_rgba(212,175,55,0.45)]"
-              viewBox="0 0 40 64"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                touchStartYRef.current = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                e.stopPropagation();
+                if (touchStartYRef.current === null || triggeredRef.current || stateRef.current !== "idle") return;
+                const currentY = e.touches[0].clientY;
+                const diffY = Math.max(0, currentY - touchStartYRef.current);
+                setDragDistance(Math.min(diffY * 0.75, 48));
+                if (diffY > 22) {
+                  touchStartYRef.current = null;
+                  setDragDistance(0);
+                  handleTrigger();
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                touchStartYRef.current = null;
+                setDragDistance(0);
+              }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                if (triggeredRef.current || stateRef.current !== "idle") return;
+                pointerStartYRef.current = e.clientY;
+              }}
+              onPointerMove={(e) => {
+                e.stopPropagation();
+                if (pointerStartYRef.current === null || triggeredRef.current || stateRef.current !== "idle") return;
+                if (e.buttons > 0) {
+                  const diffY = Math.max(0, e.clientY - pointerStartYRef.current);
+                  setDragDistance(Math.min(diffY * 0.75, 48));
+                  if (diffY > 22) {
+                    pointerStartYRef.current = null;
+                    setDragDistance(0);
+                    handleTrigger();
+                  }
+                }
+              }}
+              onPointerUp={(e) => {
+                e.stopPropagation();
+                pointerStartYRef.current = null;
+                setDragDistance(0);
+              }}
+              className="relative flex flex-col items-center cursor-pointer pointer-events-auto select-none group touch-none"
+              style={{
+                transformOrigin: "top center",
+                animation: tapPhase === "idle" && dragDistance === 0 ? "royalTugCycle 3.8s ease-in-out infinite" : "none",
+                transform:
+                  tapPhase === "tug"
+                    ? "translateY(36px) scaleY(1.06)"
+                    : tapPhase === "release"
+                    ? "translateY(-140px) scale(0.92)"
+                    : dragDistance > 0
+                    ? `translateY(${dragDistance}px) scaleY(${1 + dragDistance * 0.003})`
+                    : "translateY(0) scale(1)",
+                opacity: tapPhase === "release" ? 0 : 1,
+                transition:
+                  dragDistance > 0
+                    ? "none"
+                    : tapPhase === "tug"
+                    ? "transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+                    : tapPhase === "release"
+                    ? "transform 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms cubic-bezier(0.22, 1, 0.36, 1)"
+                    : "transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}
+              aria-label="Pull to Open Invitation"
+              role="button"
+              tabIndex={0}
             >
-              <defs>
-                <linearGradient id="goldCapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fff8dc" />
-                  <stop offset="30%" stopColor="#f3d078" />
-                  <stop offset="70%" stopColor="#d4af37" />
-                  <stop offset="100%" stopColor="#8a5a00" />
-                </linearGradient>
+              {/* Braided Metallic Gold Rope with Descending Light Beam */}
+              <div
+                className="w-[3px] h-12 sm:h-16 relative mx-auto overflow-hidden"
+                style={{
+                  background:
+                    "repeating-linear-gradient(45deg, #7a5205 0px, #d4af37 2px, #fff6d6 4px, #b8860b 6px)",
+                  boxShadow: "0 0 12px rgba(212, 175, 55, 0.45)",
+                  borderRadius: "1.5px",
+                }}
+              >
+                <div
+                  className="absolute inset-x-0 w-full h-8 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(180deg, transparent 0%, #ffffff 50%, #fde68a 80%, transparent 100%)",
+                    animation: "ropeLightBeam 2.8s ease-in-out infinite",
+                  }}
+                />
+              </div>
 
-                <radialGradient id="goldFinialRadial" cx="40%" cy="30%" r="70%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="25%" stopColor="#fff8dc" />
-                  <stop offset="50%" stopColor="#f3d078" />
-                  <stop offset="75%" stopColor="#d4af37" />
-                  <stop offset="100%" stopColor="#664100" />
-                </radialGradient>
-
-                <radialGradient id="rubyJewelGrad" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#ff5c7a" />
-                  <stop offset="45%" stopColor="#b80d2d" />
-                  <stop offset="85%" stopColor="#540311" />
-                  <stop offset="100%" stopColor="#220005" />
-                </radialGradient>
-
-                <linearGradient id="silkFringeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#7a5205" />
-                  <stop offset="20%" stopColor="#d4af37" />
-                  <stop offset="48%" stopColor="#fff8dc" />
-                  <stop offset="68%" stopColor="#d4af37" />
-                  <stop offset="88%" stopColor="#f3d078" />
-                  <stop offset="100%" stopColor="#5c3d00" />
-                </linearGradient>
-              </defs>
-
-              {/* Top Suspension Loop (connects directly to braided rope) */}
-              <ellipse cx="20" cy="3" rx="3.5" ry="2" fill="url(#goldCapGrad)" stroke="#fff8dc" strokeWidth="0.6" />
-
-              {/* Sculpted 3D Bell-Shaped Gold Cap (Crown) */}
-              <path
-                d="M 13 5 C 13 3, 27 3, 27 5 C 28 9, 31 14, 30.5 18 L 9.5 18 C 9 14, 12 9, 13 5 Z"
-                fill="url(#goldFinialRadial)"
-                stroke="#fff8dc"
-                strokeWidth="0.5"
+              {/* Soft Warm Gold Halo Aura behind Tassel Head */}
+              <div
+                className="absolute top-[42px] sm:top-[56px] w-14 h-14 rounded-full bg-[#fde68a]/35 blur-lg pointer-events-none"
+                style={{
+                  animation: "haloPulseGlow 3.8s ease-in-out infinite",
+                }}
               />
 
-              {/* Deep Ruby Accent Jewel in the Center of Crown */}
-              <ellipse cx="20" cy="11.5" rx="3" ry="4" fill="url(#rubyJewelGrad)" stroke="#fde68a" strokeWidth="0.75" />
-              <ellipse cx="19" cy="10" rx="1" ry="1.4" fill="#ffffff" opacity="0.8" />
+              {/* Ornate 3D SVG Gold Theatre Tassel */}
+              <svg
+                className="w-9 h-14 sm:w-10 sm:h-16 relative z-10 transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] drop-shadow-[0_0_20px_rgba(212,175,55,0.45)]"
+                viewBox="0 0 40 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="goldCapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fff8dc" />
+                    <stop offset="30%" stopColor="#f3d078" />
+                    <stop offset="70%" stopColor="#d4af37" />
+                    <stop offset="100%" stopColor="#8a5a00" />
+                  </linearGradient>
 
-              {/* Crown Horizontal Braided Collar Ring */}
-              <ellipse cx="20" cy="18" rx="10.5" ry="2.2" fill="url(#goldCapGrad)" stroke="#fff8dc" strokeWidth="0.6" />
+                  <radialGradient id="goldFinialRadial" cx="40%" cy="30%" r="70%">
+                    <stop offset="0%" stopColor="#ffffff" />
+                    <stop offset="25%" stopColor="#fff8dc" />
+                    <stop offset="50%" stopColor="#f3d078" />
+                    <stop offset="75%" stopColor="#d4af37" />
+                    <stop offset="100%" stopColor="#664100" />
+                  </radialGradient>
 
-              {/* Tight Ruby-Gold Neck Wrap Band */}
-              <rect x="11.5" y="19.5" width="17" height="4.5" rx="1.5" fill="#6d0516" stroke="url(#goldCapGrad)" strokeWidth="0.7" />
-              <line x1="12" y1="21.75" x2="28" y2="21.75" stroke="#fde68a" strokeWidth="0.6" strokeDasharray="1.5 1.5" />
+                  <radialGradient id="rubyJewelGrad" cx="35%" cy="30%" r="65%">
+                    <stop offset="0%" stopColor="#ff5c7a" />
+                    <stop offset="45%" stopColor="#b80d2d" />
+                    <stop offset="85%" stopColor="#540311" />
+                    <stop offset="100%" stopColor="#220005" />
+                  </radialGradient>
 
-              {/* Flowing Silk Gold Fringe Base Skirt */}
-              <path
-                d="M 12 24 L 28 24 L 34.5 58 C 34.5 61.5, 5.5 61.5, 5.5 58 Z"
-                fill="url(#silkFringeGrad)"
-                opacity="0.95"
-              />
+                  <linearGradient id="silkFringeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#7a5205" />
+                    <stop offset="20%" stopColor="#d4af37" />
+                    <stop offset="48%" stopColor="#fff8dc" />
+                    <stop offset="68%" stopColor="#d4af37" />
+                    <stop offset="88%" stopColor="#f3d078" />
+                    <stop offset="100%" stopColor="#5c3d00" />
+                  </linearGradient>
+                </defs>
 
-              {/* 16 Individual Metallic Gold Fringe Threads with varied tones & light reflection */}
-              <line x1="12.5" y1="24" x2="6.5" y2="58" stroke="#8a5a00" strokeWidth="0.9" opacity="0.85" />
-              <line x1="13.5" y1="24" x2="8.5" y2="59" stroke="#d4af37" strokeWidth="0.9" opacity="0.9" />
-              <line x1="14.5" y1="24" x2="10.5" y2="59.8" stroke="#f3d078" strokeWidth="0.8" opacity="0.95" />
-              <line x1="15.5" y1="24" x2="12.5" y2="60.5" stroke="#fff8dc" strokeWidth="0.9" opacity="0.9" />
-              <line x1="16.5" y1="24" x2="14.5" y2="61" stroke="#d4af37" strokeWidth="0.8" opacity="0.9" />
-              <line x1="17.8" y1="24" x2="16.5" y2="61.2" stroke="#f3d078" strokeWidth="0.9" opacity="0.95" />
-              <line x1="19" y1="24" x2="18.5" y2="61.5" stroke="#fff8dc" strokeWidth="1" opacity="1" />
-              <line x1="20" y1="24" x2="20" y2="61.5" stroke="#ffffff" strokeWidth="1.1" opacity="0.95" />
-              <line x1="21" y1="24" x2="21.5" y2="61.5" stroke="#fff8dc" strokeWidth="1" opacity="1" />
-              <line x1="22.2" y1="24" x2="23.5" y2="61.2" stroke="#f3d078" strokeWidth="0.9" opacity="0.95" />
-              <line x1="23.5" y1="24" x2="25.5" y2="61" stroke="#d4af37" strokeWidth="0.8" opacity="0.9" />
-              <line x1="24.5" y1="24" x2="27.5" y2="60.5" stroke="#fff8dc" strokeWidth="0.9" opacity="0.9" />
-              <line x1="25.5" y1="24" x2="29.5" y2="59.8" stroke="#f3d078" strokeWidth="0.8" opacity="0.95" />
-              <line x1="26.5" y1="24" x2="31.5" y2="59" stroke="#d4af37" strokeWidth="0.9" opacity="0.9" />
-              <line x1="27.5" y1="24" x2="33.5" y2="58" stroke="#8a5a00" strokeWidth="0.9" opacity="0.85" />
+                {/* Top Suspension Loop */}
+                <ellipse cx="20" cy="3" rx="3.5" ry="2" fill="url(#goldCapGrad)" stroke="#fff8dc" strokeWidth="0.6" />
 
-              {/* Bottom Scalloped Gold Hem Rim */}
-              <path d="M 6 58 Q 20 63 34 58" fill="none" stroke="#d4af37" strokeWidth="1.2" opacity="0.8" />
-            </svg>
-          </div>
+                {/* Sculpted 3D Bell-Shaped Gold Cap (Crown) */}
+                <path
+                  d="M 13 5 C 13 3, 27 3, 27 5 C 28 9, 31 14, 30.5 18 L 9.5 18 C 9 14, 12 9, 13 5 Z"
+                  fill="url(#goldFinialRadial)"
+                  stroke="#fff8dc"
+                  strokeWidth="0.5"
+                />
 
-          {/* Frameless Whisper Typography (14px below tassel) */}
-          <div
-            className="flex flex-col items-center mt-3.5 pointer-events-none"
-            style={{
-              opacity: tapPhase === "idle" ? 1 : 0,
-              transform: tapPhase === "idle" ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity 0.2s ease-out, transform 0.2s ease-out",
-            }}
-          >
-            <div className="font-serif italic text-sm md:text-base tracking-[0.2em] uppercase text-[#fde68a] drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
-              Pull to Unveil the Invite
+                {/* Deep Ruby Accent Jewel */}
+                <ellipse cx="20" cy="11.5" rx="3" ry="4" fill="url(#rubyJewelGrad)" stroke="#fde68a" strokeWidth="0.75" />
+                <ellipse cx="19" cy="10" rx="1" ry="1.4" fill="#ffffff" opacity="0.8" />
+
+                {/* Crown Horizontal Braided Collar Ring */}
+                <ellipse cx="20" cy="18" rx="10.5" ry="2.2" fill="url(#goldCapGrad)" stroke="#fff8dc" strokeWidth="0.6" />
+
+                {/* Tight Ruby-Gold Neck Wrap Band */}
+                <rect x="11.5" y="19.5" width="17" height="4.5" rx="1.5" fill="#6d0516" stroke="url(#goldCapGrad)" strokeWidth="0.7" />
+                <line x1="12" y1="21.75" x2="28" y2="21.75" stroke="#fde68a" strokeWidth="0.6" strokeDasharray="1.5 1.5" />
+
+                {/* Flowing Silk Gold Fringe Base Skirt */}
+                <path
+                  d="M 12 24 L 28 24 L 34.5 58 C 34.5 61.5, 5.5 61.5, 5.5 58 Z"
+                  fill="url(#silkFringeGrad)"
+                  opacity="0.95"
+                />
+
+                {/* Individual Metallic Gold Fringe Threads */}
+                <line x1="12.5" y1="24" x2="6.5" y2="58" stroke="#8a5a00" strokeWidth="0.9" opacity="0.85" />
+                <line x1="13.5" y1="24" x2="8.5" y2="59" stroke="#d4af37" strokeWidth="0.9" opacity="0.9" />
+                <line x1="14.5" y1="24" x2="10.5" y2="59.8" stroke="#f3d078" strokeWidth="0.8" opacity="0.95" />
+                <line x1="15.5" y1="24" x2="12.5" y2="60.5" stroke="#fff8dc" strokeWidth="0.9" opacity="0.9" />
+                <line x1="16.5" y1="24" x2="14.5" y2="61" stroke="#d4af37" strokeWidth="0.8" opacity="0.9" />
+                <line x1="17.8" y1="24" x2="16.5" y2="61.2" stroke="#f3d078" strokeWidth="0.9" opacity="0.95" />
+                <line x1="19" y1="24" x2="18.5" y2="61.5" stroke="#fff8dc" strokeWidth="1" opacity="1" />
+                <line x1="20" y1="24" x2="20" y2="61.5" stroke="#ffffff" strokeWidth="1.1" opacity="0.95" />
+                <line x1="21" y1="24" x2="21.5" y2="61.5" stroke="#fff8dc" strokeWidth="1" opacity="1" />
+                <line x1="22.2" y1="24" x2="23.5" y2="61.2" stroke="#f3d078" strokeWidth="0.9" opacity="0.95" />
+                <line x1="23.5" y1="24" x2="25.5" y2="61" stroke="#d4af37" strokeWidth="0.8" opacity="0.9" />
+                <line x1="24.5" y1="24" x2="27.5" y2="60.5" stroke="#fff8dc" strokeWidth="0.9" opacity="0.9" />
+                <line x1="25.5" y1="24" x2="29.5" y2="59.8" stroke="#f3d078" strokeWidth="0.8" opacity="0.95" />
+                <line x1="26.5" y1="24" x2="31.5" y2="59" stroke="#d4af37" strokeWidth="0.9" opacity="0.9" />
+                <line x1="27.5" y1="24" x2="33.5" y2="58" stroke="#8a5a00" strokeWidth="0.9" opacity="0.85" />
+
+                {/* Bottom Scalloped Gold Hem Rim */}
+                <path d="M 6 58 Q 20 63 34 58" fill="none" stroke="#d4af37" strokeWidth="1.2" opacity="0.8" />
+              </svg>
+
+              {/* Animated Golden Pull Gesture Indicator */}
+              <div
+                className="absolute top-[114px] sm:top-[132px] flex flex-col items-center pointer-events-none z-20"
+                style={{
+                  animation: tapPhase === "idle" && dragDistance === 0 ? "gestureSlideDown 3.8s cubic-bezier(0.25, 1, 0.5, 1) infinite" : "none",
+                  opacity: tapPhase === "idle" && dragDistance === 0 ? 1 : 0,
+                  transition: "opacity 0.2s ease-out",
+                }}
+              >
+                <div className="relative flex items-center justify-center">
+                  <div
+                    className="absolute w-5 h-5 rounded-full border border-[#fde68a]/80 pointer-events-none"
+                    style={{ animation: "gestureRipple 1.9s ease-out infinite" }}
+                  />
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-br from-[#ffffff] via-[#fde68a] to-[#d4af37] shadow-[0_0_8px_#fde68a]" />
+                </div>
+                <div className="w-[1.5px] h-3 bg-gradient-to-b from-[#fde68a] to-transparent mt-0.5 opacity-80" />
+              </div>
             </div>
 
-            {/* Delicate Gold Downward Double-Chevron */}
+            {/* CTA Typography */}
             <div
-              className="flex flex-col items-center mt-1.5 text-[#fde68a] opacity-85"
-              style={{ animation: "chevronBob 2.2s ease-in-out infinite" }}
+              className="flex flex-col items-center mt-2 pointer-events-none whitespace-nowrap"
+              style={{
+                opacity: tapPhase === "idle" ? 1 : 0,
+                transform: tapPhase === "idle" ? "translateY(0)" : "translateY(8px)",
+                transition: "opacity 0.2s ease-out, transform 0.2s ease-out",
+              }}
             >
-              <svg className="w-3.5 h-3.5 text-[#fde68a]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-                <polyline points="6 14 12 20 18 14" opacity="0.5" />
-              </svg>
+              <div
+                className="font-serif italic text-[11px] sm:text-xs md:text-sm tracking-[0.2em] uppercase text-[#fde68a] drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)]"
+                style={{
+                  background: "linear-gradient(90deg, #d4af37 0%, #ffffff 50%, #d4af37 100%)",
+                  backgroundSize: "200% auto",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  animation: "goldSheen 3.2s linear infinite",
+                }}
+              >
+                ✦ Pull to Open ✦
+              </div>
+
+              {/* Downward Triangle Indicator */}
+              <div className="flex flex-col items-center mt-0.5 text-[#fde68a]">
+                <span
+                  className="text-[10px] sm:text-xs text-[#fde68a] opacity-85 select-none"
+                  style={{
+                    animation: "chevronCascade2 1.6s ease-in-out infinite",
+                  }}
+                >
+                  ▼
+                </span>
+              </div>
             </div>
           </div>
         </div>

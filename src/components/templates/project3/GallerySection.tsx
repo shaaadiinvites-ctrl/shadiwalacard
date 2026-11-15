@@ -126,6 +126,7 @@ export function GallerySection({
             <FirecrackerCelebration 
               weddingSlug={wedding?.slug} 
               initialCount={wedding?.blessings_count} 
+              language={wedding?.language}
             />
           </div>
         </>
@@ -136,6 +137,7 @@ export function GallerySection({
           <FirecrackerCelebration 
             weddingSlug={wedding?.slug} 
             initialCount={wedding?.blessings_count} 
+            language={wedding?.language}
           />
         </div>
       )}
